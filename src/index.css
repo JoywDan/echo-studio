@@ -927,6 +927,49 @@ select option { background: var(--card); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(92,78,68,.18); border-radius: 999px; }
 
+/* ─── Crystal orb (Echo's Inner World) ──────────────────────── */
+.object-inner {
+  top: 5.8%; left: 50.5%;
+  width: 9.6%;
+  padding: 13% 2% 2%;
+  text-align: center;
+}
+/* Orb sphere */
+.object-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: calc(50% - 32%);
+  width: 64%; aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(230,210,248,.88), transparent 55%),
+    radial-gradient(circle at 65% 70%, rgba(100,70,130,.42), transparent 60%),
+    linear-gradient(135deg, #c8aadf, #8b5fa8 55%, #5e3878);
+  box-shadow:
+    0 0 0 6% rgba(160,120,185,.18),
+    0 0 28px rgba(148,100,185,.28),
+    0 12px 28px rgba(60,30,80,.20);
+  animation: orb-pulse 3.8s infinite ease-in-out;
+}
+/* Small pedestal */
+.object-inner::after {
+  content: '';
+  position: absolute;
+  bottom: 22%; left: calc(50% - 22%);
+  width: 44%; height: 8%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #c9b4da, #a888c0);
+  box-shadow: 0 8px 18px rgba(60,30,80,.14);
+}
+.object-inner .obj-label { color: #c4a8d8; }
+.object-inner .obj-title { color: #a07ab8; }
+.object-inner .obj-detail { color: #8a6a9a; }
+
+@keyframes orb-pulse {
+  0%, 100% { box-shadow: 0 0 0 6% rgba(160,120,185,.18), 0 0 28px rgba(148,100,185,.28), 0 12px 28px rgba(60,30,80,.20); }
+  50%       { box-shadow: 0 0 0 6% rgba(160,120,185,.28), 0 0 42px rgba(168,120,205,.42), 0 12px 32px rgba(60,30,80,.24); }
+}
+
 /* ─── Animations ─────────────────────────────────────────────── */
 @keyframes pet-roam {
   0%,  12% { transform: translateX(150px) scaleX(1);  }

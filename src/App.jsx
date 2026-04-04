@@ -6,6 +6,7 @@ import WechatPanel from './components/WechatPanel'
 import MemoryPanel from './components/MemoryPanel'
 import VPSPanel from './components/VPSPanel'
 import DiaryPanel from './components/DiaryPanel'
+import InnerWorldPanel from './components/InnerWorldPanel'
 
 const STATIONS = [
   {
@@ -48,6 +49,14 @@ const STATIONS = [
     detail: '桌边日记',
     objectClass: 'object-diary',
   },
+  {
+    id: 'inner',
+    name: "Echo's Inner World",
+    accent: '#a07ab8',
+    label: 'Crystal',
+    detail: '内心世界',
+    objectClass: 'object-inner',
+  },
 ]
 
 // Placeholder items — not yet functional, reserved for future features
@@ -63,6 +72,7 @@ const PANELS = {
   memory: MemoryPanel,
   vps: VPSPanel,
   diary: DiaryPanel,
+  inner: InnerWorldPanel,
 }
 
 export default function App() {

@@ -48,6 +48,7 @@ export const api = {
     stats: () => req('GET', '/api/memory/stats'),
     recent: (count = 10) => req('GET', `/api/memory/recent?count=${count}`),
     write: (d) => req('POST', '/api/memory/write', d),
+    selfLetters: () => req('GET', '/api/memory/self-letters'),
   },
 
   vps: {
