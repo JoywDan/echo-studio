@@ -1,66 +1,64 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../api'
 
-export default function ProviderSwitcher({ service }) {
+export default function ProviderSwitcher({ service, color = 'cyan' }) {
   const [providers, setProviders] = useState([])
   const [active, setActive] = useState(null)
-  const [selected, setSelected] = useState({ provider: '', model: '' })
+  const [sel, setSel] = useState({ provider: '', model: '' })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
     api.providers.list().then(setProviders).catch(() => {})
-    api.providers.getActive(service).then(data => {
-      setActive(data)
-    }).catch(() => {})
+    api.providers.getActive(service).then(setActive).catch(() => {})
   }, [service])
 
-  const currentProvider = providers.find(p =>
-    active?.baseURL?.includes(new URL(p.key ? p.baseURL : 'https://x.com').hostname)
-  )
-
   async function doSwitch() {
-    if (!selected.provider || !selected.model) return
+    if (!sel.provider || !sel.model) return
     setSaving(true); setMsg('')
     try {
-      await api.providers.switch(service, selected.provider, selected.model)
-      setMsg('切换成功，服务已重启')
-      const newActive = await api.providers.getActive(service)
-      setActive(newActive)
-    } catch (e) {
-      setMsg('切换失败: ' + e.message)
-    } finally { setSaving(false) }
+      await api.providers.switch(service, sel.provider, sel.model)
+      setMsg('切换成功 · 服务已重启')
+      api.providers.getActive(service).then(setActive)
+    } catch (e) { setMsg('error: ' + e.message) }
+    finally { setSaving(false) }
   }
 
-  const chosenProvider = providers.find(p => p.name === selected.provider)
+  const chosen = providers.find(p => p.name === sel.provider)
 
   if (providers.length === 0) return (
-    <div className="text-muted text-xs">暂无可用 Provider，请先添加</div>
+    <div className="text-xs text-muted">暂无 Provider</div>
   )
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {active && (
-        <div className="text-xs text-muted">
-          当前：<span className="text-accent">{active.model || active.hostname}</span>
+        <div className="card p-3">
+          <div className="text-xs text-muted tracking-widest uppercase mb-1">当前</div>
+          <div className={`text-sm neon-${color}`}>{active.model || active.hostname || '—'}</div>
+          {active.baseURL && <div className="text-xs text-muted mt-0.5">{active.baseURL}</div>}
         </div>
       )}
-      <div className="flex gap-2">
-        <select value={selected.provider} onChange={e => setSelected({ provider: e.target.value, model: '' })}>
-          <option value="">选择 Provider</option>
+
+      <div className="space-y-2">
+        <select value={sel.provider} onChange={e => setSel({ provider: e.target.value, model: '' })}>
+          <option value="">— 选择 Provider —</option>
           {providers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
         </select>
-        <select value={selected.model} onChange={e => setSelected(s => ({ ...s, model: e.target.value }))}
-                disabled={!chosenProvider}>
-          <option value="">选择模型</option>
-          {chosenProvider?.models?.map(m => <option key={m} value={m}>{m}</option>)}
+
+        <select value={sel.model} onChange={e => setSel(s => ({ ...s, model: e.target.value }))}
+          disabled={!chosen}>
+          <option value="">— 选择模型 —</option>
+          {chosen?.models?.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
       </div>
+
       <div className="flex items-center gap-3">
-        <button className="btn btn-primary" onClick={doSwitch} disabled={saving || !selected.provider || !selected.model}>
-          {saving ? '切换中…' : '切换'}
+        <button className={`btn btn-${color}`} onClick={doSwitch}
+          disabled={saving || !sel.provider || !sel.model}>
+          {saving ? 'switching…' : '切换'}
         </button>
-        {msg && <span className={`text-xs ${msg.includes('失败') ? 'text-red-400' : 'text-green-400'}`}>{msg}</span>}
+        {msg && <span className="text-xs" style={{ color: msg.includes('error') ? 'var(--pink)' : 'var(--cyan)' }}>{msg}</span>}
       </div>
     </div>
   )

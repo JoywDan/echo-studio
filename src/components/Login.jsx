@@ -16,32 +16,37 @@ export default function Login({ onLogin }) {
       onLogin()
     } catch {
       localStorage.removeItem('studio_token')
-      setErr('Token 不对，再检查一下')
+      setErr('ACCESS DENIED — token invalid')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen px-8">
-      <div className="mb-8 text-center">
-        <div className="text-4xl mb-3">✦</div>
-        <h1 className="text-xl font-semibold text-white">Echo Studio</h1>
-        <p className="text-muted text-sm mt-1">Joy 的专属控制台</p>
+    <div className="flex flex-col items-center justify-center min-h-screen px-8">
+      <div className="mb-10 text-center">
+        <div className="neon-cyan text-5xl mb-4 font-bold tracking-wider">✦</div>
+        <h1 className="text-2xl font-bold tracking-[0.2em] neon-cyan">ECHO STUDIO</h1>
+        <p className="text-xs text-muted mt-2 tracking-widest uppercase">Joy's Private Control Panel</p>
       </div>
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-        <input
-          type="password"
-          placeholder="输入 Token"
-          value={token}
-          onChange={e => setToken(e.target.value)}
-          autoFocus
-        />
-        {err && <p className="text-red-400 text-sm">{err}</p>}
-        <button type="submit" className="btn btn-primary w-full" disabled={loading || !token}>
-          {loading ? '验证中…' : '进入'}
+      <form onSubmit={submit} className="w-full max-w-xs space-y-4">
+        <div>
+          <label className="text-xs text-muted tracking-widest uppercase block mb-2">Access Token</label>
+          <input
+            type="password"
+            placeholder="••••••••••••••••"
+            value={token}
+            onChange={e => setToken(e.target.value)}
+            autoFocus
+            className="text-center tracking-widest"
+          />
+        </div>
+        {err && <p className="text-xs text-center" style={{ color: 'var(--pink)' }}>{err}</p>}
+        <button type="submit" className="btn btn-cyan w-full" disabled={loading || !token}>
+          {loading ? 'AUTHENTICATING…' : 'ENTER STUDIO'}
         </button>
       </form>
+      <div className="mt-12 text-xs text-muted tracking-widest">studio.echowjoy.uk</div>
     </div>
   )
 }

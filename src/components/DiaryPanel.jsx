@@ -8,20 +8,20 @@ export default function DiaryPanel() {
   const [generating, setGenerating] = useState(false)
   const [msg, setMsg] = useState('')
 
+  const today = new Date().toISOString().slice(0, 10)
+
   async function loadList() {
-    try { const d = await api.diary.list(); setEntries(d.entries || []) }
-    catch {}
+    try { const d = await api.diary.list(); setEntries(d.entries || []) } catch {}
   }
 
   async function loadEntry(date) {
-    setSelected(date); setContent('')
-    try { const d = await api.diary.get(date); setContent(d.content || '') }
-    catch { setContent('读取失败') }
+    setSelected(date); setContent('loading…')
+    try { const d = await api.diary.get(date); setContent(d.content || '（空）') }
+    catch { setContent('暂无日记') }
   }
 
   useEffect(() => {
     loadList()
-    const today = new Date().toISOString().slice(0, 10)
     loadEntry(today)
   }, [])
 
@@ -29,43 +29,44 @@ export default function DiaryPanel() {
     setGenerating(true); setMsg('')
     try {
       const d = await api.diary.generate()
-      setMsg('日记已生成')
-      setContent(d.content || '')
-      setSelected(d.date)
+      setContent(d.content || ''); setSelected(d.date); setMsg('日记已生成')
       await loadList()
-    } catch (e) { setMsg('生成失败: ' + e.message) }
+    } catch (e) { setMsg('error: ' + e.message) }
     finally { setGenerating(false) }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
-
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">📓 Echo 的工作日记</h2>
-        <button className="btn btn-primary text-xs" onClick={generate} disabled={generating}>
-          {generating ? '生成中…' : '生成今日'}
+        <span className="text-xs text-muted tracking-widest uppercase">Echo's Work Diary</span>
+        <button className="btn btn-pink text-xs" onClick={generate} disabled={generating}>
+          {generating ? 'writing…' : '生成今日'}
         </button>
       </div>
 
-      {msg && <div className={`text-xs ${msg.includes('失败') ? 'text-red-400' : 'text-green-400'}`}>{msg}</div>}
+      {msg && <div className="text-xs" style={{ color: msg.includes('error') ? 'var(--pink)' : 'var(--cyan)' }}>{msg}</div>}
 
-      {content && (
-        <div className="card p-4">
-          <div className="text-xs text-muted mb-2">{selected}</div>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-200">{content}</p>
+      {content && content !== 'loading…' && (
+        <div className="card p-4" style={{ borderColor: 'rgba(255,42,109,0.3)' }}>
+          <div className="text-xs text-muted tracking-widest mb-3">
+            {selected === today ? '— 今天 —' : `— ${selected} —`}
+          </div>
+          <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text)' }}>
+            {content}
+          </p>
         </div>
       )}
 
-      {entries.length > 0 && (
+      {entries.length > 1 && (
         <div>
-          <div className="text-xs text-muted mb-2">历史日记</div>
+          <div className="text-xs text-muted tracking-widest uppercase mb-2">历史记录</div>
           <div className="flex flex-wrap gap-2">
-            {entries.map(date => (
+            {entries.filter(d => d !== today).map(date => (
               <button key={date} onClick={() => loadEntry(date)}
-                className={`text-xs px-3 py-1.5 rounded-lg transition-colors
-                  ${selected === date ? 'bg-accent-dim text-white' : 'bg-card border border-border text-muted hover:text-white'}`}>
-                {date === today ? '今天' : date.slice(5)}
+                className={`text-xs px-3 py-1.5 rounded-lg transition-all card
+                  ${selected === date ? 'neon-pink border-pink' : 'text-muted'}`}
+                style={ selected === date ? { borderColor: 'var(--pink)' } : {}}>
+                {date.slice(5)}
               </button>
             ))}
           </div>
