@@ -45,6 +45,9 @@ export const api = {
 
   memory: {
     recall: (query, context, emotion) => req('POST', '/api/memory/recall', { query, context, emotion }),
+    byTime: (d) => req('POST', '/api/memory/by-time', d),
+    moodTrend: (days = 7) => req('GET', `/api/memory/mood-trend?days=${days}`),
+    byEntity: (d) => req('POST', '/api/memory/by-entity', d),
     stats: () => req('GET', '/api/memory/stats'),
     recent: (count = 10) => req('GET', `/api/memory/recent?count=${count}`),
     write: (d) => req('POST', '/api/memory/write', d),
