@@ -155,20 +155,20 @@ body::before {
   width: 21.4%;
   aspect-ratio: 240 / 180;
   border-radius: 3.5%;
-  border: 1.6% solid #f8f5ef;
-  background: linear-gradient(180deg, #e6edf0 0%, #fef6ed 100%);
-  box-shadow: inset 0 0 0 1px rgba(150,130,110,.08), var(--shadow-soft);
+  border: 1.8% solid #f8f5ef;
+  background: linear-gradient(180deg, #f7f2eb 0%, #f2e6d9 100%);
+  box-shadow: inset 0 0 0 1px rgba(150,130,110,.08), 0 18px 30px rgba(82,59,43,.10);
   overflow: hidden;
 }
 .window-sky {
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at top right, rgba(255,216,190,.72), transparent 45%),
-    linear-gradient(180deg, rgba(186,210,216,.95), rgba(244,236,222,.85));
+    radial-gradient(circle at top right, rgba(255,220,196,.76), transparent 45%),
+    linear-gradient(180deg, rgba(186,210,216,.96), rgba(244,236,222,.9));
 }
 .window-bar {
   position: absolute;
-  background: rgba(255,251,247,.84);
+  background: rgba(255,251,247,.92);
 }
 .window-bar.v {
   top: 0; bottom: 0;
@@ -181,8 +181,8 @@ body::before {
 .window-sill {
   position: absolute;
   bottom: 0; left: -8%; right: -8%;
-  height: 12%;
-  background: linear-gradient(180deg, #ede7df, #d5ccc4);
+  height: 14%;
+  background: linear-gradient(180deg, #f0e7dd, #d8c9ba);
   border-radius: 0 0 3px 3px;
 }
 
@@ -256,11 +256,11 @@ body::before {
   top: 32.4%; left: 9.3%;
   width: 19.6%; height: 2.4%;
   border-radius: 999px;
-  background: #c89b7f;
+  background: linear-gradient(180deg, #d9b396, #c58f70);
   box-shadow: 0 10px 24px rgba(90,67,52,.14);
 }
 .shelf-book, .shelf-plant { position: absolute; bottom: 100%; }
-.shelf-book { border-radius: 8px 8px 3px 3px; }
+.shelf-book { border-radius: 12px 12px 4px 4px; box-shadow: 0 8px 14px rgba(82,59,43,.08); }
 .b1 {
   left: 9%;
   width: 14%; height: 420%;
@@ -279,8 +279,8 @@ body::before {
 .shelf-plant {
   right: 8%;
   width: 26%; height: 320%;
-  border-radius: 18px 18px 12px 12px;
-  background: linear-gradient(180deg, #d6b399, #be8c6d);
+  border-radius: 18px 18px 14px 14px;
+  background: linear-gradient(180deg, #deb79c, #c08d6d);
 }
 .shelf-plant::before, .shelf-plant::after {
   content: '';
@@ -288,7 +288,7 @@ body::before {
   bottom: 68%;
   width: 44%; height: 50%;
   border-radius: 24px 24px 4px 24px;
-  background: linear-gradient(180deg, #9cb4a4, #739280);
+  background: linear-gradient(180deg, #a8c0ae, #769682);
 }
 .shelf-plant::before { left: 14%; transform: rotate(-18deg); }
 .shelf-plant::after  { right: 10%; transform: scaleX(-1) rotate(-8deg); }
@@ -297,64 +297,73 @@ body::before {
 .desk-surface {
   position: absolute;
   left: 24.1%; right: 12.3%;
-  bottom: 19.7%; height: 4%;
-  border-radius: 20px 20px 10px 10px;
-  background: linear-gradient(180deg, #dbaf92, #c89274);
-  box-shadow: var(--shadow-soft);
+  bottom: 18.4%; height: 5.8%;
+  border-radius: 22px 22px 12px 12px;
+  background:
+    linear-gradient(180deg, rgba(255,250,244,.34), transparent 36%),
+    linear-gradient(180deg, #deb295, #cb8d6c);
+  box-shadow: 0 18px 30px rgba(82,59,43,.14);
+  z-index: 0;
 }
-/* Desk legs */
+/* Desk cabinets */
 .desk-surface::before, .desk-surface::after {
   content: '';
   position: absolute;
   top: 100%;
-  width: 2.4%; height: 1600%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #c58d6d, #af7759);
+  width: 15%; height: 220%;
+  border-radius: 0 0 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(255,244,236,.26), transparent 24%),
+    linear-gradient(180deg, #d4a183, #b97958);
+  box-shadow: inset 0 -12px 0 rgba(143,91,64,.12);
 }
-.desk-surface::before { left: 5%; }
-.desk-surface::after  { right: 6%; }
+.desk-surface::before { left: 3.8%; }
+.desk-surface::after  { right: 4.8%; }
 
 .desk-shadow {
   position: absolute;
   left: 27%; right: 13%;
-  bottom: 16.3%; height: 3.4%;
+  bottom: 12.8%; height: 5.8%;
   border-radius: 999px;
-  background: rgba(91,67,53,.12);
-  filter: blur(10px);
+  background: rgba(91,67,53,.16);
+  filter: blur(14px);
 }
 
 /* ─── Lamp ───────────────────────────────────────────────────── */
 .desk-lamp {
   position: absolute;
   top: 36.8%; right: 19.6%;
-  width: 3%; height: 15.5%;
+  width: 2.8%; height: 16.2%;
   border-radius: 999px;
-  background: linear-gradient(180deg, #d9c9be, #bba391);
+  background:
+    linear-gradient(180deg, rgba(255,250,244,.34), transparent 28%),
+    linear-gradient(180deg, #dbcbbf, #b99f8b);
 }
 /* Lamp head */
 .desk-lamp::before {
   content: '';
   position: absolute;
-  top: -25%; left: -200%;
-  width: 520%; height: 56%;
-  border-radius: 44px 44px 20px 20px;
-  background: linear-gradient(180deg, #f8f3ed, #e3d4c8);
-  transform: rotate(-12deg);
+  top: -18%; left: -170%;
+  width: 430%; height: 44%;
+  border-radius: 44px 44px 22px 22px;
+  background: linear-gradient(180deg, #f8f3ed, #e5d5c8);
+  transform: rotate(-18deg);
+  box-shadow: 0 10px 18px rgba(82,59,43,.10);
 }
 /* Lamp base */
 .desk-lamp::after {
   content: '';
   position: absolute;
-  bottom: -20%; left: -200%;
-  width: 700%; height: 18%;
+  bottom: -14%; left: -170%;
+  width: 540%; height: 16%;
   border-radius: 999px;
-  background: linear-gradient(180deg, #d7b29b, #c08d6e);
+  background: linear-gradient(180deg, #dbb59e, #c38b6c);
 }
 .lamp-glow {
   position: absolute;
-  top: 20%; left: -900%;
+  top: 18%; left: -900%;
   width: 2000%; height: 200%;
-  background: radial-gradient(circle, rgba(255,224,180,.28), transparent 72%);
+  background: radial-gradient(circle, rgba(255,224,180,.34), transparent 70%);
   filter: blur(8px);
 }
 
@@ -363,22 +372,38 @@ body::before {
   position: absolute;
   left: 53.6%; bottom: 13.7%;
   width: 14.3%; height: 22.4%;
+  background:
+    radial-gradient(circle at 18% 92%, #b77e61 0 7%, transparent 7.2%),
+    radial-gradient(circle at 36% 96%, #b77e61 0 7%, transparent 7.2%),
+    radial-gradient(circle at 50% 84%, #b77e61 0 7%, transparent 7.2%),
+    radial-gradient(circle at 64% 96%, #b77e61 0 7%, transparent 7.2%),
+    radial-gradient(circle at 82% 92%, #b77e61 0 7%, transparent 7.2%),
+    linear-gradient(180deg, transparent 0 52%, #b77e61 52% 78%, transparent 78%),
+    linear-gradient(90deg, transparent 0 48%, #b77e61 48% 52%, transparent 52%);
 }
 .chair::before, .chair::after {
   content: '';
   position: absolute;
   background: linear-gradient(180deg, #d3a483, #b97f61);
-  border-radius: 26px;
+  box-shadow: 0 12px 22px rgba(82,59,43,.12);
 }
-.chair::before { inset: 0 11% 40% 11%; }
-.chair::after  { inset: 52% 0 11% 23%; }
+.chair::before {
+  inset: 0 20% 42% 20%;
+  border-radius: 28px 28px 18px 18px;
+}
+.chair::after  {
+  inset: 54% 12% 20% 12%;
+  border-radius: 24px;
+}
 
 /* ─── Paper stacks ───────────────────────────────────────────── */
 .paper-stack {
   position: absolute;
-  width: 6.4%; height: 2.1%;
+  width: 6.6%; height: 2.6%;
   border-radius: 8px;
-  background: rgba(255,252,248,.92);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 30%),
+    rgba(255,252,248,.94);
   box-shadow: 0 8px 16px rgba(91,67,53,.08);
 }
 .paper-one { left: 35.7%; bottom: 27.6%; transform: rotate(-6deg); }
@@ -390,7 +415,7 @@ body::before {
   left: 30.7%; bottom: 25.9%;
   width: 3%; height: 7.1%;
   border-radius: 0 0 14px 14px;
-  background: linear-gradient(180deg, #f5ede5, #e0cdbf);
+  background: linear-gradient(180deg, #f7efe7, #e2cfbf);
   box-shadow: 0 12px 24px rgba(91,67,53,.08);
 }
 .desk-cup::before {
@@ -415,6 +440,10 @@ body::before {
   outline: none;
   overflow: hidden;
 }
+.room-object::before,
+.room-object::after {
+  z-index: 0;
+}
 .room-object:hover, .room-object:focus-visible {
   transform: translateY(-6px);
   filter: saturate(1.02);
@@ -424,6 +453,18 @@ body::before {
 }
 
 /* Object text */
+.object-art {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.station-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 12px 20px rgba(82,59,43,.10));
+}
 .obj-label, .obj-title, .obj-detail {
   display: block;
   position: relative; z-index: 2;
@@ -502,6 +543,7 @@ body::before {
 .object-monitor .obj-label,
 .object-monitor .obj-detail { color: #efe7dd; }
 .object-monitor .obj-title  { color: #f5efeb; }
+.object-monitor .station-art { padding: 6% 8% 0; }
 
 /* ─── Mic (Voice Studio) ─────────────────────────────────────── */
 .object-mic {
@@ -553,6 +595,7 @@ body::before {
 .object-mic .obj-label,
 .object-mic .obj-title,
 .object-mic .obj-detail { text-align: center; }
+.object-mic .station-art { padding: 2% 14% 6%; }
 
 /* ─── Memory folder (Memory Core) ───────────────────────────── */
 .object-memory {
@@ -580,6 +623,7 @@ body::before {
 }
 .object-memory .obj-title,
 .object-memory .obj-detail { color: #5e4639; }
+.object-memory .station-art { padding: 8% 6% 10%; }
 
 /* ─── Server rack (Server Hub) ───────────────────────────────── */
 .object-server {
@@ -624,6 +668,7 @@ body::before {
     inset 0 -20% 0 rgba(0,0,0,.08);
 }
 .object-server .obj-title { color: #7c8d94; }
+.object-server .station-art { padding: 4% 10% 2% 4%; }
 
 /* ─── Diary (Echo's Diary) ───────────────────────────────────── */
 .object-diary {
@@ -649,6 +694,7 @@ body::before {
   border-radius: 4px 0 0 4px;
   background: linear-gradient(180deg, #e2b59d, #cb8868);
 }
+.object-diary .station-art { padding: 4% 10% 4% 8%; }
 
 /* ─── Placeholder / future-feature items ────────────────────── */
 .room-decor {
@@ -1015,6 +1061,7 @@ select option { background: var(--card); }
 .object-inner .obj-label { color: #c4a8d8; }
 .object-inner .obj-title { color: #a07ab8; }
 .object-inner .obj-detail { color: #8a6a9a; }
+.object-inner .station-art { padding: 8% 18% 18%; }
 
 @keyframes orb-pulse {
   0%, 100% { box-shadow: 0 0 0 6% rgba(160,120,185,.18), 0 0 28px rgba(148,100,185,.28), 0 12px 28px rgba(60,30,80,.20); }
