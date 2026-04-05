@@ -192,10 +192,14 @@ body::before {
   top: 8.2%; right: 7.3%;
   width: 9.3%;
   aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   background: rgba(255,252,248,.92);
   border: 8% solid #f1ece5;
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 .wall-clock::before {
   content: '';
@@ -209,11 +213,17 @@ body::before {
   width: 14%; border-radius: 999px;
   background: #8f7663;
   transform-origin: center bottom;
+  transition: transform 180ms linear;
+  z-index: 2;
 }
-.clock-hand.hour  { height: 28%; transform: translateX(-50%) rotate(18deg); }
+.clock-hand.hour  { height: 28%; }
 .clock-hand.minute {
   height: 38%; background: #d97757;
-  transform: translateX(-50%) rotate(124deg);
+}
+.clock-hand.second {
+  width: 4%;
+  height: 42%;
+  background: #b87b68;
 }
 .clock-dot {
   position: absolute;
@@ -221,6 +231,23 @@ body::before {
   width: 12%; height: 12%;
   border-radius: 999px;
   background: #d97757;
+  z-index: 3;
+}
+.clock-time {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  width: 72%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  color: #7f6a5b;
+  font-size: clamp(7px, .9vw, 11px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .08em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
 }
 
 /* ─── Shelf ──────────────────────────────────────────────────── */
@@ -386,6 +413,7 @@ body::before {
   cursor: pointer;
   transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
   outline: none;
+  overflow: hidden;
 }
 .room-object:hover, .room-object:focus-visible {
   transform: translateY(-6px);
@@ -399,23 +427,46 @@ body::before {
 .obj-label, .obj-title, .obj-detail {
   display: block;
   position: relative; z-index: 2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 180ms ease;
 }
 .obj-label {
-  font-size: .68rem;
+  font-size: 12px;
+  line-height: 1.2;
   text-transform: uppercase;
-  letter-spacing: .2em;
+  letter-spacing: .16em;
   color: var(--muted);
 }
 .obj-title {
   margin-top: 5px;
-  font-size: 1.05rem;
+  font-size: 13px;
+  line-height: 1.2;
   font-weight: 700;
   color: var(--accent, var(--orange));
 }
 .obj-detail {
   margin-top: 3px;
-  font-size: .84rem;
+  font-size: 10px;
+  line-height: 1.2;
   color: #5f5248;
+}
+.room-object:hover .obj-label,
+.room-object:hover .obj-title,
+.room-object:hover .obj-detail,
+.room-object:focus-visible .obj-label,
+.room-object:focus-visible .obj-title,
+.room-object:focus-visible .obj-detail,
+.room-object:active .obj-label,
+.room-object:active .obj-title,
+.room-object:active .obj-detail,
+.room-object.is-revealed .obj-label,
+.room-object.is-revealed .obj-title,
+.room-object.is-revealed .obj-detail {
+  opacity: 1;
 }
 
 /* ─── Monitor (Chat Terminal) ────────────────────────────────── */
@@ -1032,6 +1083,11 @@ select option { background: var(--card); }
   }
   .room-object:hover, .room-object:active {
     transform: translateY(-2px) !important;
+  }
+  .room-object .obj-label,
+  .room-object .obj-title,
+  .room-object .obj-detail {
+    opacity: 1 !important;
   }
   /* Make monitor span full width since it's the main item */
   .object-monitor {

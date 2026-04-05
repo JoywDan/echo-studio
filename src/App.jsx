@@ -75,11 +75,30 @@ const PANELS = {
   inner: InnerWorldPanel,
 }
 
+function formatClockValue(value) {
+  return String(value).padStart(2, '0')
+}
+
+function getClockState(now = new Date()) {
+  const hours = now.getHours()
+  const minutes = now.getMinutes()
+  const seconds = now.getSeconds()
+
+  return {
+    label: `${formatClockValue(hours)}:${formatClockValue(minutes)}:${formatClockValue(seconds)}`,
+    hourAngle: ((hours % 12) + minutes / 60 + seconds / 3600) * 30,
+    minuteAngle: (minutes + seconds / 60) * 6,
+    secondAngle: seconds * 6,
+  }
+}
+
 export default function App() {
   const [authed, setAuthed] = useState(false)
   const [panel, setPanel] = useState(null)
   const [checking, setChecking] = useState(true)
   const [hint, setHint] = useState(null)
+  const [revealedStation, setRevealedStation] = useState(null)
+  const [clock, setClock] = useState(() => getClockState())
 
   useEffect(() => {
     const isLocal = ['127.0.0.1', 'localhost'].includes(window.location.hostname)
@@ -91,6 +110,25 @@ export default function App() {
       .catch(() => localStorage.removeItem('studio_token'))
       .finally(() => setChecking(false))
   }, [])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setClock(getClockState())
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const handleStationClick = (stationId) => {
+    const supportsHover = window.matchMedia('(hover: hover)').matches
+
+    if (supportsHover || revealedStation === stationId) {
+      setPanel(stationId)
+      return
+    }
+
+    setRevealedStation(stationId)
+  }
 
   if (checking) return (
     <div className="loading-screen">
@@ -146,10 +184,21 @@ export default function App() {
           <div className="window-sill" />
         </div>
 
-        <div className="wall-clock" aria-hidden="true">
-          <span className="clock-hand hour" />
-          <span className="clock-hand minute" />
+        <div className="wall-clock" role="img" aria-label={`Current time ${clock.label}`}>
+          <span
+            className="clock-hand hour"
+            style={{ transform: `translateX(-50%) rotate(${clock.hourAngle}deg)` }}
+          />
+          <span
+            className="clock-hand minute"
+            style={{ transform: `translateX(-50%) rotate(${clock.minuteAngle}deg)` }}
+          />
+          <span
+            className="clock-hand second"
+            style={{ transform: `translateX(-50%) rotate(${clock.secondAngle}deg)` }}
+          />
           <span className="clock-dot" />
+          <span className="clock-time">{clock.label}</span>
         </div>
 
         <div className="room-shelf" aria-hidden="true">
@@ -184,9 +233,9 @@ export default function App() {
         {STATIONS.map(s => (
           <button
             key={s.id}
-            className={`room-object ${s.objectClass}`}
+            className={`room-object ${s.objectClass}${revealedStation === s.id ? ' is-revealed' : ''}`}
             style={{ '--accent': s.accent }}
-            onClick={() => setPanel(s.id)}
+            onClick={() => handleStationClick(s.id)}
             aria-label={s.name}
           >
             <span className="obj-label">{s.label}</span>
