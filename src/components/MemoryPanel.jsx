@@ -1,309 +1,386 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { api } from '../api'
 
-const TABS = [
-  { id: 'recent', label: 'Recent' },
-  { id: 'search', label: 'Search' },
-  { id: 'time', label: 'By Time' },
-  { id: 'entity', label: 'By Entity' },
-  { id: 'trend', label: 'Mood Trend' },
-  { id: 'write', label: 'Write' },
-  { id: 'stats', label: 'Stats' },
-]
+const LAYERS = ['', 'core', 'task', 'episode', 'atomic']
+const CATEGORIES = ['', 'relationship', 'preference', 'boundary', 'project', 'emotion', 'daily', 'intimacy', 'milestone', 'health', 'creative', 'self']
+const EMOTIONS = ['neutral', 'happy', 'sad', 'anxious', 'excited', 'tender', 'frustrated', 'angry', 'calm', 'playful', 'reflective', 'focused']
 
-function extractToolText(response) {
-  return response?.result?.content?.[0]?.text || ''
+const LAYER_COLORS = {
+  core: '#e8b4b8',
+  task: '#b8d4e8',
+  episode: '#d4e8b8',
+  atomic: '#e8d4b8',
 }
 
-function parseToolJson(response) {
-  const raw = extractToolText(response)
-  if (!raw) return null
-
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
+function timeAgo(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'Z')
+  const now = new Date()
+  const diff = (now - d) / 1000
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago'
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago'
+  if (diff < 604800) return Math.floor(diff / 86400) + 'd ago'
+  return dateStr.slice(0, 10)
 }
 
-function prettyPrint(value) {
-  if (typeof value === 'string') return value
-  return JSON.stringify(value, null, 2)
+function MemoryRow({ mem, onEdit, onDelete }) {
+  const [expanded, setExpanded] = useState(false)
+  const isLong = mem.content.length > 80
+
+  return (
+    <div
+      className="mem-row"
+      style={{ borderLeftColor: LAYER_COLORS[mem.layer] || '#666' }}
+      onClick={() => isLong && setExpanded(!expanded)}
+    >
+      <div className="mem-row-header">
+        <span className="mem-layer" style={{ background: LAYER_COLORS[mem.layer] || '#444', color: '#1a1a1a' }}>
+          {mem.layer}
+        </span>
+        <span className="mem-category">{mem.category}</span>
+        {mem.emotion && mem.emotion !== 'neutral' && (
+          <span className="mem-emotion">{mem.emotion}</span>
+        )}
+        <span className="mem-importance" title={`importance: ${mem.importance}`}>
+          {'●'.repeat(Math.min(3, Math.ceil(mem.importance)))}
+        </span>
+        <span className="mem-spacer" />
+        <span className="mem-source">{mem.source}</span>
+        <span className="mem-date" title={mem.created_at}>{timeAgo(mem.created_at)}</span>
+      </div>
+      <div className={`mem-content ${expanded ? 'expanded' : ''}`}>
+        {expanded ? mem.content : (isLong ? mem.content.slice(0, 80) + '...' : mem.content)}
+      </div>
+      <div className="mem-actions">
+        <button className="mem-btn edit" onClick={(e) => { e.stopPropagation(); onEdit(mem) }} title="Edit">✎</button>
+        <button className="mem-btn del" onClick={(e) => { e.stopPropagation(); onDelete(mem) }} title="Archive">✕</button>
+        <span className="mem-id">#{mem.id}</span>
+      </div>
+    </div>
+  )
 }
 
-export default function MemoryPanel() {
-  const [tab, setTab] = useState('recent')
-  const [recent, setRecent] = useState('Loading...')
-  const [stats, setStats] = useState(null)
-  const [searchForm, setSearchForm] = useState({ query: '', context: '', emotion: '' })
-  const [timeForm, setTimeForm] = useState({ start: '', end: '', category: '', emotion: '', limit: 10 })
-  const [entityForm, setEntityForm] = useState({ entity: '', entity_type: '', limit: 5 })
-  const [trendDays, setTrendDays] = useState(7)
-  const [writeForm, setWriteForm] = useState({ content: '', category: '', emotion: '' })
-  const [result, setResult] = useState('')
-  const [trendResult, setTrendResult] = useState('')
-  const [writeMsg, setWriteMsg] = useState('')
-  const [loading, setLoading] = useState(false)
+function EditModal({ mem, onSave, onClose }) {
+  const [form, setForm] = useState({
+    content: mem?.content || '',
+    category: mem?.category || '',
+    emotion: mem?.emotion || 'neutral',
+    importance: mem?.importance ?? 1.0,
+    layer: mem?.layer || 'atomic',
+  })
+  const [saving, setSaving] = useState(false)
+  const isNew = !mem?.id
 
-  useEffect(() => {
-    api.memory.recent(10)
-      .then((data) => setRecent(extractToolText(data) || 'No recent memories yet.'))
-      .catch(() => setRecent('Failed to load recent memories.'))
-
-    api.memory.stats()
-      .then(setStats)
-      .catch(() => setStats({ error: 'Failed to load stats.' }))
-  }, [])
-
-  async function runSearch() {
-    if (!searchForm.query.trim()) return
-    setLoading(true)
-    setResult('')
-
+  const handleSave = async () => {
+    setSaving(true)
     try {
-      const data = await api.memory.recall(searchForm.query, searchForm.context, searchForm.emotion)
-      const parsed = parseToolJson(data)
-      setResult(prettyPrint(parsed || extractToolText(data) || 'No related memories found.'))
-    } catch (error) {
-      setResult(`Search failed: ${error.message}`)
+      if (isNew) {
+        await api.memory.write({
+          content: form.content,
+          category: form.category,
+          emotion: form.emotion,
+          layer_hint: form.layer,
+          source: 'studio_frontend',
+        })
+      } else {
+        await api.memory.update(mem.id, form)
+      }
+      onSave()
+    } catch (err) {
+      alert('Save failed: ' + err.message)
     } finally {
-      setLoading(false)
-    }
-  }
-
-  async function runTimeSearch() {
-    if (!timeForm.start.trim()) return
-    setLoading(true)
-    setResult('')
-
-    try {
-      const data = await api.memory.byTime({
-        ...timeForm,
-        limit: Number(timeForm.limit) || 10,
-      })
-      const parsed = parseToolJson(data)
-      setResult(prettyPrint(parsed || extractToolText(data) || 'No memories found in that time range.'))
-    } catch (error) {
-      setResult(`Time search failed: ${error.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function runEntitySearch() {
-    if (!entityForm.entity.trim()) return
-    setLoading(true)
-    setResult('')
-
-    try {
-      const data = await api.memory.byEntity({
-        ...entityForm,
-        limit: Number(entityForm.limit) || 5,
-      })
-      const parsed = parseToolJson(data)
-      setResult(prettyPrint(parsed || extractToolText(data) || 'No related entity memories found.'))
-    } catch (error) {
-      setResult(`Entity search failed: ${error.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function loadTrend() {
-    setLoading(true)
-    setTrendResult('')
-
-    try {
-      const data = await api.memory.moodTrend(Number(trendDays) || 7)
-      const parsed = parseToolJson(data)
-      setTrendResult(parsed?.trend || prettyPrint(parsed || extractToolText(data) || 'No mood trend data yet.'))
-    } catch (error) {
-      setTrendResult(`Mood trend failed: ${error.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function writeMemory() {
-    if (!writeForm.content.trim()) return
-    setLoading(true)
-    setWriteMsg('')
-
-    try {
-      const data = await api.memory.write(writeForm)
-      const parsed = parseToolJson(data)
-      setWriteMsg(parsed?.note || 'Memory written.')
-      setWriteForm({ content: '', category: '', emotion: '' })
-    } catch (error) {
-      setWriteMsg(`Write failed: ${error.message}`)
-    } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Memory Core</h2>
-
-      <div className="tab-bar flex-wrap">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setTab(item.id)}
-            className={`tab ${tab === item.id ? 'active-orange' : ''}`}
-          >
-            {item.label}
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <h3>{isNew ? '✦ New Memory' : `✎ Edit #${mem.id}`}</h3>
+        <textarea
+          value={form.content}
+          onChange={(e) => setForm(f => ({ ...f, content: e.target.value }))}
+          rows={6}
+          placeholder="Memory content..."
+          autoFocus
+        />
+        <div className="modal-fields">
+          <label>
+            Layer
+            <select value={form.layer} onChange={(e) => setForm(f => ({ ...f, layer: e.target.value }))}>
+              {LAYERS.filter(Boolean).map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </label>
+          <label>
+            Category
+            <select value={form.category} onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c || '—'}</option>)}
+            </select>
+          </label>
+          <label>
+            Emotion
+            <select value={form.emotion} onChange={(e) => setForm(f => ({ ...f, emotion: e.target.value }))}>
+              {EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
+            </select>
+          </label>
+          <label>
+            Importance
+            <input
+              type="number"
+              min="0"
+              max="2"
+              step="0.1"
+              value={form.importance}
+              onChange={(e) => setForm(f => ({ ...f, importance: parseFloat(e.target.value) || 0 }))}
+            />
+          </label>
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-muted" onClick={onClose}>Cancel</button>
+          <button className="btn btn-orange" onClick={handleSave} disabled={saving || !form.content.trim()}>
+            {saving ? 'Saving...' : 'Save'}
           </button>
-        ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeleteConfirm({ mem, onConfirm, onClose }) {
+  const [deleting, setDeleting] = useState(false)
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box small" onClick={(e) => e.stopPropagation()}>
+        <h3>Archive Memory #{mem.id}?</h3>
+        <p className="text-sm text-muted" style={{ marginBottom: 16 }}>
+          {mem.content.length > 100 ? mem.content.slice(0, 100) + '...' : mem.content}
+        </p>
+        <div className="modal-actions">
+          <button className="btn btn-muted" onClick={onClose}>Cancel</button>
+          <button
+            className="btn btn-danger"
+            disabled={deleting}
+            onClick={async () => {
+              setDeleting(true)
+              try { await api.memory.remove(mem.id); onConfirm() }
+              catch (err) { alert('Delete failed: ' + err.message) }
+              finally { setDeleting(false) }
+            }}
+          >
+            {deleting ? 'Archiving...' : 'Archive'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function MemoryPanel() {
+  const [memories, setMemories] = useState([])
+  const [total, setTotal] = useState(0)
+  const [pages, setPages] = useState(1)
+  const [page, setPage] = useState(1)
+  const [perPage] = useState(20)
+  const [sort, setSort] = useState('created_at')
+  const [order, setOrder] = useState('desc')
+  const [layerFilter, setLayerFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [editMem, setEditMem] = useState(null)
+  const [deleteMem, setDeleteMem] = useState(null)
+  const [showNew, setShowNew] = useState(false)
+  const [stats, setStats] = useState(null)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const timerRef = useRef(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await api.memory.list({
+        page, per_page: perPage, sort, order,
+        layer: layerFilter, category: categoryFilter,
+        search: search,
+      })
+      setMemories(data.data || [])
+      setTotal(data.total || 0)
+      setPages(data.pages || 1)
+    } catch (err) {
+      console.error('Failed to load memories:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [page, perPage, sort, order, layerFilter, categoryFilter, search])
+
+  useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    api.memory.stats().then(setStats).catch(() => {})
+  }, [])
+
+  // auto-refresh
+  useEffect(() => {
+    if (autoRefresh) {
+      timerRef.current = setInterval(load, 8000)
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [autoRefresh, load])
+
+  const toggleSort = (col) => {
+    if (sort === col) { setOrder(o => o === 'desc' ? 'asc' : 'desc') }
+    else { setSort(col); setOrder('desc') }
+    setPage(1)
+  }
+
+  const sortIcon = (col) => sort === col ? (order === 'desc' ? ' ↓' : ' ↑') : ''
+
+  const handleSearch = () => { setSearch(searchInput); setPage(1) }
+
+  const extractStatsText = (s) => {
+    if (!s) return ''
+    const txt = s?.result?.content?.[0]?.text
+    if (!txt) return JSON.stringify(s, null, 2)
+    try { const p = JSON.parse(txt); return Object.entries(p.counts || p).map(([k,v]) => `${k}: ${v}`).join('  ·  ') }
+    catch { return txt }
+  }
+
+  return (
+    <div className="memory-panel">
+      <style>{`
+        .memory-panel { font-size: 13px; }
+        .mem-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+        .mem-toolbar select, .mem-toolbar input[type="text"] {
+          background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          padding: 5px 8px; border-radius: 4px; font-size: 12px;
+        }
+        .mem-toolbar select { min-width: 90px; }
+        .mem-toolbar input[type="text"] { flex: 1; min-width: 120px; }
+        .mem-stats-bar { font-size: 11px; color: var(--text-muted, #888); margin-bottom: 10px; letter-spacing: 0.5px; }
+        .mem-sort-bar { display: flex; gap: 2px; margin-bottom: 8px; flex-wrap: wrap; }
+        .mem-sort-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+          padding: 3px 10px; border-radius: 3px; font-size: 11px; cursor: pointer; }
+        .mem-sort-btn.active { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
+        .mem-row { border-left: 3px solid #666; padding: 8px 12px; margin-bottom: 6px;
+          background: var(--bg-card, #1e1e1e); border-radius: 0 4px 4px 0; cursor: pointer;
+          transition: background 0.15s; position: relative; }
+        .mem-row:hover { background: var(--bg-hover, #262626); }
+        .mem-row-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+        .mem-layer { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mem-category { font-size: 11px; color: var(--text-muted, #aaa); }
+        .mem-emotion { font-size: 10px; color: var(--accent, #D97757); background: rgba(217,119,87,0.1); padding: 1px 5px; border-radius: 3px; }
+        .mem-importance { font-size: 8px; color: var(--accent, #D97757); letter-spacing: -1px; }
+        .mem-spacer { flex: 1; }
+        .mem-source { font-size: 10px; color: var(--text-muted, #666); }
+        .mem-date { font-size: 10px; color: var(--text-muted, #666); }
+        .mem-content { font-size: 12px; color: var(--text, #ccc); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .mem-content.expanded { max-height: none; }
+        .mem-actions { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; align-items: center; opacity: 0; transition: opacity 0.15s; }
+        .mem-row:hover .mem-actions { opacity: 1; }
+        .mem-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+          width: 24px; height: 24px; border-radius: 3px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .mem-btn.edit:hover { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
+        .mem-btn.del:hover { color: #e55; border-color: #e55; }
+        .mem-id { font-size: 9px; color: var(--text-muted, #555); }
+        .mem-pagination { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 12px; }
+        .mem-pagination button { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333);
+          color: var(--text, #ccc); padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .mem-pagination button:disabled { opacity: 0.3; cursor: default; }
+        .mem-pagination button.current { border-color: var(--accent, #D97757); color: var(--accent, #D97757); }
+        .mem-pagination span { font-size: 11px; color: var(--text-muted, #888); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .modal-box { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); border-radius: 8px;
+          padding: 20px; width: 90%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
+        .modal-box.small { max-width: 380px; }
+        .modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--text, #ddd); }
+        .modal-box textarea { width: 100%; background: var(--bg, #111); border: 1px solid var(--border, #333);
+          color: var(--text, #ddd); padding: 8px; border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .modal-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .modal-fields label { font-size: 11px; color: var(--text-muted, #999); display: flex; flex-direction: column; gap: 4px; }
+        .modal-fields select, .modal-fields input {
+          background: var(--bg, #111); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          padding: 5px 8px; border-radius: 4px; font-size: 12px; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+        .btn { padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; }
+        .btn-orange { background: var(--accent, #D97757); color: #fff; }
+        .btn-orange:disabled { opacity: 0.4; }
+        .btn-muted { background: var(--bg, #111); color: var(--text-muted, #999); border: 1px solid var(--border, #333); }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:disabled { opacity: 0.4; }
+        .mem-auto-refresh { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted, #888); cursor: pointer; }
+        .mem-auto-refresh input { cursor: pointer; }
+        .mem-loading { text-align: center; padding: 20px; color: var(--text-muted, #888); font-size: 12px; }
+      `}</style>
+
+      <h2 className="text-lg font-semibold" style={{ marginBottom: 8 }}>Memory Core</h2>
+
+      {stats && <div className="mem-stats-bar">{extractStatsText(stats)}</div>}
+
+      <div className="mem-toolbar">
+        <select value={layerFilter} onChange={(e) => { setLayerFilter(e.target.value); setPage(1) }}>
+          <option value="">All Layers</option>
+          {LAYERS.filter(Boolean).map(l => <option key={l} value={l}>{l}</option>)}
+        </select>
+        <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1) }}>
+          <option value="">All Categories</option>
+          {CATEGORIES.filter(Boolean).map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          placeholder="Search content..."
+        />
+        <button className="btn btn-orange" onClick={handleSearch} style={{ padding: '5px 12px' }}>Search</button>
+        <button className="btn btn-muted" onClick={() => { setSearchInput(''); setSearch(''); setLayerFilter(''); setCategoryFilter(''); setPage(1) }}
+          style={{ padding: '5px 10px', fontSize: 11 }}>Reset</button>
+        <button className="btn btn-orange" onClick={() => setShowNew(true)} style={{ padding: '5px 12px' }}>+ New</button>
+        <label className="mem-auto-refresh">
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
+          Auto
+        </label>
       </div>
 
-      {tab === 'recent' && (
-        <pre className="log-box">{recent}</pre>
-      )}
-
-      {tab === 'search' && (
-        <div className="space-y-3">
-          <input
-            value={searchForm.query}
-            onChange={(event) => setSearchForm((form) => ({ ...form, query: event.target.value }))}
-            placeholder="Ask what memory you want to recall"
-          />
-          <input
-            value={searchForm.context}
-            onChange={(event) => setSearchForm((form) => ({ ...form, context: event.target.value }))}
-            placeholder="Optional conversation context"
-          />
-          <input
-            value={searchForm.emotion}
-            onChange={(event) => setSearchForm((form) => ({ ...form, emotion: event.target.value }))}
-            placeholder="Optional emotion tag"
-          />
-          <button className="btn btn-orange" onClick={runSearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Recall Memory'}
+      <div className="mem-sort-bar">
+        <span style={{ fontSize: 10, color: '#666', marginRight: 4, lineHeight: '22px' }}>Sort:</span>
+        {[['created_at', 'Date'], ['importance', 'Importance'], ['category', 'Category'], ['layer', 'Layer']].map(([col, label]) => (
+          <button key={col} className={`mem-sort-btn ${sort === col ? 'active' : ''}`} onClick={() => toggleSort(col)}>
+            {label}{sortIcon(col)}
           </button>
-          {result && <pre className="log-box">{result}</pre>}
+        ))}
+        <span style={{ flex: 1 }} />
+        <span style={{ fontSize: 10, color: '#666', lineHeight: '22px' }}>{total} memories</span>
+      </div>
+
+      {loading && memories.length === 0 ? (
+        <div className="mem-loading">Loading memories...</div>
+      ) : (
+        <>
+          {memories.map(mem => (
+            <MemoryRow key={mem.id} mem={mem} onEdit={setEditMem} onDelete={setDeleteMem} />
+          ))}
+          {memories.length === 0 && <div className="mem-loading">No memories found.</div>}
+        </>
+      )}
+
+      {pages > 1 && (
+        <div className="mem-pagination">
+          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span>{page} / {pages}</span>
+          <button disabled={page >= pages} onClick={() => setPage(p => p + 1)}>Next →</button>
         </div>
       )}
 
-      {tab === 'time' && (
-        <div className="space-y-3">
-          <input
-            value={timeForm.start}
-            onChange={(event) => setTimeForm((form) => ({ ...form, start: event.target.value }))}
-            placeholder="Start time, for example 2026-04-03T00:00:00"
-          />
-          <input
-            value={timeForm.end}
-            onChange={(event) => setTimeForm((form) => ({ ...form, end: event.target.value }))}
-            placeholder="Optional end time"
-          />
-          <div className="grid gap-3 md:grid-cols-3">
-            <input
-              value={timeForm.category}
-              onChange={(event) => setTimeForm((form) => ({ ...form, category: event.target.value }))}
-              placeholder="Optional category"
-            />
-            <input
-              value={timeForm.emotion}
-              onChange={(event) => setTimeForm((form) => ({ ...form, emotion: event.target.value }))}
-              placeholder="Optional emotion"
-            />
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={timeForm.limit}
-              onChange={(event) => setTimeForm((form) => ({ ...form, limit: event.target.value }))}
-              placeholder="Limit"
-            />
-          </div>
-          <button className="btn btn-orange" onClick={runTimeSearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Recall By Time'}
-          </button>
-          {result && <pre className="log-box">{result}</pre>}
-        </div>
+      {editMem && (
+        <EditModal mem={editMem} onClose={() => setEditMem(null)} onSave={() => { setEditMem(null); load() }} />
       )}
-
-      {tab === 'entity' && (
-        <div className="space-y-3">
-          <input
-            value={entityForm.entity}
-            onChange={(event) => setEntityForm((form) => ({ ...form, entity: event.target.value }))}
-            placeholder="Entity name, for example Echo or Joy"
-          />
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              value={entityForm.entity_type}
-              onChange={(event) => setEntityForm((form) => ({ ...form, entity_type: event.target.value }))}
-              placeholder="Optional type: person, project, pet..."
-            />
-            <input
-              type="number"
-              min="1"
-              max="20"
-              value={entityForm.limit}
-              onChange={(event) => setEntityForm((form) => ({ ...form, limit: event.target.value }))}
-              placeholder="Limit"
-            />
-          </div>
-          <button className="btn btn-orange" onClick={runEntitySearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Recall By Entity'}
-          </button>
-          {result && <pre className="log-box">{result}</pre>}
-        </div>
+      {deleteMem && (
+        <DeleteConfirm mem={deleteMem} onClose={() => setDeleteMem(null)} onConfirm={() => { setDeleteMem(null); load() }} />
       )}
-
-      {tab === 'trend' && (
-        <div className="space-y-3">
-          <div className="flex gap-3">
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={trendDays}
-              onChange={(event) => setTrendDays(event.target.value)}
-              placeholder="Days"
-            />
-            <button className="btn btn-orange" onClick={loadTrend} disabled={loading}>
-              {loading ? 'Loading...' : 'Load Mood Trend'}
-            </button>
-          </div>
-          {trendResult && <pre className="log-box">{trendResult}</pre>}
-        </div>
-      )}
-
-      {tab === 'write' && (
-        <div className="space-y-3">
-          <textarea
-            value={writeForm.content}
-            onChange={(event) => setWriteForm((form) => ({ ...form, content: event.target.value }))}
-            rows={4}
-            placeholder="Write down what should be remembered"
-          />
-          <div className="grid gap-3 md:grid-cols-2">
-            <select
-              value={writeForm.category}
-              onChange={(event) => setWriteForm((form) => ({ ...form, category: event.target.value }))}
-            >
-              <option value="">Optional category</option>
-              {['relationship', 'preference', 'boundary', 'project', 'emotion', 'daily', 'intimacy', 'milestone', 'health', 'creative']
-                .map((category) => <option key={category} value={category}>{category}</option>)}
-            </select>
-            <input
-              value={writeForm.emotion}
-              onChange={(event) => setWriteForm((form) => ({ ...form, emotion: event.target.value }))}
-              placeholder="Optional emotion tag"
-            />
-          </div>
-          <button className="btn btn-orange" onClick={writeMemory} disabled={loading || !writeForm.content.trim()}>
-            {loading ? 'Writing...' : 'Write Memory'}
-          </button>
-          {writeMsg && <div className="text-sm text-muted">{writeMsg}</div>}
-        </div>
-      )}
-
-      {tab === 'stats' && (
-        <pre className="log-box">{prettyPrint(stats || 'Loading...')}</pre>
+      {showNew && (
+        <EditModal mem={{}} onClose={() => setShowNew(false)} onSave={() => { setShowNew(false); load() }} />
       )}
     </div>
   )

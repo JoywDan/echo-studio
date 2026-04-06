@@ -52,6 +52,14 @@ export const api = {
     recent: (count = 10) => req('GET', `/api/memory/recent?count=${count}`),
     write: (d) => req('POST', '/api/memory/write', d),
     selfLetters: () => req('GET', '/api/memory/self-letters'),
+    list: (params = {}) => {
+      const q = new URLSearchParams()
+      for (const [k, v] of Object.entries(params)) { if (v !== '' && v != null) q.set(k, v) }
+      return req('GET', `/api/memory/list?${q}`)
+    },
+    update: (id, d) => req('PUT', `/api/memory/${id}`, d),
+    remove: (id) => req('DELETE', `/api/memory/${id}`),
+    categories: () => req('GET', '/api/memory/categories'),
   },
 
   vps: {
