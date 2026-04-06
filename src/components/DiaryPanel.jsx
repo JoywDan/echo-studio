@@ -116,7 +116,7 @@ export default function DiaryPanel() {
           <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text)' }}>
             {content}
           </p>
-        </div>
+          </div>
       )}
 
       {entries.length > 0 && (
