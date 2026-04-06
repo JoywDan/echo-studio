@@ -252,65 +252,65 @@ export default function MemoryPanel() {
         .memory-panel { font-size: 13px; }
         .mem-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
         .mem-toolbar select, .mem-toolbar input[type="text"] {
-          background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc); color: var(--text, #D97757);
           padding: 5px 8px; border-radius: 4px; font-size: 12px;
         }
         .mem-toolbar select { min-width: 90px; }
         .mem-toolbar input[type="text"] { flex: 1; min-width: 120px; }
-        .mem-stats-bar { font-size: 11px; color: var(--text-muted, #888); margin-bottom: 10px; letter-spacing: 0.5px; }
+        .mem-stats-bar { font-size: 11px; color: var(--text-muted, #b8886e); margin-bottom: 10px; letter-spacing: 0.5px; }
         .mem-sort-bar { display: flex; gap: 2px; margin-bottom: 8px; flex-wrap: wrap; }
-        .mem-sort-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+        .mem-sort-btn { background: none; border: 1px solid var(--border, #e0d5cc); color: var(--text-muted, #b8886e);
           padding: 3px 10px; border-radius: 3px; font-size: 11px; cursor: pointer; }
         .mem-sort-btn.active { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
         .mem-row { border-left: 3px solid #666; padding: 8px 12px; margin-bottom: 6px;
-          background: var(--bg-card, #1e1e1e); border-radius: 0 4px 4px 0; cursor: pointer;
+          background: var(--bg-card, #f5f3f0); border-radius: 0 4px 4px 0; cursor: pointer;
           transition: background 0.15s; position: relative; }
-        .mem-row:hover { background: var(--bg-hover, #262626); }
+        .mem-row:hover { background: var(--bg-hover, #ece8e3); }
         .mem-row-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
         .mem-layer { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .mem-category { font-size: 11px; color: var(--text-muted, #aaa); }
-        .mem-emotion { font-size: 10px; color: var(--accent, #D97757); background: rgba(217,119,87,0.1); padding: 1px 5px; border-radius: 3px; }
+        .mem-category { font-size: 11px; color: var(--text-muted, #c49578); }
+        .mem-emotion { font-size: 10px; color: var(--accent, #D97757); background: rgba(217,119,87,0.15); padding: 1px 5px; border-radius: 3px; }
         .mem-importance { font-size: 8px; color: var(--accent, #D97757); letter-spacing: -1px; }
         .mem-spacer { flex: 1; }
-        .mem-source { font-size: 10px; color: var(--text-muted, #666); }
-        .mem-date { font-size: 10px; color: var(--text-muted, #666); }
-        .mem-content { font-size: 12px; color: var(--text, #ccc); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .mem-source { font-size: 10px; color: var(--text-muted, #c9a08a); }
+        .mem-date { font-size: 10px; color: var(--text-muted, #c9a08a); }
+        .mem-content { font-size: 12px; color: var(--text-body, #5a3d2e); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
         .mem-content.expanded { max-height: none; }
         .mem-actions { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; align-items: center; opacity: 0; transition: opacity 0.15s; }
         .mem-row:hover .mem-actions { opacity: 1; }
-        .mem-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+        .mem-btn { background: none; border: 1px solid var(--border, #e0d5cc); color: var(--text-muted, #b8886e);
           width: 24px; height: 24px; border-radius: 3px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
         .mem-btn.edit:hover { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
-        .mem-btn.del:hover { color: #e55; border-color: #e55; }
-        .mem-id { font-size: 9px; color: var(--text-muted, #555); }
+        .mem-btn.del:hover { color: #d4553a; border-color: #d4553a; }
+        .mem-id { font-size: 9px; color: var(--text-muted, #d4b5a2); }
         .mem-pagination { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 12px; }
-        .mem-pagination button { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333);
-          color: var(--text, #ccc); padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .mem-pagination button { background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc);
+          color: var(--text, #D97757); padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
         .mem-pagination button:disabled { opacity: 0.3; cursor: default; }
         .mem-pagination button.current { border-color: var(--accent, #D97757); color: var(--accent, #D97757); }
-        .mem-pagination span { font-size: 11px; color: var(--text-muted, #888); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 999; }
-        .modal-box { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); border-radius: 8px;
+        .mem-pagination span { font-size: 11px; color: var(--text-muted, #b8886e); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .modal-box { background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc); border-radius: 8px;
           padding: 20px; width: 90%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
         .modal-box.small { max-width: 380px; }
-        .modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--text, #ddd); }
-        .modal-box textarea { width: 100%; background: var(--bg, #111); border: 1px solid var(--border, #333);
-          color: var(--text, #ddd); padding: 8px; border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--text-heading, #D97757); }
+        .modal-box textarea { width: 100%; background: var(--bg, #faf8f6); border: 1px solid var(--border, #e0d5cc);
+          color: var(--text-body, #5a3d2e); padding: 8px; border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; }
         .modal-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-        .modal-fields label { font-size: 11px; color: var(--text-muted, #999); display: flex; flex-direction: column; gap: 4px; }
+        .modal-fields label { font-size: 11px; color: var(--text-muted, #b8886e); display: flex; flex-direction: column; gap: 4px; }
         .modal-fields select, .modal-fields input {
-          background: var(--bg, #111); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          background: var(--bg, #faf8f6); border: 1px solid var(--border, #e0d5cc); color: var(--text, #D97757);
           padding: 5px 8px; border-radius: 4px; font-size: 12px; }
         .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
         .btn { padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; }
         .btn-orange { background: var(--accent, #D97757); color: #fff; }
         .btn-orange:disabled { opacity: 0.4; }
-        .btn-muted { background: var(--bg, #111); color: var(--text-muted, #999); border: 1px solid var(--border, #333); }
-        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-muted { background: var(--bg, #faf8f6); color: var(--text-muted, #b8886e); border: 1px solid var(--border, #e0d5cc); }
+        .btn-danger { background: #d4553a; color: #fff; }
         .btn-danger:disabled { opacity: 0.4; }
-        .mem-auto-refresh { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted, #888); cursor: pointer; }
+        .mem-auto-refresh { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted, #b8886e); cursor: pointer; }
         .mem-auto-refresh input { cursor: pointer; }
-        .mem-loading { text-align: center; padding: 20px; color: var(--text-muted, #888); font-size: 12px; }
+        .mem-loading { text-align: center; padding: 20px; color: var(--text-muted, #b8886e); font-size: 12px; }
       `}</style>
 
       <h2 className="text-lg font-semibold" style={{ marginBottom: 8 }}>Memory Core</h2>
