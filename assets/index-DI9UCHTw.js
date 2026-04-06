@@ -41,65 +41,65 @@ Error generating stack: `+i.message+`
         .memory-panel { font-size: 13px; }
         .mem-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
         .mem-toolbar select, .mem-toolbar input[type="text"] {
-          background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc); color: var(--text, #D97757);
           padding: 5px 8px; border-radius: 4px; font-size: 12px;
         }
         .mem-toolbar select { min-width: 90px; }
         .mem-toolbar input[type="text"] { flex: 1; min-width: 120px; }
-        .mem-stats-bar { font-size: 11px; color: var(--text-muted, #888); margin-bottom: 10px; letter-spacing: 0.5px; }
+        .mem-stats-bar { font-size: 11px; color: var(--text-muted, #b8886e); margin-bottom: 10px; letter-spacing: 0.5px; }
         .mem-sort-bar { display: flex; gap: 2px; margin-bottom: 8px; flex-wrap: wrap; }
-        .mem-sort-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+        .mem-sort-btn { background: none; border: 1px solid var(--border, #e0d5cc); color: var(--text-muted, #b8886e);
           padding: 3px 10px; border-radius: 3px; font-size: 11px; cursor: pointer; }
         .mem-sort-btn.active { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
         .mem-row { border-left: 3px solid #666; padding: 8px 12px; margin-bottom: 6px;
-          background: var(--bg-card, #1e1e1e); border-radius: 0 4px 4px 0; cursor: pointer;
+          background: var(--bg-card, #f5f3f0); border-radius: 0 4px 4px 0; cursor: pointer;
           transition: background 0.15s; position: relative; }
-        .mem-row:hover { background: var(--bg-hover, #262626); }
+        .mem-row:hover { background: var(--bg-hover, #ece8e3); }
         .mem-row-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
         .mem-layer { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .mem-category { font-size: 11px; color: var(--text-muted, #aaa); }
-        .mem-emotion { font-size: 10px; color: var(--accent, #D97757); background: rgba(217,119,87,0.1); padding: 1px 5px; border-radius: 3px; }
+        .mem-category { font-size: 11px; color: var(--text-muted, #c49578); }
+        .mem-emotion { font-size: 10px; color: var(--accent, #D97757); background: rgba(217,119,87,0.15); padding: 1px 5px; border-radius: 3px; }
         .mem-importance { font-size: 8px; color: var(--accent, #D97757); letter-spacing: -1px; }
         .mem-spacer { flex: 1; }
-        .mem-source { font-size: 10px; color: var(--text-muted, #666); }
-        .mem-date { font-size: 10px; color: var(--text-muted, #666); }
-        .mem-content { font-size: 12px; color: var(--text, #ccc); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .mem-source { font-size: 10px; color: var(--text-muted, #c9a08a); }
+        .mem-date { font-size: 10px; color: var(--text-muted, #c9a08a); }
+        .mem-content { font-size: 12px; color: var(--text-body, #5a3d2e); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
         .mem-content.expanded { max-height: none; }
         .mem-actions { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; align-items: center; opacity: 0; transition: opacity 0.15s; }
         .mem-row:hover .mem-actions { opacity: 1; }
-        .mem-btn { background: none; border: 1px solid var(--border, #333); color: var(--text-muted, #999);
+        .mem-btn { background: none; border: 1px solid var(--border, #e0d5cc); color: var(--text-muted, #b8886e);
           width: 24px; height: 24px; border-radius: 3px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
         .mem-btn.edit:hover { color: var(--accent, #D97757); border-color: var(--accent, #D97757); }
-        .mem-btn.del:hover { color: #e55; border-color: #e55; }
-        .mem-id { font-size: 9px; color: var(--text-muted, #555); }
+        .mem-btn.del:hover { color: #d4553a; border-color: #d4553a; }
+        .mem-id { font-size: 9px; color: var(--text-muted, #d4b5a2); }
         .mem-pagination { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 12px; }
-        .mem-pagination button { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333);
-          color: var(--text, #ccc); padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .mem-pagination button { background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc);
+          color: var(--text, #D97757); padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
         .mem-pagination button:disabled { opacity: 0.3; cursor: default; }
         .mem-pagination button.current { border-color: var(--accent, #D97757); color: var(--accent, #D97757); }
-        .mem-pagination span { font-size: 11px; color: var(--text-muted, #888); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 999; }
-        .modal-box { background: var(--bg-card, #1e1e1e); border: 1px solid var(--border, #333); border-radius: 8px;
+        .mem-pagination span { font-size: 11px; color: var(--text-muted, #b8886e); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .modal-box { background: var(--bg-card, #f5f3f0); border: 1px solid var(--border, #e0d5cc); border-radius: 8px;
           padding: 20px; width: 90%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
         .modal-box.small { max-width: 380px; }
-        .modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--text, #ddd); }
-        .modal-box textarea { width: 100%; background: var(--bg, #111); border: 1px solid var(--border, #333);
-          color: var(--text, #ddd); padding: 8px; border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .modal-box h3 { margin: 0 0 12px; font-size: 15px; color: var(--text-heading, #D97757); }
+        .modal-box textarea { width: 100%; background: var(--bg, #faf8f6); border: 1px solid var(--border, #e0d5cc);
+          color: var(--text-body, #5a3d2e); padding: 8px; border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; }
         .modal-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-        .modal-fields label { font-size: 11px; color: var(--text-muted, #999); display: flex; flex-direction: column; gap: 4px; }
+        .modal-fields label { font-size: 11px; color: var(--text-muted, #b8886e); display: flex; flex-direction: column; gap: 4px; }
         .modal-fields select, .modal-fields input {
-          background: var(--bg, #111); border: 1px solid var(--border, #333); color: var(--text, #ddd);
+          background: var(--bg, #faf8f6); border: 1px solid var(--border, #e0d5cc); color: var(--text, #D97757);
           padding: 5px 8px; border-radius: 4px; font-size: 12px; }
         .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
         .btn { padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; }
         .btn-orange { background: var(--accent, #D97757); color: #fff; }
         .btn-orange:disabled { opacity: 0.4; }
-        .btn-muted { background: var(--bg, #111); color: var(--text-muted, #999); border: 1px solid var(--border, #333); }
-        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-muted { background: var(--bg, #faf8f6); color: var(--text-muted, #b8886e); border: 1px solid var(--border, #e0d5cc); }
+        .btn-danger { background: #d4553a; color: #fff; }
         .btn-danger:disabled { opacity: 0.4; }
-        .mem-auto-refresh { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted, #888); cursor: pointer; }
+        .mem-auto-refresh { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted, #b8886e); cursor: pointer; }
         .mem-auto-refresh input { cursor: pointer; }
-        .mem-loading { text-align: center; padding: 20px; color: var(--text-muted, #888); font-size: 12px; }
+        .mem-loading { text-align: center; padding: 20px; color: var(--text-muted, #b8886e); font-size: 12px; }
       `}),s.jsx("h2",{className:"text-lg font-semibold",style:{marginBottom:8},children:"Memory Core"}),nt&&s.jsx("div",{className:"mem-stats-bar",children:Z(nt)}),s.jsxs("div",{className:"mem-toolbar",children:[s.jsxs("select",{value:h,onChange:L=>{w(L.target.value),a(1)},children:[s.jsx("option",{value:"",children:"All Layers"}),pc.filter(Boolean).map(L=>s.jsx("option",{value:L,children:L},L))]}),s.jsxs("select",{value:y,onChange:L=>{z(L.target.value),a(1)},children:[s.jsx("option",{value:"",children:"All Categories"}),mc.filter(Boolean).map(L=>s.jsx("option",{value:L,children:L},L))]}),s.jsx("input",{type:"text",value:p,onChange:L=>x(L.target.value),onKeyDown:L=>L.key==="Enter"&&H(),placeholder:"Search content..."}),s.jsx("button",{className:"btn btn-orange",onClick:H,style:{padding:"5px 12px"},children:"Search"}),s.jsx("button",{className:"btn btn-muted",onClick:()=>{x(""),d(""),w(""),z(""),a(1)},style:{padding:"5px 10px",fontSize:11},children:"Reset"}),s.jsx("button",{className:"btn btn-orange",onClick:()=>Ce(!0),style:{padding:"5px 12px"},children:"+ New"}),s.jsxs("label",{className:"mem-auto-refresh",children:[s.jsx("input",{type:"checkbox",checked:vn,onChange:L=>gn(L.target.checked)}),"Auto"]})]}),s.jsxs("div",{className:"mem-sort-bar",children:[s.jsx("span",{style:{fontSize:10,color:"#666",marginRight:4,lineHeight:"22px"},children:"Sort:"}),[["created_at","Date"],["importance","Importance"],["category","Category"],["layer","Layer"]].map(([L,ce])=>s.jsxs("button",{className:`mem-sort-btn ${c===L?"active":""}`,onClick:()=>R(L),children:[ce,O(L)]},L)),s.jsx("span",{style:{flex:1}}),s.jsxs("span",{style:{fontSize:10,color:"#666",lineHeight:"22px"},children:[n," memories"]})]}),j&&e.length===0?s.jsx("div",{className:"mem-loading",children:"Loading memories..."}):s.jsxs(s.Fragment,{children:[e.map(L=>s.jsx(Jf,{mem:L,onEdit:P,onDelete:M},L.id)),e.length===0&&s.jsx("div",{className:"mem-loading",children:"No memories found."})]}),l>1&&s.jsxs("div",{className:"mem-pagination",children:[s.jsx("button",{disabled:o<=1,onClick:()=>a(L=>L-1),children:"← Prev"}),s.jsxs("span",{children:[o," / ",l]}),s.jsx("button",{disabled:o>=l,onClick:()=>a(L=>L+1),children:"Next →"})]}),_&&s.jsx(Js,{mem:_,onClose:()=>P(null),onSave:()=>{P(null),N()}}),T&&s.jsx(qf,{mem:T,onClose:()=>M(null),onConfirm:()=>{M(null),N()}}),ue&&s.jsx(Js,{mem:{},onClose:()=>Ce(!1),onSave:()=>{Ce(!1),N()}})]})}function ep(e){const t=e==null?void 0:e.split(`
 `).find(l=>l.startsWith("Mem:"));if(!t)return null;const[,n,r]=t.trim().split(/\s+/).map(Number);return{total:n,used:r,pct:Math.round(r/n*100)}}function tp(e){const t=e==null?void 0:e.split(`
 `).find(r=>r.includes("/dev/"));if(!t)return null;const n=t.trim().split(/\s+/);return{size:n[1],used:n[2],avail:n[3],pct:parseInt(n[4])||0,pctStr:n[4]}}const np=["echo-voice","echo-bot-v2","echo-studio-api","memory-gateway","exec-mcp"];function rp(){const[e,t]=S.useState(null),[n,r]=S.useState([]),[l,i]=S.useState({}),[o,a]=S.useState("");async function u(){U.vps.health().then(t).catch(()=>{}),U.vps.pm2().then(r).catch(()=>{})}S.useEffect(()=>{u()},[]);async function c(h){i(w=>({...w,[h]:!0})),a("");try{await U.vps.restart(h),a(`${h} restarted`),setTimeout(u,1500)}catch(w){a("error: "+w.message)}finally{i(w=>({...w,[h]:!1}))}}const m=ep(e==null?void 0:e.free),v=tp(e==null?void 0:e.df);function g(h){return h>85?"var(--pink)":h>70?"var(--orange)":"var(--cyan)"}return s.jsxs("div",{className:"space-y-4",children:[s.jsxs("div",{className:"flex justify-between items-center",children:[s.jsx("span",{className:"text-xs text-muted tracking-widest uppercase",children:"System Status"}),s.jsx("button",{className:"btn btn-ghost text-xs",onClick:u,children:"刷新"})]}),o&&s.jsx("div",{className:"text-xs",style:{color:o.includes("error")?"var(--pink)":"var(--cyan)"},children:o}),(m||v)&&s.jsxs("div",{className:"card p-4 space-y-4",children:[m&&s.jsxs("div",{children:[s.jsxs("div",{className:"flex justify-between text-xs mb-2",children:[s.jsx("span",{className:"text-muted tracking-widest uppercase",children:"Memory"}),s.jsxs("span",{style:{color:g(m.pct)},children:[m.used,"MB / ",m.total,"MB · ",m.pct,"%"]})]}),s.jsx("div",{className:"h-1.5 rounded-full overflow-hidden",style:{background:"var(--border)"},children:s.jsx("div",{className:"h-full rounded-full transition-all",style:{width:`${m.pct}%`,background:g(m.pct),boxShadow:`0 0 6px ${g(m.pct)}`}})})]}),v&&s.jsxs("div",{children:[s.jsxs("div",{className:"flex justify-between text-xs mb-2",children:[s.jsx("span",{className:"text-muted tracking-widest uppercase",children:"Disk"}),s.jsxs("span",{className:"neon-cyan",children:[v.used," / ",v.size," · ",v.pctStr]})]}),s.jsx("div",{className:"h-1.5 rounded-full overflow-hidden",style:{background:"var(--border)"},children:s.jsx("div",{className:"h-full rounded-full transition-all",style:{width:`${v.pct}%`,background:"var(--cyan)",boxShadow:"0 0 6px var(--cyan)"}})})]}),(e==null?void 0:e.uptime)&&s.jsx("div",{className:"text-xs text-muted",children:e.uptime})]}),s.jsx("div",{className:"space-y-2",children:n.map(h=>{var d,p,x,j;const w=(d=h.pm2_env)==null?void 0:d.status,y=(p=h.monit)!=null&&p.memory?Math.round(h.monit.memory/1024/1024):null,z=np.includes(h.name),f=w==="online";return s.jsxs("div",{className:"card p-3 flex items-center gap-3",children:[s.jsx("div",{className:f?"dot-online":"dot-stopped",style:{flexShrink:0}}),s.jsxs("div",{className:"flex-1 min-w-0",children:[s.jsx("div",{className:"text-sm font-medium truncate",children:h.name}),s.jsxs("div",{className:"text-xs text-muted",children:[w," · ",y!=null?`${y}MB`:"—"," · ↺",(x=h.pm2_env)==null?void 0:x.restart_time]})]}),z&&s.jsx("button",{className:"btn btn-ghost text-xs",onClick:()=>c(h.name),disabled:l[h.name],children:l[h.name]?"…":"重启"})]},(j=h.pm2_env)==null?void 0:j.pm_id)})})]})}function lp(){const[e,t]=S.useState([]),[n,r]=S.useState(null),[l,i]=S.useState({}),[o,a]=S.useState(!0),[u,c]=S.useState(!1),[m,v]=S.useState("");async function g(z){if(z&&(r(z),!l[z])){i(f=>({...f,[z]:"loading…"}));try{const f=await U.diary.get(z);i(d=>({...d,[z]:f.content||"（空）"}))}catch{i(f=>({...f,[z]:"暂无日记"}))}}}async function h(z=null){a(!0),v("");try{const d=(await U.diary.list()).entries||[];if(t(d),!d.length){r(null),i({});return}const p=await Promise.all(d.map(async E=>{try{const _=await U.diary.get(E);return[E,_.content||"（空）"]}catch{return[E,"暂无日记"]}})),x=Object.fromEntries(p),j=z&&d.includes(z)?z:d[0];i(x),r(j)}catch(f){t([]),r(null),i({}),v("error: "+f.message)}finally{a(!1)}}S.useEffect(()=>{h()},[]);async function w(){c(!0),v("");try{const z=await U.diary.generate();await h(z.date),v("日记已生成")}catch(z){v("error: "+z.message)}finally{c(!1)}}const y=n&&l[n]||"";return s.jsxs("div",{className:"space-y-4",children:[s.jsxs("div",{className:"flex items-center justify-between",children:[s.jsx("span",{className:"text-xs text-muted tracking-widest uppercase",children:"Echo's Work Diary"}),s.jsx("button",{className:"btn btn-pink text-xs",onClick:w,disabled:u,children:u?"writing…":"生成今日"})]}),m&&s.jsx("div",{className:"text-xs",style:{color:m.includes("error")?"var(--pink)":"var(--cyan)"},children:m}),!o&&!e.length&&s.jsx("div",{className:"card p-4",children:s.jsx("p",{className:"text-sm",style:{color:"var(--muted)"},children:"还没有已生成的日记。"})}),o&&s.jsx("div",{className:"card p-4",children:s.jsx("p",{className:"text-sm",style:{color:"var(--muted)"},children:"正在加载已有日记…"})}),y&&y!=="loading…"&&s.jsxs("div",{className:"card p-4",style:{borderColor:"rgba(255,42,109,0.3)"},children:[s.jsx("div",{className:"text-xs text-muted tracking-widest mb-3",children:n?`— ${n} —`:"— 日记 —"}),s.jsx("p",{className:"text-sm leading-relaxed whitespace-pre-wrap",style:{color:"var(--text)"},children:y})]}),e.length>0&&s.jsxs("div",{children:[s.jsx("div",{className:"text-xs text-muted tracking-widest uppercase mb-2",children:"历史记录"}),s.jsx("div",{className:"flex flex-wrap gap-2",children:e.map(z=>s.jsx("button",{onClick:()=>g(z),className:`text-xs px-3 py-1.5 rounded-lg transition-all card
