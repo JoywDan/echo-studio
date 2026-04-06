@@ -4,36 +4,82 @@ import { api } from '../api'
 export default function DiaryPanel() {
   const [entries, setEntries] = useState([])
   const [selected, setSelected] = useState(null)
-  const [content, setContent] = useState('')
+  const [contents, setContents] = useState({})
+  const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [msg, setMsg] = useState('')
 
-  const today = new Date().toISOString().slice(0, 10)
+  async function loadEntry(date) {
+    if (!date) return
+    setSelected(date)
 
-  async function loadList() {
-    try { const d = await api.diary.list(); setEntries(d.entries || []) } catch {}
+    if (contents[date]) return
+
+    setContents(prev => ({ ...prev, [date]: 'loading…' }))
+    try {
+      const d = await api.diary.get(date)
+      setContents(prev => ({ ...prev, [date]: d.content || '（空）' }))
+    } catch {
+      setContents(prev => ({ ...prev, [date]: '暂无日记' }))
+    }
   }
 
-  async function loadEntry(date) {
-    setSelected(date); setContent('loading…')
-    try { const d = await api.diary.get(date); setContent(d.content || '（空）') }
-    catch { setContent('暂无日记') }
+  async function loadExistingEntries(preferredDate = null) {
+    setLoading(true)
+    setMsg('')
+
+    try {
+      const d = await api.diary.list()
+      const dates = d.entries || []
+      setEntries(dates)
+
+      if (!dates.length) {
+        setSelected(null)
+        setContents({})
+        return
+      }
+
+      const loadedEntries = await Promise.all(
+        dates.map(async (date) => {
+          try {
+            const entry = await api.diary.get(date)
+            return [date, entry.content || '（空）']
+          } catch {
+            return [date, '暂无日记']
+          }
+        })
+      )
+
+      const nextContents = Object.fromEntries(loadedEntries)
+      const nextSelected = preferredDate && dates.includes(preferredDate) ? preferredDate : dates[0]
+
+      setContents(nextContents)
+      setSelected(nextSelected)
+    } catch (e) {
+      setEntries([])
+      setSelected(null)
+      setContents({})
+      setMsg('error: ' + e.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    loadList()
-    loadEntry(today)
+    loadExistingEntries()
   }, [])
 
   async function generate() {
     setGenerating(true); setMsg('')
     try {
       const d = await api.diary.generate()
-      setContent(d.content || ''); setSelected(d.date); setMsg('日记已生成')
-      await loadList()
+      await loadExistingEntries(d.date)
+      setMsg('日记已生成')
     } catch (e) { setMsg('error: ' + e.message) }
     finally { setGenerating(false) }
   }
+
+  const content = selected ? contents[selected] || '' : ''
 
   return (
     <div className="space-y-4">
@@ -46,10 +92,26 @@ export default function DiaryPanel() {
 
       {msg && <div className="text-xs" style={{ color: msg.includes('error') ? 'var(--pink)' : 'var(--cyan)' }}>{msg}</div>}
 
+      {!loading && !entries.length && (
+        <div className="card p-4">
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
+            还没有已生成的日记。
+          </p>
+        </div>
+      )}
+
+      {loading && (
+        <div className="card p-4">
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
+            正在加载已有日记…
+          </p>
+        </div>
+      )}
+
       {content && content !== 'loading…' && (
         <div className="card p-4" style={{ borderColor: 'rgba(255,42,109,0.3)' }}>
           <div className="text-xs text-muted tracking-widest mb-3">
-            {selected === today ? '— 今天 —' : `— ${selected} —`}
+            {selected ? `— ${selected} —` : '— 日记 —'}
           </div>
           <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text)' }}>
             {content}
@@ -57,11 +119,11 @@ export default function DiaryPanel() {
         </div>
       )}
 
-      {entries.length > 1 && (
+      {entries.length > 0 && (
         <div>
           <div className="text-xs text-muted tracking-widest uppercase mb-2">历史记录</div>
           <div className="flex flex-wrap gap-2">
-            {entries.filter(d => d !== today).map(date => (
+            {entries.map(date => (
               <button key={date} onClick={() => loadEntry(date)}
                 className={`text-xs px-3 py-1.5 rounded-lg transition-all card
                   ${selected === date ? 'neon-pink border-pink' : 'text-muted'}`}
