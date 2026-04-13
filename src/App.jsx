@@ -8,6 +8,7 @@ import DiaryPanel from './components/DiaryPanel'
 import InnerWorldPanel from './components/InnerWorldPanel'
 import TimelinePanel from './components/TimelinePanel'
 import HealthPanel from './components/HealthPanel'
+import Sidebar from './components/Sidebar'
 
 const STATIONS = [
   {
@@ -159,21 +160,29 @@ export default function App() {
     const PanelComp = PANELS[panel]
     const station = STATIONS.find(s => s.id === panel)
     return (
-      <div className="panel-shell">
-        <div className="panel max-w-3xl mx-auto">
-          <div className="panel-header">
-            <button onClick={() => setPanel(null)} className="btn btn-ghost text-xs px-3 py-1.5">
-              ← Back to studio
-            </button>
-            <span className="panel-badge" style={{ color: station.accent }}>{station.name}</span>
+      <div className="studio-layout">
+        <Sidebar panel={panel} setPanel={setPanel} />
+        <div className="studio-content">
+          <div className="panel-shell">
+            <div className="panel max-w-3xl mx-auto">
+              <div className="panel-header">
+                <button onClick={() => setPanel(null)} className="btn btn-ghost text-xs px-3 py-1.5">
+                  ← Back to studio
+                </button>
+                <span className="panel-badge" style={{ color: station.accent }}>{station.name}</span>
+              </div>
+              <div className="p-4 md:p-6"><PanelComp /></div>
+            </div>
           </div>
-          <div className="p-4 md:p-6"><PanelComp /></div>
         </div>
       </div>
     )
   }
 
   return (
+    <div className="studio-layout">
+      <Sidebar panel={panel} setPanel={setPanel} />
+      <div className="studio-content">
     <div className="studio-shell">
       <header className="studio-header">
         <p className="studio-kicker">Joy's private room</p>
@@ -265,6 +274,8 @@ export default function App() {
         <span className="footer-dot" />
         <span>studio.echowjoy.uk</span>
       </footer>
+    </div>
+      </div>
     </div>
   )
 }
