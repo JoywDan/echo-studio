@@ -7,6 +7,8 @@ import MemoryPanel from './components/MemoryPanel'
 import VPSPanel from './components/VPSPanel'
 import DiaryPanel from './components/DiaryPanel'
 import InnerWorldPanel from './components/InnerWorldPanel'
+import TimelinePanel from './components/TimelinePanel'
+import HealthPanel from './components/HealthPanel'
 
 const STATIONS = [
   {
@@ -57,6 +59,22 @@ const STATIONS = [
     detail: '内心世界',
     objectClass: 'object-inner',
   },
+  {
+    id: 'timeline',
+    name: 'Memory Timeline',
+    accent: '#6b8fa0',
+    label: 'Timeline',
+    detail: '时间轴',
+    objectClass: 'object-memory',
+  },
+  {
+    id: 'health',
+    name: 'Weekly Health',
+    accent: '#8ab388',
+    label: 'Health Room',
+    detail: '体检室',
+    objectClass: 'object-diary',
+  },
 ]
 
 // Placeholder items — not yet functional, reserved for future features
@@ -73,6 +91,8 @@ const PANELS = {
   vps: VPSPanel,
   diary: DiaryPanel,
   inner: InnerWorldPanel,
+  timeline: TimelinePanel,
+  health: HealthPanel,
 }
 
 function formatClockValue(value) {
