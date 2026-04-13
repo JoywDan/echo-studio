@@ -3,7 +3,6 @@ import { api } from './api'
 import Login from './components/Login'
 import VoicePanel from './components/VoicePanel'
 import WechatPanel from './components/WechatPanel'
-import MemoryPanel from './components/MemoryPanel'
 import VPSPanel from './components/VPSPanel'
 import DiaryPanel from './components/DiaryPanel'
 import InnerWorldPanel from './components/InnerWorldPanel'
@@ -26,14 +25,6 @@ const STATIONS = [
     label: 'Main Monitor',
     detail: '主屏幕',
     objectClass: 'object-monitor',
-  },
-  {
-    id: 'memory',
-    name: 'Memory Core',
-    accent: '#C79276',
-    label: 'Archive',
-    detail: '资料夹',
-    objectClass: 'object-memory',
   },
   {
     id: 'vps',
@@ -87,7 +78,6 @@ const PLACEHOLDERS = [
 const PANELS = {
   voice: VoicePanel,
   wechat: WechatPanel,
-  memory: MemoryPanel,
   vps: VPSPanel,
   diary: DiaryPanel,
   inner: InnerWorldPanel,
@@ -271,7 +261,7 @@ export default function App() {
       </main>
 
       <footer className="studio-footer">
-        <span className="footer-pill">5 live stations</span>
+        <span className="footer-pill">7 live stations</span>
         <span className="footer-dot" />
         <span>studio.echowjoy.uk</span>
       </footer>
