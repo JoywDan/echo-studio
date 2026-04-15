@@ -74,7 +74,7 @@ const STATIONS = [
     accent: '#6b8fa0',
     label: 'Travel Log',
     detail: '旅行日记',
-    objectClass: 'object-memory',
+    objectClass: 'object-travel',
   },
 ]
 

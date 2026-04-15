@@ -577,6 +577,17 @@ body::before {
 .object-diary::after { display: none; }
 .object-diary .station-art { padding: 2% 2% 2% 0; }
 
+/* ─── Travel Log ─────────────────────────────────────────────── */
+.object-travel {
+  left: 57.5%; bottom: 14.2%;
+  width: 12.4%;
+  padding: 3% 3% 2% 10%;
+}
+.object-travel::before,
+.object-travel::after { display: none; }
+.object-travel .obj-title { color: #6b8fa0; }
+.object-travel .station-art { padding: 2% 2% 2% 0; }
+
 /* ─── Placeholder / future-feature items ────────────────────── */
 .room-decor {
   position: absolute;
