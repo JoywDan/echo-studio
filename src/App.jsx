@@ -8,6 +8,7 @@ import DiaryPanel from './components/DiaryPanel'
 import InnerWorldPanel from './components/InnerWorldPanel'
 import TimelinePanel from './components/TimelinePanel'
 import HealthPanel from './components/HealthPanel'
+import TravelPanel from './components/TravelPanel'
 import Sidebar from './components/Sidebar'
 
 const STATIONS = [
@@ -67,6 +68,14 @@ const STATIONS = [
     detail: '体检室',
     objectClass: 'object-diary',
   },
+  {
+    id: 'travel',
+    name: "Echo's Travel Journal",
+    accent: '#6b8fa0',
+    label: 'Travel Log',
+    detail: '旅行日记',
+    objectClass: 'object-memory',
+  },
 ]
 
 // Placeholder items — not yet functional, reserved for future features
@@ -84,6 +93,7 @@ const PANELS = {
   inner: InnerWorldPanel,
   timeline: TimelinePanel,
   health: HealthPanel,
+  travel: TravelPanel,
 }
 
 function formatClockValue(value) {
@@ -270,7 +280,7 @@ export default function App() {
       </main>
 
       <footer className="studio-footer">
-        <span className="footer-pill">7 live stations</span>
+        <span className="footer-pill">8 live stations</span>
         <span className="footer-dot" />
         <span>studio.echowjoy.uk</span>
       </footer>

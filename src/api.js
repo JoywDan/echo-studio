@@ -75,6 +75,11 @@ export const api = {
     generate: () => req('POST', '/api/diary/generate', {}),
   },
 
+  travel: {
+    list: () => req('GET', '/api/travel'),
+    get: (id) => req('GET', `/api/travel/${id}`),
+  },
+
   health: {
     list: () => req('GET', '/api/health'),
     get: (date) => req('GET', `/api/health/${date}`),
