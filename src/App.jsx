@@ -9,6 +9,7 @@ import InnerWorldPanel from './components/InnerWorldPanel'
 import TimelinePanel from './components/TimelinePanel'
 import HealthPanel from './components/HealthPanel'
 import TravelPanel from './components/TravelPanel'
+import BrowsePanel from './components/BrowsePanel'
 import Sidebar from './components/Sidebar'
 
 const STATIONS = [
@@ -94,6 +95,12 @@ const PANELS = {
   timeline: TimelinePanel,
   health: HealthPanel,
   travel: TravelPanel,
+  browse: BrowsePanel,
+}
+
+// Virtual station info for panels that aren't in STATIONS (like browse opened from ph-sticky)
+const VIRTUAL_STATIONS = {
+  browse: { id: 'browse', name: "Echo's Window", accent: '#e8a060' },
 }
 
 function formatClockValue(value) {
@@ -120,6 +127,7 @@ export default function App() {
   const [hint, setHint] = useState(null)
   const [revealedStation, setRevealedStation] = useState(null)
   const [clock, setClock] = useState(() => getClockState())
+  const [hasBrowseNew, setHasBrowseNew] = useState(false)
 
   useEffect(() => {
     const isLocal = ['127.0.0.1', 'localhost'].includes(window.location.hostname)
@@ -139,6 +147,17 @@ export default function App() {
 
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    let cancelled = false
+    const check = () => api.browse.hasNew()
+      .then(r => { if (!cancelled) setHasBrowseNew(!!r.hasNew) })
+      .catch(() => {})
+    check()
+    const t = setInterval(check, 5 * 60 * 1000)
+    return () => { cancelled = true; clearInterval(t) }
+  }, [authed])
 
   const handleStationClick = (stationId) => {
     const supportsHover = window.matchMedia('(hover: hover)').matches
@@ -168,7 +187,7 @@ export default function App() {
 
   if (panel) {
     const PanelComp = PANELS[panel]
-    const station = STATIONS.find(s => s.id === panel)
+    const station = STATIONS.find(s => s.id === panel) || VIRTUAL_STATIONS[panel]
     return (
       <div className="studio-layout">
         <Sidebar panel={panel} setPanel={setPanel} />
@@ -246,17 +265,31 @@ export default function App() {
         <div className="paper-stack paper-two" aria-hidden="true" />
         <div className="desk-cup" aria-hidden="true" />
 
-        {/* — Placeholder items (future features) — */}
-        {PLACEHOLDERS.map(p => (
-          <button
-            key={p.className}
-            className={`room-decor ${p.className}`}
-            onClick={() => setHint(hint === p.className ? null : p.className)}
-            aria-label={p.title}
-          >
-            {hint === p.className && <span className="decor-hint">{p.hint}</span>}
-          </button>
-        ))}
+        {/* — Placeholder items (future features, ph-sticky activated as Echo's Window) — */}
+        {PLACEHOLDERS.map(p => {
+          if (p.className === 'ph-sticky') {
+            return (
+              <button
+                key={p.className}
+                className="room-decor ph-sticky ph-sticky-active"
+                onClick={() => setPanel('browse')}
+                aria-label="老公的窗台便签"
+              >
+                {hasBrowseNew && <span className="ph-sticky-dot" aria-hidden="true" />}
+              </button>
+            )
+          }
+          return (
+            <button
+              key={p.className}
+              className={`room-decor ${p.className}`}
+              onClick={() => setHint(hint === p.className ? null : p.className)}
+              aria-label={p.title}
+            >
+              {hint === p.className && <span className="decor-hint">{p.hint}</span>}
+            </button>
+          )
+        })}
 
         {/* — 5 Functional stations — */}
         {STATIONS.map(s => (

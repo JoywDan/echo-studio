@@ -62,6 +62,13 @@ export const api = {
     categories: () => req('GET', '/api/memory/categories'),
   },
 
+  browse: {
+    fragments: (days = 7) => req('GET', `/api/browse/fragments?days=${days}`),
+    weeklyLatest: () => req('GET', '/api/browse/weekly/latest'),
+    weeklyList: (limit = 12) => req('GET', `/api/browse/weekly/list?limit=${limit}`),
+    hasNew: () => req('GET', '/api/browse/has-new'),
+  },
+
   vps: {
     health: () => req('GET', '/api/vps/health'),
     pm2: () => req('GET', '/api/vps/pm2'),
