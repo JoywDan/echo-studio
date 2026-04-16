@@ -80,6 +80,7 @@ export const api = {
     list: () => req('GET', '/api/diary'),
     get: (date) => req('GET', `/api/diary/${date}`),
     generate: () => req('POST', '/api/diary/generate', {}),
+    nightlog: (days = 14) => req('GET', `/api/diary/nightlog?days=${days}`),
   },
 
   travel: {
