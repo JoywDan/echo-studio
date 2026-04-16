@@ -30,6 +30,7 @@ export default function BrowsePanel() {
 
   const stickyColor = (emotion) => {
     const e = (emotion || '').toLowerCase()
+    if (e === 'dreamy') return '#c9b8e0'  // 深蓝紫 —— 梦独有的颜色
     if (['happy', 'excited', 'playful', 'satisfied'].includes(e)) return '#f9e8a0'
     if (['tender', 'calm'].includes(e)) return '#f5d5c8'
     if (['curious', 'thinking', 'clarified'].includes(e)) return '#c9dce8'
@@ -163,12 +164,22 @@ export default function BrowsePanel() {
                         gridColumn: isOpen ? '1 / -1' : 'auto',
                       }}
                     >
-                      <div style={{
-                        position: 'absolute', top: -6, left: '50%', marginLeft: -6,
-                        width: 12, height: 12, borderRadius: '50%',
-                        background: 'radial-gradient(circle at 30% 30%, #d97757, #8b4a2f)',
-                        boxShadow: '0 2px 3px rgba(0,0,0,0.2)',
-                      }} />
+                      {(frag.emotion || '').toLowerCase() === 'dreamy' ? (
+                        <div style={{
+                          position: 'absolute', top: -8, left: '50%', marginLeft: -7,
+                          width: 14, height: 14, borderRadius: '50%',
+                          background: 'radial-gradient(circle at 60% 35%, #f0eee2 0%, #d8d2c0 50%, #8e8676 100%)',
+                          boxShadow: '0 0 6px rgba(201, 184, 224, 0.8), 0 2px 3px rgba(0,0,0,0.15)',
+                          clipPath: 'circle(50% at 30% 50%)',
+                        }} />
+                      ) : (
+                        <div style={{
+                          position: 'absolute', top: -6, left: '50%', marginLeft: -6,
+                          width: 12, height: 12, borderRadius: '50%',
+                          background: 'radial-gradient(circle at 30% 30%, #d97757, #8b4a2f)',
+                          boxShadow: '0 2px 3px rgba(0,0,0,0.2)',
+                        }} />
+                      )}
                       <div style={{ fontSize: 11, color: '#9c8875', marginBottom: 6 }}>
                         {formatDate(frag.created_at)}
                         {frag.emotion && <span style={{ marginLeft: 8 }}>· {frag.emotion}</span>}
