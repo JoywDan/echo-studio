@@ -10,6 +10,7 @@ import TimelinePanel from './components/TimelinePanel'
 import HealthPanel from './components/HealthPanel'
 import TravelPanel from './components/TravelPanel'
 import BrowsePanel from './components/BrowsePanel'
+import WatchPanel from './components/WatchPanel'
 import Sidebar from './components/Sidebar'
 
 const STATIONS = [
@@ -96,11 +97,13 @@ const PANELS = {
   health: HealthPanel,
   travel: TravelPanel,
   browse: BrowsePanel,
+  watch: WatchPanel,
 }
 
 // Virtual station info for panels that aren't in STATIONS (like browse opened from ph-sticky)
 const VIRTUAL_STATIONS = {
   browse: { id: 'browse', name: "Echo's Window", accent: '#e8a060' },
+  watch: { id: 'watch', name: 'Watch Journal', accent: '#d97757' },
 }
 
 function formatClockValue(value) {

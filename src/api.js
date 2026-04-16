@@ -69,6 +69,15 @@ export const api = {
     hasNew: () => req('GET', '/api/browse/has-new'),
   },
 
+  watch: {
+    list: (limit = 20) => req('GET', `/api/watch/list?limit=${limit}`),
+    addNote: (d) => req('POST', '/api/watch/note', d),
+  },
+
+  beads: {
+    list: () => req('GET', '/api/beads/list'),
+  },
+
   vps: {
     health: () => req('GET', '/api/vps/health'),
     pm2: () => req('GET', '/api/vps/pm2'),

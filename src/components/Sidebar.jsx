@@ -13,6 +13,7 @@ const GROUPS = [
     items: [
       { id: 'diary',    label: "Echo's Diary",    detail: '桌边日记' },
       { id: 'travel',   label: 'Travel Journal',  detail: '旅行日记' },
+      { id: 'watch',    label: 'Watch Journal',   detail: '一起看的 · 提议与观感' },
       { id: 'health',   label: 'Weekly Health',   detail: '体检室 · 周报' },
       { id: 'timeline', label: 'Memory Timeline', detail: '时间轴 · 编辑记忆' },
     ],
@@ -76,7 +77,7 @@ export default function Sidebar({ panel, setPanel }) {
       </nav>
 
       <div className="sidebar-footer">
-        <span>9 stations</span>
+        <span>10 stations</span>
         <span className="sidebar-dot" />
         <a href="https://studio.echowjoy.uk" target="_blank" rel="noreferrer">studio.echowjoy.uk</a>
       </div>
