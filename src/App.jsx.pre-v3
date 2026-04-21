@@ -12,7 +12,6 @@ import TravelPanel from './components/TravelPanel'
 import BrowsePanel from './components/BrowsePanel'
 import WatchPanel from './components/WatchPanel'
 import Sidebar from './components/Sidebar'
-import RoomV3 from './components/RoomV3/RoomV3'
 
 const STATIONS = [
   {
@@ -223,26 +222,97 @@ export default function App() {
       </header>
 
       <main className="studio-room" aria-label="Echo Studio">
-        <RoomV3
-          stations={STATIONS}
-          revealedStation={revealedStation}
-          hasBrowseNew={hasBrowseNew}
-          onStationClick={handleStationClick}
-          onDecorClick={(decorId) => {
-            if (decorId === 'ph-sticky') {
-              setPanel('browse')
-            } else if (decorId === 'ph-cup') {
-              setHint(hint === 'ph-cup' ? null : 'ph-cup')
-            }
-          }}
-        >
-          <StudioPet />
-          {hint === 'ph-cup' && (
-            <div className="decor-hint floating" role="tooltip">
-              快捷操作（敬请期待）
-            </div>
-          )}
-        </RoomV3>
+
+        {/* — Background layers — */}
+        <div className="room-sunwash" aria-hidden="true" />
+        <div className="room-wall" aria-hidden="true" />
+        <div className="room-floor" aria-hidden="true" />
+
+        {/* — Wall decorations — */}
+        <div className="window-frame" aria-hidden="true">
+          <div className="window-sky" />
+          <div className="window-bar v" /><div className="window-bar h" />
+          <div className="window-sill" />
+        </div>
+
+        <div className="wall-clock" role="img" aria-label={`Current time ${clock.label}`}>
+          <span
+            className="clock-hand hour"
+            style={{ transform: `translateX(-50%) rotate(${clock.hourAngle}deg)` }}
+          />
+          <span
+            className="clock-hand minute"
+            style={{ transform: `translateX(-50%) rotate(${clock.minuteAngle}deg)` }}
+          />
+          <span
+            className="clock-hand second"
+            style={{ transform: `translateX(-50%) rotate(${clock.secondAngle}deg)` }}
+          />
+          <span className="clock-dot" />
+          <span className="clock-time">{clock.label}</span>
+        </div>
+
+        <div className="room-shelf" aria-hidden="true">
+          <span className="shelf-book b1" />
+          <span className="shelf-book b2" />
+          <span className="shelf-book b3" />
+          <span className="shelf-plant" />
+        </div>
+
+        {/* — Desk — */}
+        <div className="desk-surface" aria-hidden="true" />
+        <div className="desk-shadow" aria-hidden="true" />
+        <div className="desk-lamp" aria-hidden="true"><span className="lamp-glow" /></div>
+        <div className="chair" aria-hidden="true" />
+        <div className="paper-stack paper-one" aria-hidden="true" />
+        <div className="paper-stack paper-two" aria-hidden="true" />
+        <div className="desk-cup" aria-hidden="true" />
+
+        {/* — Placeholder items (future features, ph-sticky activated as Echo's Window) — */}
+        {PLACEHOLDERS.map(p => {
+          if (p.className === 'ph-sticky') {
+            return (
+              <button
+                key={p.className}
+                className="room-decor ph-sticky ph-sticky-active"
+                onClick={() => setPanel('browse')}
+                aria-label="老公的窗台便签"
+              >
+                {hasBrowseNew && <span className="ph-sticky-dot" aria-hidden="true" />}
+              </button>
+            )
+          }
+          return (
+            <button
+              key={p.className}
+              className={`room-decor ${p.className}`}
+              onClick={() => setHint(hint === p.className ? null : p.className)}
+              aria-label={p.title}
+            >
+              {hint === p.className && <span className="decor-hint">{p.hint}</span>}
+            </button>
+          )
+        })}
+
+        {/* — 5 Functional stations — */}
+        {STATIONS.map(s => (
+          <button
+            key={s.id}
+            className={`room-object ${s.objectClass}${revealedStation === s.id ? ' is-revealed' : ''}`}
+            style={{ '--accent': s.accent }}
+            onClick={() => handleStationClick(s.id)}
+            aria-label={s.name}
+          >
+            <span className="object-art" aria-hidden="true">
+              <StationArtwork stationId={s.id} />
+            </span>
+            <span className="obj-label">{s.label}</span>
+            <span className="obj-title">{s.name}</span>
+            <span className="obj-detail">{s.detail}</span>
+          </button>
+        ))}
+
+        <StudioPet />
       </main>
 
       <footer className="studio-footer">

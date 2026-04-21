@@ -1,0 +1,87 @@
+/* ---------- RoomV3 stage ---------- */
+.room-v3 {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.room-v3-stage {
+  width: 100%;
+  aspect-ratio: 1200 / 760;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 30px 60px -30px rgba(60, 40, 30, 0.25),
+    0 10px 30px -15px rgba(60, 40, 30, 0.15);
+  background: #F7F1E8;
+}
+
+.room-v3-stage svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- clickable hit groups ---------- */
+.room-v3-stage .room-hit,
+.room-v3-stage .room-hit * {
+  pointer-events: all;
+}
+.room-v3-stage .room-hit {
+  cursor: pointer;
+  transition: filter 220ms ease;
+  outline: none;
+}
+
+/* subtle float/glow on hover (pointer devices) */
+@media (hover: hover) {
+  .room-v3-stage .room-hit:hover {
+    filter: drop-shadow(0 6px 14px rgba(224, 133, 102, 0.45))
+            drop-shadow(0 0 14px rgba(197, 185, 214, 0.55))
+            brightness(1.04);
+  }
+}
+
+/* touch devices: first tap shows reveal ring, second tap activates */
+.room-v3-stage .room-hit.is-revealed {
+  filter: drop-shadow(0 6px 14px rgba(224, 133, 102, 0.45))
+          drop-shadow(0 0 18px rgba(197, 185, 214, 0.55));
+}
+
+/* keyboard focus */
+.room-v3-stage .room-hit:focus-visible {
+  outline: 3px solid #E08566;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* crystal ball deserves extra pulse treatment (Echo's Inner World) */
+.room-v3-stage [data-station="inner"] {
+  animation: crystal-pulse 5s ease-in-out infinite;
+  transform-origin: 200px 244px; /* ball center per room-a3.js comment */
+  transform-box: view-box;
+}
+@keyframes crystal-pulse {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(197, 185, 214, 0.35)); }
+  50%      { filter: drop-shadow(0 0 22px rgba(197, 185, 214, 0.65)); }
+}
+@media (hover: hover) {
+  .room-v3-stage [data-station="inner"]:hover {
+    animation-duration: 1.8s;
+  }
+}
+
+/* sticky note "has-new" red dot (CSS-only addition via pseudo-element) */
+.room-v3-stage [data-decor="ph-sticky"].has-new::after {
+  /* SVG <g> can't have ::after — we'll handle this by drawing
+     an extra DOM dot overlay instead. See RoomV3.jsx if we enable. */
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 760px) {
+  .room-v3-stage {
+    border-radius: 14px;
+  }
+}

@@ -50,7 +50,7 @@ export default function Sidebar({ panel, setPanel }) {
 
       <nav className="sidebar-nav">
         {GROUPS.map(group => (
-          <div key={group.id} className="sidebar-group">
+          <div key={group.id} className="sidebar-group" data-group={group.id}>
             {group.label && <div className="sidebar-group-label">{group.label}</div>}
             <div className="sidebar-group-items">
               {group.items.map(item => {
