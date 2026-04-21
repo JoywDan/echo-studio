@@ -1,3 +1,6 @@
+/* ── cute, rounded font stack (Fredoka + Nunito for Latin, Noto Sans SC + ZCOOL KuaiLe for CJK) ── */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+KuaiLe&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,6 +17,46 @@
   --muted:        #877a71;
   --shadow:       0 24px 60px rgba(82, 59, 43, 0.12);
   --shadow-soft:  0 16px 38px rgba(82, 59, 43, 0.10);
+
+  /* ── v3 palette (matches RoomV3 / Claude Design handoff) ── */
+  --v3-cream:     #F7F1E8;
+  --v3-cream2:    #F2E8DA;
+  --v3-white:     #FBF7F0;
+  --v3-coral:     #E08566;
+  --v3-coral-d:   #C86A4E;
+  --v3-coral-s:   #F0B9A4;
+  --v3-coral-xs:  #F7D4C5;
+  --v3-sage:      #A9BDA3;
+  --v3-sage-d:    #7F9A7A;
+  --v3-lav:       #C5B9D6;
+  --v3-lav-d:     #A396B8;
+  --v3-milk:      #E9C9BD;
+  --v3-ink:       #3B2F2A;
+  --v3-ink-soft:  #6B5B52;
+  --v3-wall:      #F5E5D7;
+  --v3-wall-hi:   #FBF0E3;
+  --v3-shadow:    rgba(80,55,45,0.14);
+  --v3-shadow-d:  rgba(80,55,45,0.22);
+
+  /* Tender macaron trio — max creaminess, max tenderness.
+     Text L*~75, dots L*~88; whitened & desaturated for 嫩嫩的 feel. */
+  /* 开心果 Pistache (Daily) */
+  --mac-pistache:      #D1E2BC;  /* dot/hint */
+  --mac-pistache-d:    #A7C88A;  /* soft tender text */
+  --mac-pistache-s:    #EBF2DF;  /* whitest accent */
+  /* 紫罗兰 Violette (Echo) */
+  --mac-violette:      #DCD0EC;
+  --mac-violette-d:    #B8A8D5;
+  --mac-violette-s:    #EFE9F6;
+  /* 覆盆子 Framboise (System) */
+  --mac-framboise:     #F5CED9;
+  --mac-framboise-d:   #E0A8BC;
+  --mac-framboise-s:   #FCE7EE;
+
+  /* cute, rounded typography */
+  --font-body:  'Nunito', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+  --font-cute:  'Fredoka', 'Nunito', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-deco:  'ZCOOL KuaiLe', 'Fredoka', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 /* ─── Reset ──────────────────────────────────────────────────── */
@@ -25,10 +68,16 @@ body {
   min-height: 100dvh;
   color: var(--text);
   background:
-    radial-gradient(circle at top left,  rgba(217,119,87,.14), transparent 32%),
-    radial-gradient(circle at top right, rgba(154,170,176,.14), transparent 28%),
-    linear-gradient(180deg, #f8f3ed 0%, #efebe4 100%);
-  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    radial-gradient(circle at 10% 0%,   rgba(247, 212, 197, 0.55), transparent 32%),
+    radial-gradient(circle at 92% 6%,   rgba(197, 185, 214, 0.48), transparent 30%),
+    radial-gradient(circle at 96% 48%,  rgba(169, 189, 163, 0.28), transparent 26%),
+    radial-gradient(circle at 4% 72%,   rgba(240, 185, 164, 0.42), transparent 28%),
+    radial-gradient(circle at 55% 98%,  rgba(255, 225, 195, 0.45), transparent 32%),
+    radial-gradient(circle at 30% 40%,  rgba(251, 240, 227, 0.60), transparent 36%),
+    linear-gradient(165deg, #FBF0E3 0%, #F7F1E8 38%, #F2E8DA 68%, #EBD7C4 100%);
+  background-attachment: fixed;
+  font-family: var(--font-body);
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
@@ -1070,16 +1119,19 @@ select option { background: var(--card); }
   position: relative;
 }
 
-/* ── Sidebar ─────────────────────────────────────────── */
+/* ── Sidebar (v3 palette, matches RoomV3) ───────────────── */
 .studio-sidebar {
   width: 248px;
   flex: none;
-  background: var(--ivory);
-  border-right: 1px solid var(--border-cream);
+  background:
+    linear-gradient(180deg, var(--v3-wall-hi) 0%, var(--v3-cream) 38%, var(--v3-cream2) 100%);
+  border-right: 1px solid rgba(233, 201, 189, 0.55);
   display: flex;
   flex-direction: column;
   padding: 22px 14px 14px;
-  box-shadow: 1px 0 0 rgba(82, 59, 43, 0.02);
+  box-shadow:
+    1px 0 0 rgba(200, 106, 78, 0.04),
+    inset -1px 0 0 rgba(255, 255, 255, 0.4);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -1091,7 +1143,7 @@ select option { background: var(--card); }
   align-items: center;
   gap: 12px;
   padding: 0 10px 20px;
-  border-bottom: 1px solid var(--border-cream);
+  border-bottom: 1px dashed rgba(200, 106, 78, 0.22);
   margin-bottom: 18px;
 }
 
@@ -1101,27 +1153,45 @@ select option { background: var(--card); }
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: var(--terracotta);
-  color: var(--ivory);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--v3-coral-s) 0%, var(--v3-coral) 60%, var(--v3-coral-d) 100%);
+  color: var(--v3-white);
   font-size: 20px;
-  box-shadow: 0 0 0 1px rgba(201, 100, 66, 0.35), 0 4px 14px rgba(201, 100, 66, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(200, 106, 78, 0.30),
+    0 6px 18px rgba(224, 133, 102, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .sidebar-brand-title {
-  font-family: var(--serif);
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--near-black);
+  font-family: var(--font-cute);
+  font-size: 20px;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
+  background: linear-gradient(95deg, var(--mac-pistache-d) 0%, var(--mac-violette-d) 50%, var(--mac-framboise-d) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+.sidebar-brand-title::after {
+  content: " ✨";
+  -webkit-text-fill-color: initial;
+  font-size: 14px;
+  margin-left: 2px;
+  animation: cute-twinkle 2.6s ease-in-out infinite;
 }
 
 .sidebar-brand-subtitle {
+  font-family: var(--font-body);
   font-size: 11px;
-  color: var(--stone-gray);
-  margin-top: 2px;
-  letter-spacing: 0.02em;
+  color: var(--v3-ink-soft);
+  margin-top: 3px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .sidebar-nav {
@@ -1137,12 +1207,137 @@ select option { background: var(--card); }
 }
 
 .sidebar-group-label {
-  font-size: 10px;
-  font-weight: 500;
+  font-family: var(--font-cute);
+  font-size: 10.5px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--stone-gray);
+  letter-spacing: 0.18em;
+  color: var(--v3-coral-d);
   padding: 4px 10px 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sidebar-group-label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--v3-coral-s);
+  box-shadow: 0 0 0 2px rgba(240, 185, 164, 0.28);
+}
+
+/* per-group colour themes — French macaron trio, harmonising with warm coral bg */
+
+/* ── Daily → 开心果 Pistache (cool green, split-complement to warm coral) ── */
+.sidebar-group[data-group="daily"] .sidebar-group-label         { color: var(--mac-pistache-d); }
+.sidebar-group[data-group="daily"] .sidebar-group-label::before { background: var(--mac-pistache); box-shadow: 0 0 0 2px rgba(209,226,188,.50); }
+.sidebar-group[data-group="daily"] .sidebar-item-label          { color: var(--mac-pistache-d); }
+.sidebar-group[data-group="daily"] .sidebar-item-mark           { color: var(--mac-pistache); }
+.sidebar-group[data-group="daily"] .sidebar-item:hover .sidebar-item-label { color: #8CAE70; }
+.sidebar-group[data-group="daily"] .sidebar-item.is-active {
+  box-shadow: inset 3px 0 0 var(--mac-pistache-d), 0 1px 0 rgba(167,200,138,.05);
+  background: linear-gradient(90deg, rgba(235,242,223,.70) 0%, rgba(242,232,218,.20) 100%);
+}
+.sidebar-group[data-group="daily"] .sidebar-item.is-active .sidebar-item-label { color: #8CAE70; font-weight: 600; }
+
+/* ── Echo → 紫罗兰 Violette (muted lavender-purple, dreamy) ── */
+.sidebar-group[data-group="echo"]  .sidebar-group-label         { color: var(--mac-violette-d); }
+.sidebar-group[data-group="echo"]  .sidebar-group-label::before { background: var(--mac-violette); box-shadow: 0 0 0 2px rgba(220,208,236,.55); }
+.sidebar-group[data-group="echo"]  .sidebar-item-label          { color: var(--mac-violette-d); }
+.sidebar-group[data-group="echo"]  .sidebar-item-mark           { color: var(--mac-violette); }
+.sidebar-group[data-group="echo"]  .sidebar-item:hover .sidebar-item-label { color: #9F8FC4; }
+.sidebar-group[data-group="echo"]  .sidebar-item.is-active {
+  box-shadow: inset 3px 0 0 var(--mac-violette-d), 0 1px 0 rgba(184,168,213,.05);
+  background: linear-gradient(90deg, rgba(239,233,246,.72) 0%, rgba(242,232,218,.20) 100%);
+}
+.sidebar-group[data-group="echo"]  .sidebar-item.is-active .sidebar-item-label { color: #9F8FC4; font-weight: 600; }
+
+/* ── System → 覆盆子 Framboise (dusty raspberry — warm yet distinct from orange) ── */
+.sidebar-group[data-group="system"] .sidebar-group-label         { color: var(--mac-framboise-d); }
+.sidebar-group[data-group="system"] .sidebar-group-label::before { background: var(--mac-framboise); box-shadow: 0 0 0 2px rgba(245,206,217,.55); }
+.sidebar-group[data-group="system"] .sidebar-item-label          { color: var(--mac-framboise-d); }
+.sidebar-group[data-group="system"] .sidebar-item-mark           { color: var(--mac-framboise); }
+.sidebar-group[data-group="system"] .sidebar-item:hover .sidebar-item-label { color: #CC94A7; }
+.sidebar-group[data-group="system"] .sidebar-item.is-active {
+  box-shadow: inset 3px 0 0 var(--mac-framboise-d), 0 1px 0 rgba(224,168,188,.05);
+  background: linear-gradient(90deg, rgba(252,231,238,.72) 0%, rgba(242,232,218,.20) 100%);
+}
+.sidebar-group[data-group="system"] .sidebar-item.is-active .sidebar-item-label { color: #CC94A7; font-weight: 600; }
+
+/* ── Home → neutral ink-soft (stays out of the macaron argument) ── */
+.sidebar-group[data-group="home"]   .sidebar-item-label         { color: var(--v3-ink-soft); }
+.sidebar-group[data-group="home"]   .sidebar-item-mark          { color: var(--v3-ink-soft); font-size: 17px; }
+.sidebar-group[data-group="home"]   .sidebar-item:hover .sidebar-item-label { color: var(--v3-ink); }
+.sidebar-group[data-group="home"]   .sidebar-item.is-active {
+  box-shadow: inset 3px 0 0 var(--v3-ink-soft), 0 1px 0 rgba(107,91,82,.08);
+  background: linear-gradient(90deg, rgba(233,201,189,.45) 0%, rgba(242,232,218,.30) 100%);
+}
+.sidebar-group[data-group="home"]   .sidebar-item.is-active .sidebar-item-label { color: var(--v3-ink); font-weight: 600; }
+
+/* ── "回到房间" detail text: tender pink → purple macaron gradient ── */
+.sidebar-group[data-group="home"] .sidebar-item-detail {
+  background: linear-gradient(92deg,
+    var(--mac-framboise-d) 0%,
+    #D49ACB 50%,
+    var(--mac-violette-d) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 1;
+}
+.sidebar-group[data-group="home"] .sidebar-item:hover .sidebar-item-detail,
+.sidebar-group[data-group="home"] .sidebar-item.is-active .sidebar-item-detail {
+  background: linear-gradient(92deg,
+    #CC94A7 0%,
+    #BE8FB8 50%,
+    #9F8FC4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Cute emoji accents on group labels ── */
+.sidebar-group-label::after {
+  font-size: 11px;
+  margin-left: 4px;
+  letter-spacing: 0;
+  opacity: 0.9;
+  filter: saturate(1.1);
+}
+.sidebar-group[data-group="daily"]  .sidebar-group-label::after { content: " 🍵"; }
+.sidebar-group[data-group="echo"]   .sidebar-group-label::after { content: " 🫐"; }
+.sidebar-group[data-group="system"] .sidebar-group-label::after { content: " 🍓"; }
+
+/* ── Cute dot bullets: make the ::before dot bigger & glow-softer ── */
+.sidebar-group-label::before {
+  width: 7px !important;
+  height: 7px !important;
+}
+
+/* ── Active items get a tiny sparkle trail ── */
+.sidebar-item.is-active::after {
+  content: "✦";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  opacity: 0.55;
+  animation: cute-twinkle 2.2s ease-in-out infinite;
+}
+.sidebar-group[data-group="daily"]  .sidebar-item.is-active::after { color: var(--mac-pistache-d); }
+.sidebar-group[data-group="echo"]   .sidebar-item.is-active::after { color: var(--mac-violette-d); }
+.sidebar-group[data-group="system"] .sidebar-item.is-active::after { color: var(--mac-framboise-d); }
+.sidebar-group[data-group="home"]   .sidebar-item.is-active::after { color: var(--v3-ink-soft); }
+
+@keyframes cute-twinkle {
+  0%,100% { opacity: 0.35; transform: translateY(-50%) scale(1); }
+  50%     { opacity: 0.9;  transform: translateY(-50%) scale(1.25); }
 }
 
 .sidebar-group-items {
@@ -1156,26 +1351,34 @@ select option { background: var(--card); }
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 9px 12px;
+  border-radius: 14px;
   background: transparent;
   border: 0;
-  color: var(--olive-gray);
+  color: var(--v3-ink-soft);
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  transition: background 0.22s ease, color 0.2s ease, box-shadow 0.22s ease, transform 0.18s cubic-bezier(.34,1.56,.64,1);
   position: relative;
 }
 
 .sidebar-item:hover {
-  background: var(--warm-sand);
-  color: var(--near-black);
+  background: linear-gradient(90deg, rgba(247, 212, 197, 0.55) 0%, rgba(247, 241, 232, 0.0) 100%);
+  color: var(--v3-ink);
+  transform: translateY(-1px) scale(1.015);
+}
+
+.sidebar-item:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 0.08s;
 }
 
 .sidebar-item.is-active {
-  background: var(--warm-sand);
-  color: var(--near-black);
-  box-shadow: inset 3px 0 0 var(--terracotta);
+  background: linear-gradient(90deg, rgba(240, 185, 164, 0.55) 0%, rgba(242, 232, 218, 0.35) 100%);
+  color: var(--v3-ink);
+  box-shadow:
+    inset 3px 0 0 var(--v3-coral-d),
+    0 1px 0 rgba(200, 106, 78, 0.06);
   padding-left: 13px;
 }
 
@@ -1186,8 +1389,9 @@ select option { background: var(--card); }
   align-items: center;
   justify-content: center;
   font-size: 15px;
-  color: var(--terracotta);
+  color: var(--v3-coral-d);
   flex: none;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.5));
 }
 
 .sidebar-item-body {
@@ -1199,50 +1403,54 @@ select option { background: var(--card); }
 }
 
 .sidebar-item-label {
-  font-size: 13px;
-  font-weight: 500;
+  font-family: var(--font-cute);
+  font-size: 13.5px;
+  font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.002em;
+  letter-spacing: 0.008em;
 }
 
 .sidebar-item-detail {
   font-size: 10.5px;
-  color: var(--stone-gray);
+  color: var(--v3-ink-soft);
   line-height: 1.3;
   letter-spacing: 0.02em;
+  opacity: 0.78;
 }
 
 .sidebar-item.is-active .sidebar-item-detail {
-  color: var(--charcoal-warm);
+  color: var(--v3-ink);
+  opacity: 1;
 }
 
 .sidebar-footer {
   padding: 14px 10px 2px;
   font-size: 10px;
-  color: var(--stone-gray);
+  color: var(--v3-ink-soft);
   display: flex;
   align-items: center;
   gap: 8px;
-  border-top: 1px solid var(--border-cream);
+  border-top: 1px dashed rgba(200, 106, 78, 0.22);
   margin-top: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .sidebar-footer .sidebar-dot {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: var(--stone-gray);
+  background: var(--v3-sage);
+  box-shadow: 0 0 0 2px rgba(169, 189, 163, 0.25);
 }
 
 .sidebar-footer a {
-  color: var(--stone-gray);
+  color: var(--v3-ink-soft);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color 0.18s;
 }
 
 .sidebar-footer a:hover {
-  color: var(--terracotta);
+  color: var(--v3-coral-d);
 }
 
 /* Room runs inside the flex child — keep its absolute positioning local */
