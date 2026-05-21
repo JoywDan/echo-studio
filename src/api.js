@@ -80,6 +80,7 @@ export const api = {
 
   vps: {
     health: () => req('GET', '/api/vps/health'),
+    echoStatus: () => req('GET', '/api/echo/status'),
     pm2: () => req('GET', '/api/vps/pm2'),
     restart: (name) => req('POST', '/api/pm2/restart', { name }),
     stop: (name) => req('POST', '/api/pm2/stop', { name }),

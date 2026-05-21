@@ -20,11 +20,13 @@ const RESTARTABLE = ['echo-voice','echo-bot-v2','echo-studio-api','memory-gatewa
 export default function VPSPanel() {
   const [health, setHealth] = useState(null)
   const [procs, setProcs] = useState([])
+  const [echoStatus, setEchoStatus] = useState(null)
   const [restarting, setRestarting] = useState({})
   const [msg, setMsg] = useState('')
 
   async function load() {
     api.vps.health().then(setHealth).catch(() => {})
+    api.vps.echoStatus().then(setEchoStatus).catch(() => {})
     api.vps.pm2().then(setProcs).catch(() => {})
   }
 
@@ -54,6 +56,44 @@ export default function VPSPanel() {
       </div>
 
       {msg && <div className="text-xs" style={{ color: msg.includes('error') ? 'var(--pink)' : 'var(--cyan)' }}>{msg}</div>}
+
+      {echoStatus && (
+        <div className="card p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium">Echo Status</div>
+              <div className="text-xs text-muted">{new Date(echoStatus.at).toLocaleString()}</div>
+            </div>
+            <span className="text-xs" style={{ color: echoStatus.ok ? 'var(--cyan)' : 'var(--pink)' }}>
+              {echoStatus.ok ? 'OK' : 'Needs attention'}
+            </span>
+          </div>
+          <div className="grid gap-2 md:grid-cols-3">
+            {['bot','voice','studioApi'].map(key => {
+              const s = echoStatus.services?.[key]
+              return <div key={key} className="rounded-md p-3" style={{ background: 'rgba(255,255,255,.03)', border: '1px solid var(--border)' }}>
+                <div className="text-xs text-muted uppercase tracking-widest">{key}</div>
+                <div className="text-sm">{s?.status || 'unknown'} · ↺{s?.restarts ?? '—'}</div>
+                <div className="text-xs text-muted">{s?.memory_mb ? String(s.memory_mb) + 'MB' : '—'}</div>
+              </div>
+            })}
+          </div>
+          <div className="text-xs" style={{ color: echoStatus.wechat?.stale ? 'var(--orange)' : 'var(--muted)' }}>
+            WeChat: {echoStatus.wechat?.has_session ? 'session saved' : 'no session'}
+            {echoStatus.wechat?.stale ? ' · stale · ' + Math.ceil((echoStatus.wechat.retry_after_s || 0) / 60) + 'm pause' : ''}
+            {echoStatus.wechat?.last_inbound_age_s != null ? ' · inbound ' + Math.round(echoStatus.wechat.last_inbound_age_s / 60) + 'm ago' : ''}
+          </div>
+          <div className="text-xs text-muted">
+            Voice: today {echoStatus.voice?.today_count || 0} · last tweet {echoStatus.voice?.last_tweet_age_s != null ? Math.round(echoStatus.voice.last_tweet_age_s / 60) + 'm ago' : '—'}
+          </div>
+          {(echoStatus.recentErrors?.bot?.length || echoStatus.recentErrors?.voice?.length) ? (
+            <details className="text-xs text-muted">
+              <summary>recent error tails</summary>
+              <pre className="mt-2 whitespace-pre-wrap break-words">{[...(echoStatus.recentErrors?.bot || []), ...(echoStatus.recentErrors?.voice || [])].slice(-8).join('\n')}</pre>
+            </details>
+          ) : null}
+        </div>
+      )}
 
       {(ram || disk) && (
         <div className="card p-4 space-y-4">
