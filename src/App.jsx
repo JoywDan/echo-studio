@@ -165,8 +165,9 @@ export default function App() {
 
   const handleStationClick = (stationId) => {
     const supportsHover = window.matchMedia('(hover: hover)').matches
+    const isMobileLayout = window.matchMedia('(max-width: 639px)').matches
 
-    if (supportsHover || revealedStation === stationId) {
+    if (isMobileLayout || supportsHover || revealedStation === stationId) {
       setPanel(stationId)
       return
     }
@@ -246,7 +247,7 @@ export default function App() {
       </main>
 
       <footer className="studio-footer">
-        <span className="footer-pill">8 live stations</span>
+        <span className="footer-pill">{STATIONS.length} live stations</span>
         <span className="footer-dot" />
         <span>studio.echowjoy.uk</span>
       </footer>

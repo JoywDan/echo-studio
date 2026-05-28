@@ -1014,17 +1014,38 @@ select option { background: var(--card); }
 
 /* ─── Mobile fallback (<640px) ───────────────────────────────── */
 @media (max-width: 639px) {
-  .studio-shell { padding: 20px 14px 28px; }
+  .studio-shell { padding: 28px 14px 36px; }
 
-  /* Replace the isometric room with a simple card grid */
+  .studio-header {
+    margin-bottom: 18px;
+    text-align: left;
+    padding: 0 4px;
+  }
+
+  .studio-kicker {
+    font-size: .68rem;
+    letter-spacing: .24em;
+    margin-bottom: 8px;
+  }
+
+  .studio-header h1 {
+    font-size: 2.45rem;
+    line-height: 1;
+    letter-spacing: .08em;
+  }
+
+  /* Replace the isometric room with a readable mobile control list. */
   .studio-room {
     aspect-ratio: unset;
     min-height: unset;
-    border-radius: 24px;
-    padding: 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    border-radius: 26px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    overflow: visible;
+    background:
+      linear-gradient(180deg, rgba(255,253,249,.96), rgba(241,233,224,.96));
   }
 
   /* Hide all non-interactive decorations */
@@ -1032,51 +1053,83 @@ select option { background: var(--card); }
   .window-frame, .wall-clock, .room-shelf,
   .desk-lamp, .desk-surface, .desk-shadow,
   .chair, .paper-stack, .paper-one, .paper-two,
-  .desk-cup, .studio-pet { display: none !important; }
+  .desk-cup, .studio-pet,
+  .room-decor { display: none !important; }
 
-  /* Stack station cards in the grid */
+  /* Turn stations into large touch targets. */
   .room-object {
-    position: static !important;
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
     width: 100% !important;
-    padding: 14px 12px !important;
-    border-radius: 16px !important;
-    background: rgba(255,253,249,.88) !important;
+    min-height: 86px;
+    padding: 14px 16px 14px 76px !important;
+    border-radius: 18px !important;
+    background:
+      linear-gradient(180deg, rgba(255,253,249,.94), rgba(255,249,242,.88)) !important;
     border: 1px solid rgba(92,78,68,.08) !important;
-    box-shadow: 0 8px 20px rgba(82,59,43,.06) !important;
+    box-shadow: 0 10px 22px rgba(82,59,43,.07) !important;
     transform: none !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
   }
-  .room-object:hover, .room-object:active {
-    transform: translateY(-2px) !important;
+
+  .room-object:active {
+    transform: translateY(1px) !important;
   }
+
+  .room-object .object-art {
+    position: absolute;
+    inset: 14px auto 14px 16px;
+    width: 46px;
+    height: 58px;
+    opacity: .9;
+  }
+
+  .room-object .station-art {
+    width: 100%;
+    height: 100%;
+    padding: 0 !important;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 12px rgba(82,59,43,.08));
+  }
+
   .room-object .obj-label,
   .room-object .obj-title,
   .room-object .obj-detail {
     opacity: 1 !important;
+    text-overflow: clip;
+    white-space: normal;
   }
-  /* Make monitor span full width since it's the main item */
-  .object-monitor {
-    grid-column: span 2;
+
+  .room-object .obj-label {
+    font-size: 11px;
+    letter-spacing: .18em;
+    color: var(--muted);
   }
+
+  .room-object .obj-title {
+    margin-top: 4px;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .room-object .obj-detail {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #6f6259;
+  }
+
   /* Remove the pseudo-element room decorations on mobile */
   .room-object::before, .room-object::after { display: none !important; }
   .object-monitor .obj-label,
   .object-monitor .obj-detail { color: var(--muted) !important; }
   .object-monitor .obj-title  { color: var(--orange) !important; }
-
-  /* Show placeholder items as simple grid cells */
-  .room-decor {
-    position: static !important;
-    width: 100% !important; height: 56px !important;
-    border-radius: 14px !important;
-    background: rgba(255,253,249,.60) !important;
-    border: 1px dashed rgba(92,78,68,.14) !important;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .room-decor::before { display: none !important; }
-  .room-decor::after  { display: none !important; }
-  .ph-cup::before, .ph-cup::after,
-  .ph-sticky::before, .ph-sticky::after,
-  .ph-phone::before, .ph-phone::after { display: none !important; }
 
   .decor-hint {
     position: fixed;
