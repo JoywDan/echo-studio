@@ -116,6 +116,7 @@ html,body{height:100%;width:100%;background:var(--washi);color:var(--ink);font-f
 .thinking-block.open .thinking-arrow{transform:rotate(90deg)}
 .thinking-body{display:none;padding:0.4rem 0.6rem;font-size:0.72rem;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap;border-top:1px solid rgba(167,55,42,0.08);max-height:300px;overflow-y:auto}
 .thinking-block.open .thinking-body{display:block}
+.thinking-hint{padding:0.3rem 0.6rem;font-size:0.65rem;color:var(--ink-soft);opacity:0.5;font-style:italic}
 .messages::-webkit-scrollbar{width:3px}.messages::-webkit-scrollbar-track{background:transparent}.messages::-webkit-scrollbar-thumb{background:var(--washi-dark);border-radius:3px}
 @media(min-width:601px){#chat-app{border-left:1px solid var(--washi-dark);border-right:1px solid var(--washi-dark)}}
 </style>
@@ -228,7 +229,7 @@ async function loadHistory(){
     if(!d.messages.length){addWelcome();return;}
     for(const m of d.messages){
       const att=m.attachments_json?JSON.parse(m.attachments_json):null;
-      appendMessage(m.role,m.content,null,att);
+      appendMessage(m.role,m.content,null,att,m.thinking_content);
     }
     scrollToBottom();
   }catch{addWelcome();}
@@ -303,8 +304,12 @@ function appendMessage(role,content,toolCalls,attachments,thinkingContent){
   // Thinking block
   if(thinkingContent){
     const tb=document.createElement('div');tb.className='thinking-block';
-    tb.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'open\')"><span class="thinking-arrow">&#9654;</span> 思考过程</div><div class="thinking-body"></div>';
-    tb.querySelector('.thinking-body').textContent=thinkingContent;
+    if(thinkingContent==='__no_thinking__'){
+      tb.innerHTML='<div class="thinking-hint">本轮模型没有返回可展示的思考摘要</div>';
+    }else{
+      tb.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'open\')"><span class="thinking-arrow">&#9654;</span> 思考过程</div><div class="thinking-body"></div>';
+      tb.querySelector('.thinking-body').textContent=thinkingContent;
+    }
     wrap.appendChild(tb);
   }
   div.appendChild(wrap);msgs.appendChild(div);scrollToBottom();
@@ -351,7 +356,8 @@ async function sendMessage(){
     });
     document.getElementById('typing').classList.remove('show');
     if(d.actual_model&&d.actual_model!==d.model)showFallbackNotice(d.model,d.actual_model);
-    appendMessage('assistant',d.reply,d.tool_calls,null,d.thinking_content);
+    const tc=d.thinking_content||(d.thinking&&!d.thinking_content?'__no_thinking__':'');
+    appendMessage('assistant',d.reply,d.tool_calls,null,tc);
   }catch(e){
     document.getElementById('typing').classList.remove('show');
     appendMessage('assistant',`_（连接出了点问题：${e.message}）_`);
