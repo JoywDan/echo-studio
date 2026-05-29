@@ -303,7 +303,7 @@ function appendMessage(role,content,toolCalls,attachments,thinkingContent){
   // Thinking block
   if(thinkingContent){
     const tb=document.createElement('div');tb.className='thinking-block';
-    tb.innerHTML=\`<div class="thinking-header" onclick="this.parentElement.classList.toggle('open')"><span class="thinking-arrow">▶</span> 思考过程</div><div class="thinking-body"></div>\`;
+    tb.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'open\')"><span class="thinking-arrow">&#9654;</span> 思考过程</div><div class="thinking-body"></div>';
     tb.querySelector('.thinking-body').textContent=thinkingContent;
     wrap.appendChild(tb);
   }
