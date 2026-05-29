@@ -129,6 +129,7 @@ html,body{height:100%;width:100%;background:var(--washi);color:var(--ink);font-f
     <div class="toolbar-group"><label>模型</label><select class="model-select" id="model-select" onchange="onModelChange()"></select></div>
     <div class="toolbar-group toggle-wrap" onclick="toggleThinking()"><label>思考</label><div class="toggle-track" id="thinking-toggle"><div class="toggle-knob"></div></div></div>
     <div class="toolbar-group toggle-wrap" onclick="toggleMemory()"><label>记忆</label><div class="toggle-track on" id="memory-toggle"><div class="toggle-knob"></div></div></div>
+    <div class="toolbar-group toggle-wrap" onclick="toggleWeb()"><label>联网</label><div class="toggle-track" id="web-toggle"><div class="toggle-knob"></div></div></div>
   </div>
 
   <div class="messages" id="messages"></div>
@@ -159,6 +160,7 @@ let currentModel=localStorage.getItem('echo_chat_model')||'';
 let thinkingOn=localStorage.getItem('echo_chat_thinking')==='true';
 let memoryOn=localStorage.getItem('echo_chat_memory')!=='false';
 let pendingImage=null; // {file, preview, uploaded:{filename,url}}
+let webOn=localStorage.getItem('echo_chat_web')==='true'; // web tools off by default
 
 function token(){return localStorage.getItem('studio_token')||'';}
 async function apiCall(method,path,body){
@@ -196,12 +198,15 @@ async function loadModels(){
 function onModelChange(){currentModel=document.getElementById('model-select').value;localStorage.setItem('echo_chat_model',currentModel);const m=models.find(x=>x.id===currentModel);if(m){thinkingOn=m.defaultThinking;localStorage.setItem('echo_chat_thinking',thinkingOn);}updateToggles();}
 function toggleThinking(){const m=models.find(x=>x.id===currentModel);if(m&&!m.supportsThinking)return;thinkingOn=!thinkingOn;localStorage.setItem('echo_chat_thinking',thinkingOn);updateToggles();}
 function toggleMemory(){memoryOn=!memoryOn;localStorage.setItem('echo_chat_memory',memoryOn);updateToggles();}
+function toggleWeb(){webOn=!webOn;localStorage.setItem('echo_chat_web',webOn);updateToggles();}
 function updateToggles(){
   const tt=document.getElementById('thinking-toggle'),mt=document.getElementById('memory-toggle');
   const m=models.find(x=>x.id===currentModel);const s=m?m.supportsThinking:false;
   if(!s){thinkingOn=false;tt.classList.remove('on');tt.parentElement.style.opacity='0.4';tt.parentElement.style.pointerEvents='none';}
   else{tt.parentElement.style.opacity='1';tt.parentElement.style.pointerEvents='auto';tt.classList.toggle('on',thinkingOn);}
   mt.classList.toggle('on',memoryOn);
+  const wt=document.getElementById('web-toggle');
+  wt.classList.toggle('on',webOn);
 }
 
 // Session
@@ -279,7 +284,7 @@ function appendMessage(role,content,toolCalls,attachments){
     const cards=document.createElement('div');cards.className='tool-cards';
     for(const tc of toolCalls){
       const card=document.createElement('div');card.className='tool-card';
-      const labels={memory_search:'🔍 记忆搜索',memory_recent:'📋 最近记忆',memory_write:'✏️ 写入记忆',memory_wakeup:'🌅 记忆唤醒'};
+      const labels={memory_search:'🔍 记忆搜索',memory_recent:'📋 最近记忆',memory_write:'✏️ 写入记忆',memory_wakeup:'🌅 记忆唤醒',web_fetch:'🌐 网页抓取',twitter_read:'🐦 推特阅读'};
       card.innerHTML=`<div class="tool-card-header">${labels[tc.tool]||tc.tool}</div>`
         +(tc.args?`<div class="tool-card-args">${formatArgs(tc.args)}</div>`:'')
         +(tc.result?`<div class="tool-card-result" onclick="this.classList.toggle('expanded')">${escHtml(tc.result.slice(0,200))}${tc.result.length>200?'…':''}</div>`:'');
@@ -326,7 +331,7 @@ async function sendMessage(){
   try{
     const d=await apiCall('POST','/api/chat/message',{
       session_id:sessionId,messages:[{role:'user',content:text||'[发了一张图片]'}],
-      model:currentModel,thinking:thinkingOn,tools:memoryOn,
+      model:currentModel,thinking:thinkingOn,tools:memoryOn,web_tools:webOn,
       attachments:attachments.length?attachments:undefined
     });
     document.getElementById('typing').classList.remove('show');
