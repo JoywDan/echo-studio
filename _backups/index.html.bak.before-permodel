@@ -258,36 +258,13 @@ async function loadModels(){
   try{const d=await apiCall('GET','/api/chat/models');models=d.models;
     const sel=document.getElementById('model-select');sel.innerHTML='';
     for(const m of models){const o=document.createElement('option');o.value=m.id;o.textContent=m.label;sel.appendChild(o);}
-    if(!currentModel||!models.some(m=>m.id===currentModel))currentModel=d.default;
-    sel.value=currentModel;
+    if(currentModel&&models.some(m=>m.id===currentModel))sel.value=currentModel;
+    else{currentModel=d.default;sel.value=currentModel;}
     updateToggles();
   }catch(e){console.error('load models:',e);}
 }
-// ── per-session model + thinking (each window独立, 互不影响) ──
-function mKey(sid){return 'echo_chat_model_'+sid;}
-function tKey(sid){return 'echo_chat_thinking_'+sid;}
-function applySessionModel(){
-  // load THIS session's saved model; fall back to global default for new windows
-  const saved=localStorage.getItem(mKey(sessionId));
-  if(saved&&models.some(m=>m.id===saved))currentModel=saved;
-  else currentModel=(localStorage.getItem('echo_chat_model')&&models.some(m=>m.id===localStorage.getItem('echo_chat_model')))?localStorage.getItem('echo_chat_model'):(models[0]?models[0].id:currentModel);
-  const m=models.find(x=>x.id===currentModel);
-  const savedT=localStorage.getItem(tKey(sessionId));
-  if(savedT!==null)thinkingOn=(savedT==='true');
-  else thinkingOn=m?!!m.defaultThinking:false;
-  if(m&&!m.supportsThinking)thinkingOn=false;
-  const sel=document.getElementById('model-select');if(sel)sel.value=currentModel;
-  updateToggles();
-}
-function onModelChange(){
-  currentModel=document.getElementById('model-select').value;
-  localStorage.setItem(mKey(sessionId),currentModel);   // per-session
-  localStorage.setItem('echo_chat_model',currentModel);  // global default for new windows
-  const m=models.find(x=>x.id===currentModel);
-  if(m){thinkingOn=!!m.defaultThinking;localStorage.setItem(tKey(sessionId),thinkingOn);}
-  updateToggles();
-}
-function toggleThinking(){const m=models.find(x=>x.id===currentModel);if(m&&!m.supportsThinking)return;thinkingOn=!thinkingOn;localStorage.setItem(tKey(sessionId),thinkingOn);updateToggles();}
+function onModelChange(){currentModel=document.getElementById('model-select').value;localStorage.setItem('echo_chat_model',currentModel);const m=models.find(x=>x.id===currentModel);if(m){thinkingOn=m.defaultThinking;localStorage.setItem('echo_chat_thinking',thinkingOn);}updateToggles();}
+function toggleThinking(){const m=models.find(x=>x.id===currentModel);if(m&&!m.supportsThinking)return;thinkingOn=!thinkingOn;localStorage.setItem('echo_chat_thinking',thinkingOn);updateToggles();}
 function toggleMemory(){memoryOn=!memoryOn;localStorage.setItem('echo_chat_memory',memoryOn);updateToggles();}
 function toggleWeb(){webOn=!webOn;localStorage.setItem('echo_chat_web',webOn);updateToggles();}
 function toggleCoding(){codingOn=!codingOn;localStorage.setItem('echo_chat_coding',codingOn);updateToggles();}
@@ -305,8 +282,8 @@ function updateToggles(){
 
 // Session
 function genId(){return'chat-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);}
-function initSession(){const s=localStorage.getItem('echo_chat_session');if(s){sessionId=s;applySessionModel();loadHistory();}else newSession();}
-function newSession(){sessionId=genId();localStorage.setItem('echo_chat_session',sessionId);if(models&&models.length)applySessionModel();document.getElementById('messages').innerHTML='';addWelcome();clearImage();}
+function initSession(){const s=localStorage.getItem('echo_chat_session');if(s){sessionId=s;loadHistory();}else newSession();}
+function newSession(){sessionId=genId();localStorage.setItem('echo_chat_session',sessionId);document.getElementById('messages').innerHTML='';addWelcome();clearImage();}
 
 // ── Session drawer ──
 function openDrawer(){document.getElementById('drawer').classList.add('show');document.getElementById('drawer-backdrop').classList.add('show');loadSessions();}
@@ -342,7 +319,6 @@ async function loadSessions(){
 async function switchSession(sid){
   if(sid===sessionId){closeDrawer();return;}
   sessionId=sid;localStorage.setItem('echo_chat_session',sid);
-  applySessionModel();
   await loadHistory();closeDrawer();
 }
 async function renameSession(sid,oldTitle){
