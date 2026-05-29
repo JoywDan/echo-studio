@@ -139,6 +139,24 @@ html,body{height:100%;width:100%;background:var(--washi);color:var(--ink);font-f
 .thinking-body{display:none;padding:0.4rem 0.6rem;font-size:0.72rem;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap;border-top:1px solid rgba(167,55,42,0.08);max-height:300px;overflow-y:auto}
 .thinking-block.open .thinking-body{display:block}
 .thinking-hint{padding:0.3rem 0.6rem;font-size:0.65rem;color:var(--ink-soft);opacity:0.5;font-style:italic}
+/* Pending action confirmation cards */
+.action-card{margin-top:0.5rem;border-radius:10px;background:rgba(167,55,42,0.06);border:1px solid rgba(167,55,42,0.25);overflow:hidden}
+.action-card-head{display:flex;align-items:center;gap:0.35rem;padding:0.5rem 0.7rem;font-size:0.72rem;font-weight:600;color:var(--vermillion);border-bottom:1px solid rgba(167,55,42,0.15)}
+.action-card-body{padding:0.5rem 0.7rem;font-size:0.75rem;color:var(--ink);line-height:1.5}
+.action-card-summary{white-space:pre-wrap;word-break:break-word}
+.action-card-detail{margin-top:0.4rem;max-height:160px;overflow-y:auto;background:rgba(44,36,32,0.04);border-radius:6px;padding:0.4rem 0.5rem;font-size:0.66rem;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all;display:none}
+.action-card-detail.show{display:block}
+.action-detail-toggle{font-size:0.62rem;color:var(--vermillion-soft);cursor:pointer;margin-top:0.3rem;display:inline-block}
+.action-card-actions{display:flex;gap:0.5rem;padding:0.5rem 0.7rem;border-top:1px solid rgba(167,55,42,0.12)}
+.action-btn{flex:1;padding:0.45rem;border-radius:7px;font-size:0.75rem;cursor:pointer;border:none;font-family:var(--font-sans);transition:opacity 0.15s}
+.action-btn.execute{background:var(--vermillion);color:var(--joy-text)}
+.action-btn.cancel{background:none;border:1px solid var(--washi-dark);color:var(--ink-soft)}
+.action-btn:disabled{opacity:0.45;cursor:default}
+.action-card.done .action-card-actions{display:none}
+.action-card-status{padding:0.45rem 0.7rem;font-size:0.72rem;border-top:1px solid rgba(167,55,42,0.12)}
+.action-card-status.ok{color:#3a7d44}
+.action-card-status.fail{color:var(--vermillion)}
+.action-card-status.cancelled{color:var(--ink-soft);opacity:0.7}
 .messages::-webkit-scrollbar{width:3px}.messages::-webkit-scrollbar-track{background:transparent}.messages::-webkit-scrollbar-thumb{background:var(--washi-dark);border-radius:3px}
 @media(min-width:601px){#chat-app{border-left:1px solid var(--washi-dark);border-right:1px solid var(--washi-dark)}}
 </style>
@@ -360,7 +378,7 @@ document.addEventListener('paste',e=>{
 });
 
 // Messages
-function appendMessage(role,content,toolCalls,attachments,thinkingContent){
+function appendMessage(role,content,toolCalls,attachments,thinkingContent,pendingActions){
   const msgs=document.getElementById('messages');const div=document.createElement('div');div.className=`msg ${role}`;
   const wrap=document.createElement('div');wrap.className='msg-wrap';
   // Images
@@ -400,7 +418,52 @@ function appendMessage(role,content,toolCalls,attachments,thinkingContent){
     }
     wrap.appendChild(tb);
   }
+  // Pending action confirmation cards
+  if(pendingActions&&pendingActions.length){
+    for(const pa of pendingActions){wrap.appendChild(buildActionCard(pa));}
+  }
   div.appendChild(wrap);msgs.appendChild(div);scrollToBottom();
+}
+const ACTION_LABELS={write_file:'📝 写文件',pm2_restart:'🔄 重启服务',run_build:'🔨 构建',git_commit:'💾 Git提交'};
+function buildActionCard(pa){
+  const card=document.createElement('div');card.className='action-card';card.dataset.actionId=pa.id;
+  if(pa.status&&pa.status!=='pending'){card.classList.add('done');}
+  const head=document.createElement('div');head.className='action-card-head';
+  head.textContent=(ACTION_LABELS[pa.action_type]||pa.action_type)+' · 需要确认';
+  const body=document.createElement('div');body.className='action-card-body';
+  const sum=document.createElement('div');sum.className='action-card-summary';sum.textContent=pa.summary||'';
+  body.appendChild(sum);
+  // Show file content preview for write_file
+  if(pa.params&&pa.params.content!==undefined){
+    const tog=document.createElement('span');tog.className='action-detail-toggle';tog.textContent='查看内容 ▾';
+    const det=document.createElement('div');det.className='action-card-detail';det.textContent=pa.params.content;
+    tog.onclick=()=>{det.classList.toggle('show');tog.textContent=det.classList.contains('show')?'收起 ▴':'查看内容 ▾';};
+    body.appendChild(tog);body.appendChild(det);
+  }
+  const actions=document.createElement('div');actions.className='action-card-actions';
+  const exec=document.createElement('button');exec.className='action-btn execute';exec.textContent='执行';
+  const cancel=document.createElement('button');cancel.className='action-btn cancel';cancel.textContent='取消';
+  exec.onclick=()=>decideAction(pa.id,'execute',card,exec,cancel);
+  cancel.onclick=()=>decideAction(pa.id,'cancel',card,exec,cancel);
+  actions.appendChild(exec);actions.appendChild(cancel);
+  card.appendChild(head);card.appendChild(body);card.appendChild(actions);
+  return card;
+}
+async function decideAction(actionId,decision,card,exec,cancel){
+  exec.disabled=true;cancel.disabled=true;
+  if(decision==='execute')exec.textContent='执行中…';
+  try{
+    const d=await apiCall('POST','/api/chat/coding-action/'+encodeURIComponent(actionId),{decision});
+    card.classList.add('done');
+    const st=document.createElement('div');st.className='action-card-status';
+    if(d.status==='cancelled'){st.classList.add('cancelled');st.textContent='已取消';}
+    else if(d.status==='executed'){st.classList.add('ok');st.textContent='✓ 执行成功'+(d.result&&d.result.bak?'（已备份）':'');}
+    else{st.classList.add('fail');st.textContent='✗ 失败：'+((d.result&&(d.result.error||d.result.detail))||d.status);}
+    card.appendChild(st);
+  }catch(e){
+    exec.disabled=false;cancel.disabled=false;exec.textContent='执行';
+    const st=document.createElement('div');st.className='action-card-status fail';st.textContent='✗ '+e.message;card.appendChild(st);
+  }
 }
 function formatArgs(a){return Object.entries(a).map(([k,v])=>`${k}: ${typeof v==='string'?v:JSON.stringify(v)}`).join(' · ');}
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
@@ -445,7 +508,7 @@ async function sendMessage(){
     document.getElementById('typing').classList.remove('show');
     if(d.actual_model&&d.actual_model!==d.model)showFallbackNotice(d.model,d.actual_model);
     const tc=d.thinking_content||(d.thinking&&!d.thinking_content?'__no_thinking__':'');
-    appendMessage('assistant',d.reply,d.tool_calls,null,tc);
+    appendMessage('assistant',d.reply,d.tool_calls,null,tc,d.pending_actions);
   }catch(e){
     document.getElementById('typing').classList.remove('show');
     appendMessage('assistant',`_（连接出了点问题：${e.message}）_`);
