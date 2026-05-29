@@ -117,10 +117,6 @@ html,body{height:100%;width:100%;background:var(--washi);color:var(--ink);font-f
 /* Image button */
 .img-btn{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--washi-dark);color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;transition:all 0.2s}
 .img-btn:active{background:var(--washi-dark)}
-.msg-files{display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.3rem}
-.file-chip{display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.6rem;border-radius:8px;background:rgba(44,36,32,0.06);font-size:0.78rem;max-width:240px}
-.msg.user .file-chip{background:rgba(255,255,255,0.18);color:var(--joy-text)}
-.file-chip .fname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Image preview */
 .img-preview{display:none;padding:0.4rem 0.8rem;border-top:1px solid var(--washi-dark);background:rgba(247,243,236,0.8);flex-shrink:0}
@@ -208,8 +204,6 @@ html,body{height:100%;width:100%;background:var(--washi);color:var(--ink);font-f
   <div class="input-bar">
     <button class="img-btn" onclick="document.getElementById('file-input').click()" title="发图片">📷</button>
     <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="onFileSelect(event)">
-    <button class="img-btn" onclick="document.getElementById('doc-input').click()" title="发文件">📎</button>
-    <input type="file" id="doc-input" accept=".txt,.md,.markdown,.pdf,.json,.csv,.log,.js,.mjs,.cjs,.ts,.tsx,.jsx,.py,.sh,.html,.css,.xml,.yaml,.yml,.sql,.c,.cpp,.h,.java,.go,.rs,.rb,.php,.ini,.conf,.toml" style="display:none" onchange="onDocSelect(event)">
     <textarea id="input" placeholder="说点什么..." rows="1" autocomplete="off"></textarea>
     <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -226,7 +220,6 @@ let currentModel=localStorage.getItem('echo_chat_model')||'';
 let thinkingOn=localStorage.getItem('echo_chat_thinking')==='true';
 let memoryOn=localStorage.getItem('echo_chat_memory')!=='false';
 let pendingImage=null; // {file, preview, uploaded:{filename,url}}
-let pendingFile=null;  // {file, name}
 let webOn=localStorage.getItem('echo_chat_web')==='true'; // web tools off by default
 let codingOn=localStorage.getItem('echo_chat_coding')==='true'; // coding tools off by default
 
@@ -350,22 +343,6 @@ async function loadHistory(){
 
 // Image handling
 function onFileSelect(e){const f=e.target.files[0];if(!f)return;if(f.size>5*1024*1024){alert('图片太大，最大5MB');return;}previewImage(f);e.target.value='';}
-function onDocSelect(e){const f=e.target.files[0];if(!f)return;if(f.size>10*1024*1024){alert('文件太大，最大10MB');return;}pendingFile={file:f,name:f.name};showFilePreview();e.target.value='';}
-function showFilePreview(){
-  document.getElementById('img-preview-thumb').style.display='none';
-  document.getElementById('img-preview-info').textContent=`📎 ${pendingFile.name} (${(pendingFile.file.size/1024).toFixed(0)}KB)`;
-  document.getElementById('img-preview').classList.add('show');
-  updateSendBtn();
-}
-function clearFile(){pendingFile=null;document.getElementById('img-preview-thumb').style.display='';updateSendBtn();}
-async function uploadFile(file){
-  const r=await fetch(API+'/api/chat/upload-file',{
-    method:'POST',headers:{'Authorization':'Bearer '+token(),'Content-Type':'application/octet-stream','X-Filename':encodeURIComponent(file.name)},
-    body:file
-  });
-  if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'upload failed');}
-  return r.json();
-}
 function previewImage(file){
   pendingImage={file,preview:URL.createObjectURL(file),uploaded:null};
   document.getElementById('img-preview-thumb').src=pendingImage.preview;
@@ -375,8 +352,7 @@ function previewImage(file){
 }
 function clearImage(){
   if(pendingImage?.preview)URL.revokeObjectURL(pendingImage.preview);
-  pendingImage=null;pendingFile=null;
-  document.getElementById('img-preview-thumb').style.display='';
+  pendingImage=null;
   document.getElementById('img-preview').classList.remove('show');
   updateSendBtn();
 }
@@ -407,28 +383,14 @@ function appendMessage(role,content,toolCalls,attachments,thinkingContent,pendin
   const wrap=document.createElement('div');wrap.className='msg-wrap';
   // Images
   if(attachments&&attachments.length){
-    const imgs=attachments.filter(a=>a.kind!=='file');
-    const files=attachments.filter(a=>a.kind==='file');
-    if(imgs.length){
-      const imgDiv=document.createElement('div');imgDiv.className='msg-images';
-      for(const a of imgs){
-        const img=document.createElement('img');
-        img.src=API+(a.url||`/api/chat/uploads/${a.filename}`);
-        img.onclick=()=>{document.getElementById('lightbox-img').src=img.src;document.getElementById('lightbox').classList.add('show');};
-        imgDiv.appendChild(img);
-      }
-      wrap.appendChild(imgDiv);
+    const imgDiv=document.createElement('div');imgDiv.className='msg-images';
+    for(const a of attachments){
+      const img=document.createElement('img');
+      img.src=API+(a.url||`/api/chat/uploads/${a.filename}`);
+      img.onclick=()=>{document.getElementById('lightbox-img').src=img.src;document.getElementById('lightbox').classList.add('show');};
+      imgDiv.appendChild(img);
     }
-    if(files.length){
-      const fDiv=document.createElement('div');fDiv.className='msg-files';
-      for(const a of files){
-        const chip=document.createElement('div');chip.className='file-chip';
-        chip.innerHTML='<span>📎</span><span class="fname"></span>';
-        chip.querySelector('.fname').textContent=a.name||a.filename||'文件';
-        fDiv.appendChild(chip);
-      }
-      wrap.appendChild(fDiv);
-    }
+    wrap.appendChild(imgDiv);
   }
   const bubble=document.createElement('div');bubble.className='bubble';
   if(role==='assistant')bubble.innerHTML=marked.parse(content,{breaks:true});else bubble.textContent=content;
@@ -510,41 +472,30 @@ function showFallbackNotice(req,act){
   n.textContent=`⚡ ${models.find(m=>m.id===req)?.label||req} 不可用，已切换到 ${models.find(m=>m.id===act)?.label||act}`;msgs.appendChild(n);
 }
 function scrollToBottom(){const m=document.getElementById('messages');requestAnimationFrame(()=>{m.scrollTop=m.scrollHeight;});}
-function updateSendBtn(){document.getElementById('send-btn').disabled=!(document.getElementById('input').value.trim()||pendingImage||pendingFile);}
+function updateSendBtn(){document.getElementById('send-btn').disabled=!(document.getElementById('input').value.trim()||pendingImage);}
 
 // Send
 async function sendMessage(){
   if(sending)return;
   const inp=document.getElementById('input');const text=inp.value.trim();
-  if(!text&&!pendingImage&&!pendingFile)return;
+  if(!text&&!pendingImage)return;
   sending=true;inp.value='';autoResize();document.getElementById('send-btn').disabled=true;
 
   let attachments=[];
-  const badge0=document.getElementById('model-badge');
   // Upload image first if pending
   if(pendingImage){
-    badge0.textContent='上传图片…';badge0.classList.add('show');
+    const badge=document.getElementById('model-badge');badge.textContent='上传图片…';badge.classList.add('show');
     try{
       const up=await uploadImage(pendingImage.file);
-      attachments=[{filename:up.filename,url:up.url,kind:'image'}];
+      attachments=[{filename:up.filename,url:up.url}];
     }catch(e){
       appendMessage('assistant',`_（图片上传失败：${e.message}）_`);
       sending=false;document.getElementById('send-btn').disabled=false;clearImage();return;
     }
     clearImage();
-  } else if(pendingFile){
-    badge0.textContent='上传文件…';badge0.classList.add('show');
-    try{
-      const up=await uploadFile(pendingFile.file);
-      attachments=[{filename:up.filename,name:up.name,url:up.url,kind:'file'}];
-    }catch(e){
-      appendMessage('assistant',`_（文件上传失败：${e.message}）_`);
-      sending=false;document.getElementById('send-btn').disabled=false;clearImage();return;
-    }
-    clearImage();
   }
 
-  appendMessage('user',text||(attachments[0]&&attachments[0].kind==='file'?('📎 '+(attachments[0].name||'文件')):'[图片]'),null,attachments.length?attachments:null);
+  appendMessage('user',text||'[图片]',null,attachments.length?attachments:null);
   document.getElementById('typing').classList.add('show');scrollToBottom();
   const badge=document.getElementById('model-badge');badge.textContent=thinkingOn?'思考中…':'';if(badge.textContent)badge.classList.add('show');
 
