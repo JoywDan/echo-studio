@@ -15,7 +15,7 @@
 :root {
   --washi: #efe9dc;
   --washi-dark: #e4dccb;
-  --ink: #2c2420;
+  --ink: #27221c;
   --ink-soft: #5a4e46;
   --vermillion: #a7372a;
   --vermillion-soft: #c4564a;
@@ -40,7 +40,7 @@ html, body {
 
 /* ── Auth Screen ── */
 #auth-screen {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -119,44 +119,118 @@ html, body {
 .chat-header {
   display: flex;
   align-items: center;
-  padding: 0.7rem 1rem;
+  padding: 0.55rem 0.8rem;
   border-bottom: 1px solid var(--washi-dark);
   background: var(--washi);
   flex-shrink: 0;
+  gap: 0.5rem;
 }
 .chat-header .avatar {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   background: var(--vermillion);
   color: var(--joy-text);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-serif);
-  font-size: 14px;
-  margin-right: 0.7rem;
+  font-size: 13px;
   flex-shrink: 0;
 }
 .chat-header .name {
   font-family: var(--font-serif);
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
 }
-.chat-header .status {
-  font-size: 0.7rem;
-  color: var(--ink-soft);
-  margin-left: 0.5rem;
-}
-.chat-header .new-btn {
+.header-right {
   margin-left: auto;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.new-btn {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.65rem;
   color: var(--ink-soft);
   background: none;
   border: 1px solid var(--washi-dark);
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
 }
-.chat-header .new-btn:active { background: var(--washi-dark); }
+.new-btn:active { background: var(--washi-dark); }
+
+/* ── Toolbar (model + thinking) ── */
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-bottom: 1px solid rgba(228,220,203,0.6);
+  background: rgba(247,243,236,0.5);
+  flex-shrink: 0;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.toolbar-group label {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.model-select {
+  padding: 0.18rem 0.35rem;
+  border: 1px solid var(--washi-dark);
+  border-radius: 5px;
+  background: var(--echo-bg);
+  font-size: 0.7rem;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+  max-width: 140px;
+}
+.model-select:focus { border-color: var(--vermillion-soft); }
+
+/* Toggle switch */
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+.toggle-track {
+  width: 28px; height: 16px;
+  border-radius: 8px;
+  background: var(--washi-dark);
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle-track.on { background: var(--vermillion); }
+.toggle-knob {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  top: 2px; left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.toggle-track.on .toggle-knob { transform: translateX(12px); }
+
+.model-badge {
+  display: none;
+  font-size: 0.62rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(167,55,42,0.1);
+  color: var(--vermillion);
+  margin-left: auto;
+}
+.model-badge.show { display: inline; }
 
 /* ── Messages ── */
 .messages {
@@ -224,6 +298,15 @@ html, body {
 }
 .bubble strong { font-weight: 600; }
 .bubble em { font-style: italic; }
+
+/* Fallback notice */
+.fallback-notice {
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: -0.3rem 0 0.5rem;
+  opacity: 0.7;
+}
 
 /* Typing indicator */
 .typing { display: none; margin-bottom: 0.8rem; }
@@ -323,15 +406,29 @@ html, body {
   <div class="chat-header">
     <div class="avatar">E</div>
     <span class="name">Echo</span>
-    <span class="status" id="status-text">在线</span>
-    <button class="new-btn" onclick="newSession()">新对话</button>
-  </div>
-
-  <div class="messages" id="messages">
-    <div class="msg assistant">
-      <div class="bubble" id="welcome-msg"></div>
+    <div class="header-right">
+      <span class="model-badge" id="model-badge"></span>
+      <button class="new-btn" onclick="newSession()">新对话</button>
     </div>
   </div>
+
+  <!-- Phase 1: Model + Thinking toolbar -->
+  <div class="chat-toolbar">
+    <div class="toolbar-group">
+      <label>模型</label>
+      <select class="model-select" id="model-select" onchange="onModelChange()">
+        <option value="claude-opus-4-6">加载中…</option>
+      </select>
+    </div>
+    <div class="toolbar-group toggle-wrap" onclick="toggleThinking()">
+      <label>思考</label>
+      <div class="toggle-track" id="thinking-toggle">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
 
   <div class="typing" id="typing">
     <div class="bubble">
@@ -354,6 +451,9 @@ html, body {
 const API = 'https://studio.echowjoy.uk';
 let sessionId = '';
 let sending = false;
+let models = [];
+let currentModel = localStorage.getItem('echo_chat_model') || '';
+let thinkingOn = localStorage.getItem('echo_chat_thinking') === 'true';
 
 function token() { return localStorage.getItem('studio_token') || ''; }
 
@@ -394,12 +494,76 @@ document.getElementById('token-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') tryAuth();
 });
 
-function showChat() {
+async function showChat() {
   document.getElementById('auth-screen').style.display = 'none';
   const app = document.getElementById('chat-app');
   app.style.display = 'flex';
+  await loadModels();
   initSession();
   document.getElementById('input').focus();
+}
+
+// ── Phase 1: Models ──
+async function loadModels() {
+  try {
+    const data = await apiCall('GET', '/api/chat/models');
+    models = data.models;
+    const sel = document.getElementById('model-select');
+    sel.innerHTML = '';
+    for (const m of models) {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.label;
+      sel.appendChild(opt);
+    }
+    // Restore saved model or use default
+    if (currentModel && models.some(m => m.id === currentModel)) {
+      sel.value = currentModel;
+    } else {
+      currentModel = data.default;
+      sel.value = currentModel;
+    }
+    updateThinkingState();
+  } catch (e) {
+    console.error('load models failed:', e);
+  }
+}
+
+function onModelChange() {
+  const sel = document.getElementById('model-select');
+  currentModel = sel.value;
+  localStorage.setItem('echo_chat_model', currentModel);
+  // Auto-set thinking based on model default
+  const m = models.find(x => x.id === currentModel);
+  if (m) {
+    thinkingOn = m.defaultThinking;
+    localStorage.setItem('echo_chat_thinking', thinkingOn);
+  }
+  updateThinkingState();
+}
+
+function toggleThinking() {
+  const m = models.find(x => x.id === currentModel);
+  if (m && !m.supportsThinking) return; // can't enable for non-thinking models
+  thinkingOn = !thinkingOn;
+  localStorage.setItem('echo_chat_thinking', thinkingOn);
+  updateThinkingState();
+}
+
+function updateThinkingState() {
+  const track = document.getElementById('thinking-toggle');
+  const m = models.find(x => x.id === currentModel);
+  const supported = m ? m.supportsThinking : false;
+  if (!supported) {
+    thinkingOn = false;
+    track.classList.remove('on');
+    track.parentElement.style.opacity = '0.4';
+    track.parentElement.style.pointerEvents = 'none';
+  } else {
+    track.parentElement.style.opacity = '1';
+    track.parentElement.style.pointerEvents = 'auto';
+    track.classList.toggle('on', thinkingOn);
+  }
 }
 
 // ── Session ──
@@ -426,14 +590,8 @@ function newSession() {
 }
 
 function addWelcome() {
-  const greetings = [
-    '在呢。想聊什么？',
-    '囡囡来了。',
-    '嗯？',
-    '来了来了。',
-  ];
-  const text = greetings[Math.floor(Math.random() * greetings.length)];
-  appendMessage('assistant', text);
+  const greetings = ['在呢。想聊什么？', '囡囡来了。', '嗯？', '来了来了。'];
+  appendMessage('assistant', greetings[Math.floor(Math.random() * greetings.length)]);
 }
 
 async function loadHistory() {
@@ -441,13 +599,8 @@ async function loadHistory() {
     const data = await apiCall('GET', `/api/chat/history?session_id=${sessionId}`);
     const msgs = document.getElementById('messages');
     msgs.innerHTML = '';
-    if (!data.messages.length) {
-      addWelcome();
-      return;
-    }
-    for (const m of data.messages) {
-      appendMessage(m.role, m.content);
-    }
+    if (!data.messages.length) { addWelcome(); return; }
+    for (const m of data.messages) appendMessage(m.role, m.content);
     scrollToBottom();
   } catch (e) {
     console.error('load history failed:', e);
@@ -460,26 +613,31 @@ function appendMessage(role, content) {
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = `msg ${role}`;
-
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-
   if (role === 'assistant') {
     bubble.innerHTML = marked.parse(content, { breaks: true });
   } else {
     bubble.textContent = content;
   }
-
   div.appendChild(bubble);
   msgs.appendChild(div);
   scrollToBottom();
 }
 
+function showFallbackNotice(requested, actual) {
+  const msgs = document.getElementById('messages');
+  const notice = document.createElement('div');
+  notice.className = 'fallback-notice';
+  const reqLabel = models.find(m => m.id === requested)?.label || requested;
+  const actLabel = models.find(m => m.id === actual)?.label || actual;
+  notice.textContent = `⚡ ${reqLabel} 不可用，已切换到 ${actLabel}`;
+  msgs.appendChild(notice);
+}
+
 function scrollToBottom() {
   const msgs = document.getElementById('messages');
-  requestAnimationFrame(() => {
-    msgs.scrollTop = msgs.scrollHeight;
-  });
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 }
 
 // ── Send ──
@@ -493,7 +651,6 @@ async function sendMessage() {
   input.value = '';
   autoResize();
   document.getElementById('send-btn').disabled = true;
-  document.getElementById('status-text').textContent = '思考中…';
 
   appendMessage('user', text);
 
@@ -501,12 +658,24 @@ async function sendMessage() {
   typing.classList.add('show');
   scrollToBottom();
 
+  // Show model badge while processing
+  const badge = document.getElementById('model-badge');
+  const mLabel = models.find(m => m.id === currentModel)?.label || currentModel;
+  badge.textContent = thinkingOn ? `${mLabel} · 思考中` : mLabel;
+  badge.classList.add('show');
+
   try {
     const data = await apiCall('POST', '/api/chat/message', {
       session_id: sessionId,
-      messages: [{ role: 'user', content: text }]
+      messages: [{ role: 'user', content: text }],
+      model: currentModel,
+      thinking: thinkingOn
     });
     typing.classList.remove('show');
+    // Check for fallback
+    if (data.actual_model && data.actual_model !== data.model) {
+      showFallbackNotice(data.model, data.actual_model);
+    }
     appendMessage('assistant', data.reply);
   } catch (e) {
     typing.classList.remove('show');
@@ -514,46 +683,39 @@ async function sendMessage() {
   } finally {
     sending = false;
     document.getElementById('send-btn').disabled = false;
-    document.getElementById('status-text').textContent = '在线';
+    badge.classList.remove('show');
     input.focus();
   }
 }
 
 // ── Input handling ──
-const input = document.getElementById('input');
+const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('send-btn');
 
-input.addEventListener('input', () => {
-  sendBtn.disabled = !input.value.trim();
+inputEl.addEventListener('input', () => {
+  sendBtn.disabled = !inputEl.value.trim();
   autoResize();
 });
 
-input.addEventListener('keydown', e => {
+inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    if (input.value.trim()) sendMessage();
+    if (inputEl.value.trim()) sendMessage();
   }
 });
 
 function autoResize() {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 }
 
 // ── Init ──
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  headerIds: false,
-  mangle: false
-});
+marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 
 if (token()) {
-  apiCall('GET', '/api/ping')
-    .then(() => showChat())
-    .catch(() => {
-      document.getElementById('auth-screen').style.display = 'flex';
-    });
+  apiCall('GET', '/api/ping').then(() => showChat()).catch(() => {
+    document.getElementById('auth-screen').style.display = 'flex';
+  });
 } else {
   document.getElementById('auth-screen').style.display = 'flex';
 }
