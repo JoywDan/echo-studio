@@ -94,6 +94,35 @@ input, textarea { font-family: inherit; }
 .sticky-list .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .sticky-pin { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 6; }
 .sticky-fold { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; clip-path: polygon(100% 0, 0 100%, 100% 100%); opacity: 0.4; border-radius: 0 0 var(--radius) 0; }
+.sticky-actions { position: absolute; top: 6px; right: 6px; display: none; flex-direction: row; gap: 4px; z-index: 8; }
+.sticky:hover .sticky-actions { display: flex; }
+.sticky-act-btn { width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.sticky-act-btn:hover { background: rgba(255,255,255,0.95); }
+.sticky-deleting { opacity: 0.4; pointer-events: none; }
+
+/* Note Editor modal */
+.note-editor-backdrop { position: fixed; inset: 0; background: rgba(40,30,20,0.35); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.note-editor { width: 100%; max-width: 380px; border-radius: 14px; overflow: hidden; background: var(--card, #fffdf8); box-shadow: 0 8px 40px rgba(80,50,30,0.18); }
+.note-editor-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 12px; }
+.note-editor-title { font-family: var(--font-cute); font-size: 17px; color: var(--ink); }
+.note-editor-close { background: none; border: none; cursor: pointer; padding: 2px; opacity: 0.6; }
+.note-editor-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+.ne-label { font-size: 12px; color: var(--ink-soft); font-weight: 600; letter-spacing: 0.03em; display: flex; align-items: center; gap: 6px; }
+.ne-hint { font-size: 11px; color: var(--ink-faint); font-weight: 400; }
+.ne-input { width: 100%; border: 1.5px solid var(--border, #e8ddd3); border-radius: 8px; padding: 8px 11px; font-size: 15px; background: var(--paper, #faf4ee); color: var(--ink); outline: none; font-family: inherit; }
+.ne-input:focus { border-color: var(--vermillion-l); }
+.ne-textarea { width: 100%; border: 1.5px solid var(--border, #e8ddd3); border-radius: 8px; padding: 8px 11px; font-size: 14px; background: var(--paper, #faf4ee); color: var(--ink); outline: none; resize: vertical; font-family: inherit; line-height: 1.6; }
+.ne-textarea:focus { border-color: var(--vermillion-l); }
+.ne-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.ne-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+.ne-swatch.sel { border-color: var(--ink); transform: scale(1.12); }
+.ne-chip { padding: 4px 12px; border-radius: 20px; border: 1.5px solid var(--border, #e8ddd3); background: transparent; font-size: 12px; cursor: pointer; color: var(--ink-soft); transition: background 0.15s, color 0.15s; }
+.ne-chip.sel { background: var(--vermillion-l); color: #fff; border-color: var(--vermillion-l); }
+.ne-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.ne-btn-cancel { background: none; border: 1.5px solid var(--border, #e8ddd3); border-radius: 8px; padding: 8px 18px; font-size: 14px; cursor: pointer; color: var(--ink-soft); }
+.ne-btn-save { background: var(--vermillion); border: none; border-radius: 8px; padding: 8px 22px; font-size: 14px; cursor: pointer; color: #fff; font-weight: 600; }
+.ne-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .conv-list { display: flex; flex-direction: column; gap: 4px; }
 .conv-row { position: relative; display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; padding: 12px 12px; border-radius: var(--radius); border: 1.5px solid transparent; background: transparent; transition: background 0.15s; }
 .conv-row:hover { background: rgba(255,253,248,0.5); }

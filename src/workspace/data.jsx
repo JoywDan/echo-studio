@@ -16,6 +16,10 @@ export const QUICK_ACTIONS = [
   { id: "qa3", label: "New task", icon: "task", doodle: "check" },
   { id: "qa4", label: "Upload", icon: "upload", doodle: "star" },
 ]
+export const LIVE_APPS = [
+  { id: 'cc', title: 'CC 控制台', sub: '手机上指挥 Claude Code', icon: 'task', tint: 'pink', url: 'https://joywdan.github.io/echo-studio/cc/' },
+  { id: 'gallery', title: '画廊 · 教堂', sub: 'Echo 的画廊和教堂', icon: 'image', tint: 'blue', url: 'https://gallery.echowjoy.uk' },
+]
 export const COMING_SOON = [
   { id: "cs1", title: "Echo's diary", sub: "Echo 写给你的日记", icon: "book", tint: "yellow" },
   { id: "cs2", title: "Letter for Echo", sub: "写一封信给 Echo", icon: "send", tint: "pink" },

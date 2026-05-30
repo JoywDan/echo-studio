@@ -103,4 +103,11 @@ export const api = {
     get: (date) => req('GET', `/api/health/${date}`),
     generate: () => req('POST', '/api/health/generate', {}),
   },
+
+  notes: {
+    list: () => req('GET', '/api/notes'),
+    create: (d) => req('POST', '/api/notes', d),
+    update: (id, d) => req('PUT', `/api/notes/${id}`, d),
+    remove: (id) => req('DELETE', `/api/notes/${id}`),
+  },
 }

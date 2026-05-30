@@ -18,10 +18,10 @@ export function SectionHead({ title, doodle, action, onAction }) {
   return (<div className="section-head"><h2>{title}</h2>{doodle}
     {action && (<button className="head-action" onClick={onAction}>{action}</button>)}</div>)
 }
-export function StickyNote({ note, variant = "tape", onClick }) {
+export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, deleting }) {
   const [light, dark] = TINT_MAP[note.tint] || TINT_MAP.yellow
   const doodleEl = { bowl: <Sparkle size={16} color="var(--vermillion-l)" />, sparkle: <Sparkle size={16} color="var(--vermillion-l)" />, flower: <Flower size={18} /> }[note.doodle]
-  return (<div className={"sticky sticky-" + variant} style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
+  return (<div className={"sticky sticky-" + variant + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
     {variant === "tape" && <Tape kind={note.tape} style={{ top: -12, left: "50%", transform: "translateX(-50%) rotate(-3deg)" }} />}
     {variant === "pin" && <span className="sticky-pin"><Pin size={20} /></span>}
     <div className="torn"><div className="torn-bg" style={{ background: light, filter: "url(#rough-paper)" }} />
@@ -30,7 +30,14 @@ export function StickyNote({ note, variant = "tape", onClick }) {
           <span style={{ fontFamily: "var(--font-cute)", fontWeight: 400, fontSize: "14px", lineHeight: 1.15 }}>{note.title}</span>{doodleEl}</div>
         <span className="sticky-underline" style={{ background: "var(--vermillion-l)" }} />
         <ul className="sticky-list">{note.items.map((it, i) => (<li key={i}><span className="dot" style={{ background: dark }} />{it}</li>))}</ul>
-      </div></div></div>)
+      </div></div>
+    {(onEdit || onDelete) && (
+      <div className="sticky-actions">
+        {onEdit && <button className="sticky-act-btn" onClick={(e) => { e.stopPropagation(); onEdit() }} title="编辑"><Icon name="pencil" size={13} color="var(--ink-soft)" /></button>}
+        {onDelete && <button className="sticky-act-btn sticky-act-del" onClick={(e) => { e.stopPropagation(); onDelete() }} title="删除"><Icon name="trash" size={13} color="var(--vermillion)" /></button>}
+      </div>
+    )}
+  </div>)
 }
 const AV = { cat: CatAvatar, rabbit: RabbitAvatar, cake: CakeAvatar, leaf: LeafAvatar }
 export function ConversationRow({ conv, onClick, onDelete }) {
@@ -65,6 +72,14 @@ export function QuickAction({ qa, onClick }) {
   }[qa.doodle]
   return (<button className="quick-action" onClick={onClick}><TornCard className="qa-card">{doodleEl}
     <Icon name={qa.icon} size={26} color="var(--ink)" stroke={1.6} /><span className="qa-label">{qa.label}</span></TornCard></button>)
+}
+export function AppCard({ app }) {
+  const [light] = TINT_MAP[app.tint] || TINT_MAP.yellow
+  return (<button className="coming-card" onClick={() => window.open(app.url, '_blank')}><div className="torn">
+    <div className="torn-bg" style={{ filter: "url(#rough-paper-soft)", background: "var(--card)" }} />
+    <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
+      <div className="coming-text"><span className="coming-title">{app.title}</span><span className="coming-sub">{app.sub}</span></div>
+      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>打开 ↗</span></div></div></button>)
 }
 export function ComingSoonCard({ mod, onClick }) {
   const [light] = TINT_MAP[mod.tint] || TINT_MAP.yellow
