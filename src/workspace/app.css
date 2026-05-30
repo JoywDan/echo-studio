@@ -144,7 +144,7 @@ input, textarea { font-family: inherit; }
 .chat-header-actions { display: flex; align-items: center; gap: 4px; }
 .icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; transition: background 0.15s; }
 .icon-btn:hover { background: rgba(167,55,42,0.08); }
-.chat-toolbar { margin: 0 14px 6px; }
+.chat-toolbar { margin: 0 14px 6px; position: relative; z-index: 20; }
 .toolbar-card { display: flex; align-items: center; gap: 14px 18px; flex-wrap: wrap; padding: 12px 15px; }
 .toolbar-group { display: flex; align-items: center; gap: 9px; }
 .toolbar-label { font-family: var(--font-cute); font-size: 14.5px; color: var(--ink-soft); white-space: nowrap; }
