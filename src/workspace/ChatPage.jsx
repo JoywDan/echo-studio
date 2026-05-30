@@ -77,6 +77,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   const [draft, setDraft] = React.useState("")
   const [lightbox, setLightbox] = React.useState(null)
   const [sending, setSending] = React.useState(false)
+  const [toolbarOpen, setToolbarOpen] = React.useState(() => localStorage.getItem('ws_toolbar_open') === '1')
   const [pendingFile, setPendingFile] = React.useState(null)
   const scrollRef = React.useRef(null)
   const fileInputRef = React.useRef(null)
@@ -84,6 +85,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   const sessionId = conv && conv.id
 
   const curModel = models.find((m) => m.id === model)
+  const summaryToggles = [toggles.think && '思考', toggles.memory && '记忆', toggles.web && '联网', toggles.code && '编码'].filter(Boolean).join('·')
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
 
   // init model when models load
@@ -170,11 +172,18 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
           <div className="chat-header-actions">
             <button className="icon-btn" onClick={onBack}><Icon name="menu" size={20} color="var(--ink-soft)" /></button></div>
         </header>
-        <div className="chat-toolbar"><TornCard className="toolbar-card">
-          <div className="toolbar-group"><span className="toolbar-label">模型</span>
-            <ModelSelect value={model} options={models} onChange={onModelChange} /></div>
-          {TOGGLES.map((tg) => (<WashiToggle key={tg.id} label={tg.label} on={toggles[tg.id]} disabled={tg.id === 'think' && curModel && !curModel.supportsThinking} onChange={() => flipToggle(tg.id)} />))}
-        </TornCard></div>
+        <div className="chat-toolbar">
+          <button className={"toolbar-toggle" + (toolbarOpen ? " open" : "")} onClick={() => { const v = !toolbarOpen; setToolbarOpen(v); localStorage.setItem('ws_toolbar_open', v ? '1' : '0') }}>
+            <Heart size={12} color="var(--vermillion-l)" fill="var(--vermillion-l)" />
+            <span className="tt-text">{toolbarOpen ? '收起设置' : ((curModel ? curModel.label : '模型') + (summaryToggles ? ' · ' + summaryToggles : ''))}</span>
+            <span className="tt-chev"><Icon name="chevron" size={15} color="var(--vermillion)" /></span>
+          </button>
+          {toolbarOpen && (<TornCard className="toolbar-card">
+            <div className="toolbar-group"><span className="toolbar-label">模型</span>
+              <ModelSelect value={model} options={models} onChange={onModelChange} /></div>
+            {TOGGLES.map((tg) => (<WashiToggle key={tg.id} label={tg.label} on={toggles[tg.id]} disabled={tg.id === 'think' && curModel && !curModel.supportsThinking} onChange={() => flipToggle(tg.id)} />))}
+          </TornCard>)}
+        </div>
         <div className="chat-scroll" ref={scrollRef}>
           {messages.map((m) => (<Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} />))}
         </div>

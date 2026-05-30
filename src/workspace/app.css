@@ -252,3 +252,10 @@ input, textarea { font-family: inherit; }
 .app.has-wallpaper { background: var(--wallpaper) center/cover fixed no-repeat; }
 .app.has-wallpaper .paper-bg { background-color: color-mix(in srgb, var(--washi) 72%, transparent); background-image: none; }
 .app.has-wallpaper .paper-bg::after { opacity: calc(0.3 * var(--texture)); }
+/* collapsible toolbar pill (cute) */
+.toolbar-toggle { display: inline-flex; align-items: center; gap: 7px; margin: 2px 14px 6px; padding: 6px 14px; border-radius: 999px; background: rgba(255,253,248,0.72); border: 1.5px solid rgba(120,95,70,0.2); box-shadow: var(--paper-shadow-sm); font-family: var(--font-cute); font-size: 13px; color: var(--ink-soft); max-width: calc(100% - 28px); transition: border-color 0.15s, transform 0.12s; }
+.toolbar-toggle:hover { border-color: var(--vermillion); transform: translateY(-1px); }
+.toolbar-toggle:active { transform: scale(0.97); }
+.toolbar-toggle .tt-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar-toggle .tt-chev { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(167,55,42,0.1); flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.5,1.6,0.5,1); }
+.toolbar-toggle.open .tt-chev { transform: rotate(180deg); }
