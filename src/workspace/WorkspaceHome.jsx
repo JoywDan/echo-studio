@@ -3,7 +3,7 @@ import { CoffeeCup, Heart, Star, Sparkle, Pin, Icon } from './doodles.jsx'
 import { SectionHead, StickyNote, ConversationRow, TaskCard, QuickAction, ComingSoonCard } from './components.jsx'
 import { PINNED_NOTES, TASKS, QUICK_ACTIONS, COMING_SOON } from './data.jsx'
 
-export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, loading }) {
+export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
   const [tasks, setTasks] = React.useState(TASKS)
   const [showAll, setShowAll] = React.useState(false)
   const [query, setQuery] = React.useState("")
@@ -28,6 +28,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
               <Star size={15} color="var(--vermillion)" style={{ position: "absolute", top: 0, left: 6 }} />
               <div className="ws-stamp"><Star size={26} color="#f7ede4" fill="#f7ede4" /></div>
             </div>
+            <button className="set-gear" onClick={onOpenSettings} title="主题设置"><Icon name="gear" size={18} color="var(--ink-soft)" /></button>
           </header>
 
           <div className="search-wrap">

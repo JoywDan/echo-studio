@@ -102,6 +102,7 @@ export function Icon({ name, size = 22, color = INK, stroke = 1.7, style, classN
     book: <><path d="M4 5c3-1.2 6-1.2 8 0v15c-2-1.2-5-1.2-8 0zM20 5c-3-1.2-6-1.2-8 0v15c2-1.2 5-1.2 8 0z" {...p} /></>,
     moon: <><path d="M20 14.5A8 8 0 019 4 8 8 0 1020 14.5z" {...p} /></>,
     trash: <><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13" {...p} /></>,
+    gear: <><circle cx="12" cy="12" r="3.2" {...p} /><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8" {...p} /></>,
   }
   return (<svg width={size} height={size} viewBox="0 0 24 24" style={style} className={className} aria-hidden="true">{paths[name] || null}</svg>)
 }

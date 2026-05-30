@@ -3,6 +3,8 @@ import WorkspaceHome from './WorkspaceHome.jsx'
 import ChatPage from './ChatPage.jsx'
 import { api, getToken, setToken, clearToken } from './api.js'
 import { AVATAR_CYCLE, AVATAR_TINTS } from './data.jsx'
+import { useTheme } from './theme.js'
+import Settings from './Settings.jsx'
 
 function genId() { return 'chat-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) }
 function relTime(s) {
@@ -30,6 +32,8 @@ export default function App() {
   const [activeConv, setActiveConv] = React.useState(null)
   const [mode, setMode] = React.useState(() => (window.innerWidth < 760 ? 'mobile' : 'wide'))
   const appRef = React.useRef(null)
+  const { t, set, reset, cssVars } = useTheme()
+  const [settingsOpen, setSettingsOpen] = React.useState(false)
 
   // responsive
   React.useEffect(() => {
@@ -67,9 +71,9 @@ export default function App() {
   // when a message is sent in a (possibly new) session, refresh the list
   const onSessionTouched = React.useCallback(() => { api.sessions().then((d) => setSessions(d.sessions || [])).catch(() => {}) }, [])
 
-  if (authed === null) return <div className="app is-wide paper-bg" style={{ display: 'grid', placeItems: 'center' }}><span className="muted">载入中…</span></div>
+  if (authed === null) return <div className="app is-wide paper-bg" style={{ display: 'grid', placeItems: 'center', ...cssVars }}><span className="muted">载入中…</span></div>
   if (authed === false) return (
-    <div className="app is-wide paper-bg"><div className="auth-screen">
+    <div className="app is-wide paper-bg" style={cssVars}><div className="auth-screen">
       <div className="seal">私</div><h1>Echo Workspace</h1><p className="sub">与 Echo 的私人空间</p>
       <input type="password" placeholder="输入访问令牌" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && tryAuth()} autoFocus />
       <button onClick={tryAuth}>进入</button>{authErr && <div className="err">{authErr}</div>}
@@ -77,10 +81,11 @@ export default function App() {
 
   const convs = sessionsToConvs(sessions, activeConv && activeConv.id)
   return (
-    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide')} ref={appRef}>
+    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide')} ref={appRef} style={cssVars}>
       <div className="layout" data-view={view}>
-        <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onDeleteConv={deleteConv} />
+        <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
         <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} />
       </div>
+      <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>)
 }
