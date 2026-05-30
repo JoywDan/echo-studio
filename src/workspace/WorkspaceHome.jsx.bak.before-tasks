@@ -1,15 +1,12 @@
 import React from 'react'
 import { CoffeeCup, Heart, Star, Sparkle, Pin, Icon } from './doodles.jsx'
 import { SectionHead, StickyNote, ConversationRow, TaskCard, QuickAction, ComingSoonCard, AppCard } from './components.jsx'
-import { QUICK_ACTIONS, COMING_SOON, LIVE_APPS } from './data.jsx'
+import { TASKS, QUICK_ACTIONS, COMING_SOON, LIVE_APPS } from './data.jsx'
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
-import TaskEditor from './TaskEditor.jsx'
 
 export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
-  const [tasks, setTasks] = React.useState([])
-  const [tasksLoading, setTasksLoading] = React.useState(true)
-  const [editingTask, setEditingTask] = React.useState(null)
+  const [tasks, setTasks] = React.useState(TASKS)
   const [showAll, setShowAll] = React.useState(false)
   const [query, setQuery] = React.useState("")
 
@@ -20,32 +17,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
-    api.tasks.list().then(setTasks).catch(() => setTasks([])).finally(() => setTasksLoading(false))
   }, [])
 
-  const toggleTask = (id) => {
-    const cur = tasks.find((t) => t.id === id)
-    if (!cur) return
-    const next = !cur.done
-    setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: next } : t)))
-    api.tasks.update(id, { done: next }).catch(() => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: cur.done } : t))))
-  }
-
-  async function handleSaveTask(data) {
-    if (editingTask === 'new') {
-      const created = await api.tasks.create(data)
-      setTasks((ts) => [...ts, created])
-    } else {
-      const updated = await api.tasks.update(editingTask.id, data)
-      setTasks((ts) => ts.map((t) => t.id === updated.id ? updated : t))
-    }
-    setEditingTask(null)
-  }
-
-  async function handleDeleteTask(id) {
-    await api.tasks.remove(id)
-    setTasks((ts) => ts.filter((t) => t.id !== id))
-  }
+  const toggleTask = (id) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
 
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter((c) => (c.title + " " + c.preview).toLowerCase().includes(q)) : conversations
@@ -129,21 +103,11 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <hr className="divider-hand" />
 
           <SectionHead title="Tasks" doodle={<Icon name="task" size={18} color="var(--ink)" />}
-            action={<><Icon name="plus" size={14} color="var(--vermillion)" /> New task</>}
-            onAction={() => setEditingTask('new')} />
-          <div className="task-grid">
-            {tasksLoading
-              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading…</span>
-              : tasks.length === 0
-                ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>还没有任务，点 + New task 新建</span>
-                : tasks.map((t) => (<TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => handleDeleteTask(t.id)} />))}
-          </div>
+            action={<><Icon name="plus" size={14} color="var(--vermillion)" /> New task</>} />
+          <div className="task-grid">{tasks.map((t) => (<TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} />))}</div>
 
           <SectionHead title="Quick actions" doodle={<Sparkle size={17} color="var(--vermillion)" />} />
-          <div className="qa-grid">{QUICK_ACTIONS.map((qa) => {
-            const act = { qa1: () => onNewChat(), qa2: () => setEditingNote('new'), qa3: () => setEditingTask('new'), qa4: () => onNewChat() }[qa.id]
-            return (<QuickAction key={qa.id} qa={qa} onClick={act || (() => {})} />)
-          })}</div>
+          <div className="qa-grid">{QUICK_ACTIONS.map((qa) => (<QuickAction key={qa.id} qa={qa} onClick={() => qa.id === "qa1" && onNewChat()} />))}</div>
 
           <SectionHead title="Studio" doodle={<Heart size={15} color="var(--vermillion-l)" />}
             action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>陆续上线 ✦</span>} />
@@ -158,14 +122,6 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           note={editingNote === 'new' ? null : editingNote}
           onSave={handleSaveNote}
           onClose={() => setEditingNote(null)}
-        />
-      )}
-
-      {editingTask !== null && (
-        <TaskEditor
-          task={editingTask === 'new' ? null : editingTask}
-          onSave={handleSaveTask}
-          onClose={() => setEditingTask(null)}
         />
       )}
     </div>

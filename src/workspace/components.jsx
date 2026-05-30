@@ -55,13 +55,17 @@ export function ConversationRow({ conv, onClick, onDelete }) {
       <Icon name={onDelete ? "trash" : "pin"} size={15} color="var(--ink-faint)" /></button>
   </div>)
 }
-export function TaskCard({ task, onToggle }) {
+export function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const dueColor = task.dueType === "today" ? "var(--vermillion)" : "var(--vermillion-l)"
   return (<TornCard className="task-card" rotate={0}>
     <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="toggle">{task.done && <Icon name="check" size={15} color="#fff" />}</button>
     <div className="task-body"><span className={"task-text" + (task.done ? " done" : "")}>{task.text}</span>
       <span className="task-due" style={{ color: dueColor }}>{task.due}</span></div>
-    <span className="task-icon"><Icon name={task.icon} size={18} color="var(--ink-faint)" /></span></TornCard>)
+    <span className="task-icon"><Icon name={task.icon} size={18} color="var(--ink-faint)" /></span>
+    {(onEdit || onDelete) && (<span className="task-actions">
+      {onEdit && <button className="task-act-btn" onClick={(e) => { e.stopPropagation(); onEdit() }} title="编辑"><Icon name="pencil" size={13} color="var(--ink-soft)" /></button>}
+      {onDelete && <button className="task-act-btn" onClick={(e) => { e.stopPropagation(); onDelete() }} title="删除"><Icon name="trash" size={13} color="var(--vermillion)" /></button>}
+    </span>)}</TornCard>)
 }
 export function QuickAction({ qa, onClick }) {
   const doodleEl = {

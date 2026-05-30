@@ -110,4 +110,11 @@ export const api = {
     update: (id, d) => req('PUT', `/api/notes/${id}`, d),
     remove: (id) => req('DELETE', `/api/notes/${id}`),
   },
+
+  tasks: {
+    list: () => req('GET', '/api/tasks'),
+    create: (d) => req('POST', '/api/tasks', d),
+    update: (id, d) => req('PUT', `/api/tasks/${id}`, d),
+    remove: (id) => req('DELETE', `/api/tasks/${id}`),
+  },
 }
