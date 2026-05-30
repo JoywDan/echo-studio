@@ -2,3 +2,6 @@ node_modules/
 dist/
 .bak-trash/
 _design-handoff/
+
+*.bak
+*.bak.*
