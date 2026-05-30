@@ -32,7 +32,7 @@ export default function App() {
   const [activeConv, setActiveConv] = React.useState(null)
   const [mode, setMode] = React.useState(() => (window.innerWidth < 760 ? 'mobile' : 'wide'))
   const appRef = React.useRef(null)
-  const { t, set, reset, cssVars } = useTheme()
+  const { t, set, reset, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont } = useTheme()
   const [settingsOpen, setSettingsOpen] = React.useState(false)
 
   // responsive
@@ -81,11 +81,11 @@ export default function App() {
 
   const convs = sessionsToConvs(sessions, activeConv && activeConv.id)
   return (
-    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide')} ref={appRef} style={cssVars}>
+    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide') + (wallpaper ? ' has-wallpaper' : '')} ref={appRef} style={cssVars}>
       <div className="layout" data-view={view}>
         <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
         <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} />
       </div>
-      <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} />
     </div>)
 }

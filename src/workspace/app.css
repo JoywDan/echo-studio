@@ -248,3 +248,7 @@ input, textarea { font-family: inherit; }
 .set-opt.sel { border-color: var(--vermillion); background: rgba(167,55,42,0.08); color: var(--vermillion); }
 .set-reset { margin-top: 14px; width: 100%; padding: 10px; border-radius: 999px; border: 1.4px solid rgba(120,95,70,0.25); font-family: var(--font-cute); font-size: 14px; color: var(--ink-soft); }
 .set-reset:hover { border-color: var(--vermillion); color: var(--vermillion); }
+
+.app.has-wallpaper { background: var(--wallpaper) center/cover fixed no-repeat; }
+.app.has-wallpaper .paper-bg { background-color: color-mix(in srgb, var(--washi) 72%, transparent); background-image: none; }
+.app.has-wallpaper .paper-bg::after { opacity: calc(0.3 * var(--texture)); }

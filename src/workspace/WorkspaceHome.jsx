@@ -24,11 +24,10 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
                 <Heart size={20} color="var(--vermillion-l)" fill="var(--vermillion-l)" style={{ position: "absolute", top: -10, right: 26, opacity: 0.9 }} /></h1>
               <p className="ws-subtitle">history + notes<Heart size={15} color="var(--vermillion-l)" /></p>
             </div>
-            <div className="ws-header-doodles">
+            <div className="ws-header-doodles" onClick={onOpenSettings} style={{ cursor: "pointer" }} title="点这颗星调主题 ✦">
               <Star size={15} color="var(--vermillion)" style={{ position: "absolute", top: 0, left: 6 }} />
               <div className="ws-stamp"><Star size={26} color="#f7ede4" fill="#f7ede4" /></div>
             </div>
-            <button className="set-gear" onClick={onOpenSettings} title="主题设置"><Icon name="gear" size={18} color="var(--ink-soft)" /></button>
           </header>
 
           <div className="search-wrap">
