@@ -44,22 +44,25 @@ export default function App() {
 
   // auth check on mount
   React.useEffect(() => {
-    if (!getToken()) { setAuthed(false); return }
-    api.ping().then(() => setAuthed(true)).catch(() => { clearToken(); setAuthed(false) })
+    setAuthed(getToken() ? true : false)  // trust saved token; only a real 401 logs out
   }, [])
 
+  const on401 = React.useCallback((e) => { if (/unauth/i.test((e && e.message) || '')) { clearToken(); setAuthed(false) } }, [])
   const loadData = React.useCallback(() => {
-    api.models().then((d) => setModels(d.models || [])).catch(() => {})
+    api.models().then((d) => setModels(d.models || [])).catch(on401)
     setLoadingSessions(true)
-    api.sessions().then((d) => setSessions(d.sessions || [])).catch(() => {}).finally(() => setLoadingSessions(false))
-  }, [])
+    api.sessions().then((d) => setSessions(d.sessions || [])).catch(on401).finally(() => setLoadingSessions(false))
+  }, [on401])
   React.useEffect(() => { if (authed) loadData() }, [authed, loadData])
 
   const tryAuth = async () => {
     const t = tokenInput.trim(); if (!t) return
     setToken(t)
-    try { await api.ping(); setAuthed(true); setAuthErr('') }
-    catch { clearToken(); setAuthErr('令牌无效') }
+    try { await api.models(); setAuthed(true); setAuthErr('') }
+    catch (e) {
+      if (/unauth/i.test(e.message || '')) { clearToken(); setAuthErr('令牌无效') }
+      else { setAuthed(true); setAuthErr('') }  // network hiccup but token saved — let her in
+    }
   }
 
   const openChat = (conv) => { setActiveConv(conv); setView('chat') }
