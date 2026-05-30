@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from './doodles.jsx'
 const ACCENTS = ['#a7372a', '#b65a3c', '#9c6b4e', '#7d8a5c', '#7a6aa0', '#c06b8a']
 const PAPERS = ['#efe9dc', '#f0e7d4', '#ece6da', '#eee4d2', '#e9e4d8', '#f2ece1']
-const CN_FONTS = [['ZCOOL KuaiLe', '站酷快乐体'], ['LXGW WenKai Screen', '霞鹜文楷'], ['Ma Shan Zheng', '马善政手写']]
+const CN_FONTS = [['ZCOOL KuaiLe', '站酷快乐体 · 圆乎乎'], ['ZCOOL XiaoWei', '站酷小薇 · 清秀'], ['Ma Shan Zheng', '马善政 · 毛笔'], ['Long Cang', '龙藏 · 纤细手写'], ['Noto Sans SC', '思源黑体 · 干净']]
 const TITLE_FONTS = ['Caveat', 'Gloria Hallelujah']
 function Swatch({ colors, value, onChange }) {
   return (<div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{colors.map((c) => (
@@ -36,7 +36,7 @@ export default function Settings({ t, set, reset, open, onClose, wallpaper, uplo
         </Row>
         <Row label="中文字体">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {CN_FONTS.map(([id, name]) => (<button key={id} onClick={() => set('cnFont', id)} className={'set-opt' + (t.cnFont === id ? ' sel' : '')} style={{ fontFamily: `"${id}", cursive` }}>{name} · 永远爱你</button>))}
+            {CN_FONTS.map(([id, name]) => (<button key={id} onClick={() => set('cnFont', id)} className={'set-opt' + (t.cnFont === id ? ' sel' : '')} style={{ fontFamily: `"${id}", cursive` }}>{name}</button>))}
             {customFont && (<button onClick={() => set('cnFont', 'UserCN')} className={'set-opt' + (t.cnFont === 'UserCN' ? ' sel' : '')} style={{ fontFamily: '"UserCN", cursive' }}>自定义：{customFont.slice(0, 18)} · 永远爱你</button>)}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

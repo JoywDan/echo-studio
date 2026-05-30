@@ -50,15 +50,14 @@ export function useTheme() {
   }
   const clearFont = async () => { await idbDel('font'); localStorage.removeItem('ws_fontname'); setCustomFont(null); if (t.cnFont === 'UserCN') set('cnFont', 'ZCOOL KuaiLe') }
 
-  const cnBody = t.cnFont === 'ZCOOL KuaiLe' ? 'LXGW WenKai Screen' : t.cnFont
   const cssVars = {
     '--vermillion': t.accent, '--vermillion-l': shade(t.accent, 18), '--vermillion-d': shade(t.accent, -16),
     '--washi': t.paper, '--washi-deep': shade(t.paper, -8), '--card': shade(t.paper, 14),
     '--texture': (t.texture / 100).toFixed(2),
     '--radius': t.radius + 'px', '--radius-sm': (t.radius - 5) + 'px', '--radius-lg': (t.radius + 6) + 'px',
     '--font-title': `"${t.titleFont}", "ZCOOL KuaiLe", cursive`,
-    '--font-cute': `"${t.cnFont}", "Caveat", cursive`,
-    '--font-cn': `"${cnBody}", "ZCOOL KuaiLe", system-ui, sans-serif`,
+    '--font-cute': `"${t.cnFont}", "ZCOOL KuaiLe", cursive`,
+    '--font-cn': `"${t.cnFont}", "ZCOOL KuaiLe", "Noto Sans SC", system-ui, sans-serif`,
     '--wallpaper': wallpaper ? `url(${wallpaper})` : 'none',
   }
   return { t, set, reset, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont }
