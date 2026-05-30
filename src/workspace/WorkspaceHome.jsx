@@ -1,7 +1,7 @@
 import React from 'react'
 import { CoffeeCup, Heart, Star, Sparkle, Pin, Icon } from './doodles.jsx'
 import { SectionHead, StickyNote, ConversationRow, TaskCard, QuickAction, ComingSoonCard, AppCard } from './components.jsx'
-import { TASKS, QUICK_ACTIONS, COMING_SOON } from './data.jsx'
+import { TASKS, QUICK_ACTIONS, COMING_SOON, LIVE_APPS } from './data.jsx'
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 
