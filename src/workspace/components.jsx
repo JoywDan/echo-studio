@@ -125,7 +125,7 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   const seed = note.id || note.title
   const itemCount = Array.isArray(note.items) ? note.items.length : 0
   const longestItem = Array.isArray(note.items) ? note.items.reduce((m, it) => Math.max(m, String(it || "").length), 0) : 0
-  const noteMinHeight = Math.max(230, 150 + itemCount * 48 + Math.ceil(longestItem / 8) * 26)
+  const noteMinHeight = Math.min(310, Math.max(210, 156 + itemCount * 28 + Math.ceil(Math.max(0, longestItem - 18) / 16) * 16))
   const tintKey = note.tint || pickBy(seed, ["cream", "pink", "sage", "blue", "yellow"])
   const [light, dark] = TINT_MAP[tintKey] || TINT_MAP.yellow
   const sticker = note.sticker || ({ bowl: "cloud", sparkle: "star", flower: "flowerface" }[note.doodle]) || pickBy(seed, ["heart", "cloud", "flower", "flowerface", "panther", "sparkle"])

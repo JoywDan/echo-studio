@@ -2420,3 +2420,34 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
 .sticky .doodle-fill {
   height: calc(100% + 18px) !important;
 }
+
+/* Note height brake: enough room, no poster-sized cards */
+.sticky {
+  min-height: calc(var(--note-min-h, 220px) + 12px) !important;
+}
+
+.sticky-card {
+  min-height: var(--note-min-h, 220px) !important;
+  max-height: none !important;
+}
+
+.sticky-body {
+  min-height: var(--note-min-h, 220px) !important;
+  padding-bottom: 72px !important;
+}
+
+.sticky-list li {
+  margin-bottom: 5px !important;
+  line-height: 1.42 !important;
+}
+
+.sticky .doodle-frame,
+.sticky .doodle-fill {
+  height: calc(100% + 8px) !important;
+}
+
+@media (max-width: 480px) {
+  .sticky { min-height: calc(var(--note-min-h, 212px) + 12px) !important; }
+  .sticky-card { min-height: var(--note-min-h, 212px) !important; }
+  .sticky-body { min-height: var(--note-min-h, 212px) !important; padding-bottom: 76px !important; }
+}
