@@ -44,7 +44,7 @@ const FRAME_PATHS = [
   ],
 ]
 
-function RoughFrame({ frame = 0, dbl = true, tint = "pink" }) {
+function RoughFrame({ frame = 0, dbl = true }) {
   const svgRef = React.useRef(null)
 
   React.useEffect(() => {
@@ -59,49 +59,18 @@ function RoughFrame({ frame = 0, dbl = true, tint = "pink" }) {
     const base = {
       fill: 'none',
       stroke: 'var(--edge)',
-      strokeWidth: 2.5,
-      roughness: 2.9,
-      bowing: 2.1,
+      strokeWidth: 2.2,
+      roughness: 2.4,
+      bowing: 1.8,
       seed,
       disableMultiStroke: false,
       preserveVertices: false,
     }
-    const accent = {
-      pink: '#d7837d',
-      sage: '#8fa17b',
-      cream: '#d7b45f',
-      blue: '#86a9bb',
-      yellow: '#d7b45f',
-      green: '#8fa17b',
-    }[tint] || '#d7837d'
 
-    svg.appendChild(rc.path(p1, { ...base, stroke: accent, strokeWidth: 5.8, roughness: 4.2, bowing: 2.8, seed: seed + 3 }))
-    svg.appendChild(rc.path(p2, { ...base, stroke: accent, strokeWidth: 3.6, roughness: 3.6, bowing: 2.5, seed: seed + 9 }))
-    svg.appendChild(rc.path(p1, { ...base, strokeWidth: 2.4, roughness: 3.3, seed }))
-    svg.appendChild(rc.path(p2, { ...base, strokeWidth: 1.45, roughness: 2.4, seed: seed + 17 }))
-    if (dbl) svg.appendChild(rc.path(p3, { ...base, strokeWidth: 1, roughness: 2.1, seed: seed + 31 }))
-
-    const scribbles = [
-      [[18, 75], [42, 69]],
-      [[19, 82], [48, 76]],
-      [[58, 22], [82, 18]],
-      [[62, 29], [88, 24]],
-      [[68, 68], [89, 63]],
-    ]
-    scribbles.forEach((line, index) => {
-      const [[x1, y1], [x2, y2]] = line
-      const dx = ((seed + index * 11) % 7) - 3
-      const dy = ((seed + index * 17) % 7) - 3
-      svg.appendChild(rc.line(x1 + dx, y1 + dy, x2 + dx, y2 + dy, {
-        stroke: accent,
-        strokeWidth: index % 2 ? 2.2 : 1.6,
-        roughness: 5.1,
-        bowing: 3.2,
-        seed: seed + 101 + index,
-        disableMultiStroke: false,
-      }))
-    })
-  }, [frame, dbl, tint])
+    svg.appendChild(rc.path(p1, { ...base, strokeWidth: 2.7, roughness: 2.9, seed }))
+    svg.appendChild(rc.path(p2, { ...base, strokeWidth: 1.35, roughness: 2.1, seed: seed + 17 }))
+    if (dbl) svg.appendChild(rc.path(p3, { ...base, strokeWidth: 1, roughness: 1.8, seed: seed + 31 }))
+  }, [frame, dbl])
 
   return <svg ref={svgRef} className={"rough-frame" + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" />
 }
@@ -125,7 +94,7 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
       <path d={p1} />
     </svg>
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
-    <RoughFrame frame={hashText(String(frame) + className)} dbl={dbl} tint={tint} />
+    <RoughFrame frame={hashText(String(frame) + className)} dbl={dbl} />
     <svg className={"doodle-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path className="df df-shadow" d={p1} />
       <path className="df df-crayon df1" d={p1} />
