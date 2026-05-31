@@ -5,3 +5,7 @@ _design-handoff/
 
 *.bak
 *.bak.*
+
+_design_new/
+src/workspace/_codex_backup/
+src/workspace/_modal_styles.css

@@ -1,67 +1,28 @@
-/* Mock content: workspace placeholders. Conversations and chat use real data. */
-export const PINNED_NOTES = [
-  {
-    id: "n1",
-    title: "上庭",
-    tape: "gingham",
-    rotate: -3,
-    tint: "sage",
-    sticker: "cloud",
-    edge: "crayon",
-    items: ["6/2 8:30", "护照、id、通知书"],
-    doodle: "cloud",
-  },
-  {
-    id: "n2",
-    title: "新增功能",
-    tape: "polka",
-    rotate: 2,
-    tint: "pink",
-    sticker: "flowerface",
-    edge: "torn",
-    items: ["prompt skill 画图", "抽象幼稚画风", "听音乐", "点外卖"],
-    doodle: "flowerface",
-  },
-  {
-    id: "n3",
-    title: "小纸片灵感",
-    tape: "stripe",
-    rotate: -2,
-    tint: "cream",
-    sticker: "heart",
-    edge: "dashed",
-    items: ["粉色大涂抹", "黑豹头像", "胶带和星星"],
-    doodle: "heart",
-  },
-]
-export const TASKS = [
-  { id: "t1", text: "找通知", due: "Today", dueType: "today", icon: "note", tint: "cream", tape: "gingham", sticker: "star", edge: "crayon", done: false },
-  { id: "t2", text: "修推特发帖逻辑", due: "Today", dueType: "today", icon: "send", tint: "pink", tape: "polka", sticker: "cloud", edge: "dashed", done: false },
-  { id: "t3", text: "生图-神隐少女", due: "Today", dueType: "today", icon: "image", tint: "sage", tape: "stripe", sticker: "flower", edge: "torn", done: false },
-  { id: "t4", text: "加群聊、加记忆库", due: "Tomorrow", dueType: "tomorrow", icon: "pencil", tint: "cream", tape: "plain", sticker: "heart", edge: "crayon", done: false },
-]
+/* data.jsx — 静态配置 + 装饰映射（真实数据走 api） */
 export const QUICK_ACTIONS = [
-  { id: "qa1", label: "New chat", icon: "new-chat", doodle: "sparkle", edge: "pink" },
-  { id: "qa2", label: "New note", icon: "note", doodle: "heart", edge: "sage" },
-  { id: "qa3", label: "New task", icon: "task", doodle: "check", edge: "cream" },
-  { id: "qa4", label: "Upload", icon: "upload", doodle: "star", edge: "pink" },
+  { id: "qa1", label: "New chat", icon: "chat-plus", edge: "pink", flower: true },
+  { id: "qa2", label: "New note", icon: "file", edge: "sage" },
+  { id: "qa3", label: "New task", icon: "clipboard", edge: "cream" },
+  { id: "qa4", label: "Upload", icon: "upload", edge: "pink" },
 ]
-export const LIVE_APPS = [
-  { id: 'cc', title: 'CC 控制台', sub: '手机上指挥 Claude Code', icon: 'task', tint: 'pink', url: 'https://joywdan.github.io/echo-studio/cc/' },
-  { id: 'gallery', title: '画廊 · 教堂', sub: 'Echo 的画廊和教堂', icon: 'image', tint: 'blue', url: 'https://gallery.echowjoy.uk' },
+export const STUDIO = [
+  { id: "s1", title: "CC 控制台", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], url: "https://joywdan.github.io/echo-studio/cc/" },
+  { id: "s2", title: "画廊 · 教堂", edge: "blue", icon: "pic", creature: "PainterBlob", deco: ["flower","scribble"], url: "https://gallery.echowjoy.uk" },
+  { id: "s3", title: "Echo 写的日记", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], module: "diary" },
+  { id: "s4", title: "Echo 写给自己的信", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], module: "letters" },
+  { id: "s5", title: "Echo 带回的见闻", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["flower"], module: "travel" },
+  { id: "s6", title: "路拾遗梦", edge: "sage", icon: "moon", creature: "SleepCloud", deco: ["star"], module: "wander" },
+  { id: "s7", title: "moonline 群聊", edge: "pink", creature: "BlobTrio", clip: true, deco: ["star","heart"], module: "agentroom" },
+  { id: "s8", title: "River of memory", edge: "sage", icon: "river", deco: ["flowerface","star"], english: true },
 ]
-export const COMING_SOON = [
-  { id: "cs1", module: "diary", title: "Echo 写的日记", sub: "桌边留下的每日页", icon: "book", tint: "yellow" },
-  { id: "cs2", module: "letters", title: "Echo 写给自己的信", sub: "写给未来自己的信", icon: "send", tint: "pink" },
-  { id: "cs3", module: "travel", title: "Echo 带回的见闻", sub: "每周一次出门记录", icon: "image", tint: "blue" },
-  { id: "cs4", module: "wander", title: "路拾遗梦", sub: "散步、梦与旧周记", icon: "moon", tint: "green" },
+export const MODELS = [
+  { label: "Opus 4.6", id: "claude-opus-4-6" },
+  { label: "Opus 4.8", id: "claude-opus-4-8" },
+  { label: "Sonnet 4.6", id: "claude-sonnet-4-6" },
 ]
-export const STUDIO_LINKS = [
-  { id: 'agent-room', title: 'moonline 群聊', sub: 'Codex · CC · Grok · Gemini', icon: 'new-chat', tint: 'pink', url: 'https://dan.echowjoy.uk/agent-room/' },
-]
-export const TOGGLES = [
-  { id: "think", label: "思考" }, { id: "memory", label: "记忆" }, { id: "web", label: "联网" }, { id: "code", label: "编码" },
-]
-// fallback avatars cycle for conversation rows
-export const AVATAR_CYCLE = ["cloud", "heart", "cake", "rabbit", "leaf"]
-export const AVATAR_TINTS = ["#e4c3bc", "#dde3d0", "#f3e6bf", "#d8e0e4"]
+export const FEATURES = ["思考","记忆","联网","编码"]
+export const CONV_CREATURES = ["PinkBlobCrown","FuzzGreen","CupcakeCyclops","RunCloudGreen","GreenAlien","Rabbit"]
+export const NOTE_TINTS = ["sage","pink","cream","blue"]
+export const TASK_TINTS = ["cream","pink","sage","blue"]
+export const AVATAR_CYCLE = CONV_CREATURES
+export const AVATAR_TINTS = ["pink","sage","cream","blue"]

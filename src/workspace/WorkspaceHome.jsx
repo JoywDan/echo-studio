@@ -1,197 +1,114 @@
 import React from 'react'
-import { Crab, TreasureChest, Heart, Star, Sparkle, Pin, CloudFace, HeartLegs, Icon } from './doodles.jsx'
-import { SectionHead, StickyNote, ConversationRow, TaskCard, QuickAction, ComingSoonCard, AppCard } from './components.jsx'
-import { QUICK_ACTIONS, COMING_SOON, LIVE_APPS, STUDIO_LINKS } from './data.jsx'
+import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard } from './components.jsx'
+import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
+import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
+import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
 import StudioReader from './StudioReader.jsx'
 
-export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onRenameConv, onDeleteConv, onOpenSettings, loading }) {
-  const [tasks, setTasks] = React.useState([])
-  const [tasksLoading, setTasksLoading] = React.useState(true)
-  const [editingTask, setEditingTask] = React.useState(null)
+export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
   const [showAll, setShowAll] = React.useState(false)
   const [query, setQuery] = React.useState("")
-
-  const [notes, setNotes] = React.useState([])
-  const [notesLoading, setNotesLoading] = React.useState(true)
+  const [notes, setNotes] = React.useState([]); const [notesLoading, setNotesLoading] = React.useState(true)
+  const [tasks, setTasks] = React.useState([]); const [tasksLoading, setTasksLoading] = React.useState(true)
   const [editingNote, setEditingNote] = React.useState(null)
-  const [deletingId, setDeletingId] = React.useState(null)
-  const [studioModule, setStudioModule] = React.useState(null)
+  const [editingTask, setEditingTask] = React.useState(null)
+  const [reader, setReader] = React.useState(null)
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
     api.tasks.list().then(setTasks).catch(() => setTasks([])).finally(() => setTasksLoading(false))
   }, [])
 
-  const toggleTask = (id) => {
-    const cur = tasks.find((t) => t.id === id)
-    if (!cur) return
-    const next = !cur.done
-    setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: next } : t)))
-    api.tasks.update(id, { done: next }).catch(() => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: cur.done } : t))))
-  }
-
-  async function handleSaveTask(data) {
-    if (editingTask === 'new') {
-      const created = await api.tasks.create(data)
-      setTasks((ts) => [...ts, created])
-    } else {
-      const updated = await api.tasks.update(editingTask.id, data)
-      setTasks((ts) => ts.map((t) => t.id === updated.id ? updated : t))
-    }
-    setEditingTask(null)
-  }
-
-  async function handleDeleteTask(id) {
-    await api.tasks.remove(id)
-    setTasks((ts) => ts.filter((t) => t.id !== id))
-  }
-
   const q = query.trim().toLowerCase()
-  const filtered = q ? conversations.filter((c) => (c.title + " " + c.preview).toLowerCase().includes(q)) : conversations
-  const convs = showAll ? filtered : filtered.slice(0, 4)
+  const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
+  const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
+  const noteCards = notes.map((n, i) => ({ ...n, tint: n.tint || NOTE_TINTS[i % 4], items: n.items || [] }))
+  const taskCards = tasks.map((t, i) => ({ ...t, tint: t.tint || TASK_TINTS[i % 4], icon: t.icon || "file" }))
 
-  async function handleSaveNote(data) {
-    if (editingNote === 'new') {
-      const created = await api.notes.create(data)
-      setNotes((ns) => [...ns, created])
-    } else {
-      const updated = await api.notes.update(editingNote.id, data)
-      setNotes((ns) => ns.map((n) => n.id === updated.id ? updated : n))
-    }
-    setEditingNote(null)
-  }
-
-  async function handleDeleteNote(id) {
-    setDeletingId(id)
-    try {
-      await api.notes.remove(id)
-      setNotes((ns) => ns.filter((n) => n.id !== id))
-    } finally {
-      setDeletingId(null)
-    }
-  }
+  async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
+  async function delNote(id) { await api.notes.remove(id); setNotes(n => n.filter(x => x.id !== id)) }
+  const toggleTask = (id) => { const cur = tasks.find(t => t.id === id); if (!cur) return; const nx = !cur.done; setTasks(ts => ts.map(t => t.id === id ? { ...t, done: nx } : t)); api.tasks.update(id, { done: nx }).catch(() => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: cur.done } : t))) }
+  async function saveTask(d) { if (editingTask === 'new') { const r = await api.tasks.create(d); setTasks(t => [...t, r]) } else { const r = await api.tasks.update(editingTask.id, d); setTasks(t => t.map(x => x.id === r.id ? r : x)) } setEditingTask(null) }
+  async function delTask(id) { await api.tasks.remove(id); setTasks(t => t.filter(x => x.id !== id)) }
+  function openStudio(m) { if (m.url) { window.open(m.url, '_blank') } else if (m.module && m.module !== 'agentroom') { setReader({ module: m.module, title: m.title }) } }
 
   return (
-    <div className="panel workspace-panel paper-bg">
+    <div className="panel workspace-panel">
       <div className="panel-scroll">
         <div className="ws-inner">
-          <header className="ws-header ws-hero">
-            <Crab size={72} className="hero-crab" />
-            <div className="ws-title-block">
-              <h1 className="ws-title">
-                <span>Every</span>
-                <span>version,</span>
-                <span>yours</span>
-                <Heart size={20} color="var(--vermillion-l)" fill="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 56, opacity: 0.9 }} />
-              </h1>
-            </div>
-            <div className="ws-header-doodles" onClick={onOpenSettings} style={{ cursor: "pointer" }} title="点这颗星调主题 ✦">
-              <Star size={15} color="var(--vermillion)" style={{ position: "absolute", top: 0, left: 6 }} />
-              <TreasureChest size={70} className="hero-chest" />
-            </div>
+          <header className="ws-header">
+            <Crab size={86} style={{ position: "absolute", left: -6, top: 18 }} />
+            <TreasureChest size={92} style={{ position: "absolute", right: -4, top: 6 }} />
+            <h1 className="ws-title" onClick={onOpenSettings} style={{ cursor: "pointer" }} title="点标题调主题">
+              <span className="t-every">Every</span><span className="t-version">version,</span><span className="t-yours">yours</span>
+            </h1>
+            <Heart size={16} color="var(--brick)" style={{ position: "absolute", right: 96, top: 0 }} />
+            <Star size={14} fill="same" style={{ position: "absolute", left: 92, top: 8 }} />
+            <Sparkle size={16} style={{ position: "absolute", right: 8, top: 78 }} />
           </header>
 
           <div className="search-wrap">
             <div className="search-border" />
-            <span className="search-ico"><Icon name="search" size={19} color="var(--ink-faint)" /></span>
-            <input className="search-box" placeholder="搜索聊天、笔记、任务..." value={query} onChange={(e) => setQuery(e.target.value)} />
-            <button className="search-end"><Icon name="filter" size={19} color="var(--ink-soft)" /></button>
+            <span className="search-ico"><Icon name="search" size={20} color="var(--ink-soft)" /></span>
+            <input className="search-box" placeholder="搜聊天、笔记、任务…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          </div>
+          <Squiggle w={120} color="#e0b15f" style={{ margin: "10px 0 0 6px", display: "block" }} />
+
+          <div className="section-head">
+            <span className="pin-tape"><span className="pin-stub" />置顶笔记</span>
+            <Star size={15} fill="same" style={{ marginLeft: 4 }} />
+            <button className="head-action" onClick={() => setEditingNote('new')}><Icon name="plus" size={17} color="var(--brick)" /> 新建笔记</button>
+          </div>
+          <div className="notes-grid">
+            {notesLoading ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>载入便签…</span>
+              : noteCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有便签，点 + 新建</span>
+              : noteCards.map(n => <StickyNote key={n.id} note={n} onClick={() => setEditingNote(n)} onDelete={() => delNote(n.id)} />)}
           </div>
 
-          <SectionHead title="置顶笔记" doodle={<><Pin size={17} /><Star size={14} fill="var(--note-yellow)" /></>}
-            action={<><Icon name="plus" size={14} color="var(--vermillion)" /> Add note</>}
-            onAction={() => setEditingNote('new')} />
-          <div className="notes-grid pinned-row">
-            {notesLoading
-              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading...</span>
-              : notes.length === 0
-                ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>还没有便签，点 + Add note 新建</span>
-                : notes.map((n) => (
-                  <StickyNote
-                    key={n.id}
-                    note={n}
-                    variant="tape"
-                    onEdit={() => setEditingNote(n)}
-                    onDelete={() => handleDeleteNote(n.id)}
-                    deleting={deletingId === n.id}
-                  />
-                ))
-            }
-          </div>
+          <div className="doodle-strip"><WormCrown size={42} /><SpeechHeart size={24} /><Wave w={34} color="#cda98c" /><Star size={20} fill="same" /><Rabbit size={40} /></div>
 
-          <div className="doodle-strip">
-            <CloudFace size={38} />
-            <Sparkle size={18} color="var(--note-yellow-d)" />
-            <Heart size={17} color="var(--vermillion-l)" />
-            <HeartLegs size={34} />
+          <div className="section-head">
+            <h2>Conversations</h2><Star size={14} fill="same" style={{ marginLeft: 2 }} />
+            <button className="head-action recent-pill" onClick={() => setShowAll(s => !s)}><Icon name="sort" size={16} color="var(--ink)" /> Recent</button>
           </div>
-
-          <SectionHead title="Conversations"
-            action={<span className="chip" style={{ pointerEvents: "none" }}><Icon name="sort" size={14} color="var(--ink-soft)" />Recent</span>} />
           <div className="conv-list">
-            {loading && convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话...</div>)
-              : convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>{q ? "没找到相关对话" : "还没有对话，点右下角新建 ✏"}</div>)
-              : convs.map((c) => (<ConversationRow key={c.id} conv={c} onClick={() => onOpenChat(c)} onRename={() => onRenameConv && onRenameConv(c)} onDelete={() => onDeleteConv && onDeleteConv(c)} />))}
+            {loading && convs.length === 0 ? <div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话…</div>
+              : convs.length === 0 ? <div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>{q ? "没找到相关对话" : "还没有对话，点 New chat 新建"}</div>
+              : convs.map((c, i) => <ConversationRow key={c.id} conv={c} last={i === convs.length - 1} onClick={() => onOpenChat(c)} onDelete={() => onDeleteConv && onDeleteConv(c)} />)}
           </div>
-          {filtered.length > 4 && (<button className="show-more" onClick={() => setShowAll((s) => !s)}>
-            {showAll ? "收起" : "Show more"} <Icon name="chevron" size={15} color="var(--ink-soft)" style={{ transform: showAll ? "rotate(180deg)" : "none" }} /></button>)}
+          {filtered.length > 3 && <button className="show-more" onClick={() => setShowAll(s => !s)}>{showAll ? "收起" : "展开更多"} <Icon name="chevron" size={15} color="var(--ink-soft)" style={{ transform: showAll ? "rotate(180deg)" : "none" }} /></button>}
 
-          <hr className="divider-hand" />
-
-          <SectionHead title="Tasks" doodle={<Icon name="task" size={18} color="var(--ink)" />}
-            action={<><Icon name="plus" size={14} color="var(--vermillion)" /> New task</>}
-            onAction={() => setEditingTask('new')} />
+          <div className="section-head">
+            <h2>Tasks</h2><span className="tasks-check"><Icon name="check" size={16} color="var(--brick)" /></span>
+            <button className="head-action" onClick={() => setEditingTask('new')}><Icon name="plus" size={16} color="var(--brick)" /> New task</button>
+          </div>
           <div className="task-grid">
-            {tasksLoading
-              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading...</span>
-              : tasks.length === 0
-                ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>还没有任务，点 + New task 新建</span>
-                : tasks.map((t) => (<TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => handleDeleteTask(t.id)} />))}
+            {tasksLoading ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>载入任务…</span>
+              : taskCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有任务，点 + New task</span>
+              : taskCards.map(t => <TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => delTask(t.id)} />)}
+          </div>
+          <div className="doodle-strip center-strip"><Squiggle w={50} color="#e0b15f" /><HeartLegs size={36} /><Squiggle w={50} color="#cdd6b8" /></div>
+
+          <div className="section-head"><h2>Quick actions</h2><Star size={14} fill="same" /><Heart size={22} color="#e6a6ab" fill="same" style={{ marginLeft: "auto" }} /></div>
+          <div className="qa-grid">
+            {QUICK_ACTIONS.map(qa => { const act = { qa1: onNewChat, qa2: () => setEditingNote('new'), qa3: () => setEditingTask('new'), qa4: onNewChat }[qa.id]; return <QuickAction key={qa.id} qa={qa} onClick={act || (() => {})} /> })}
           </div>
 
-          <div className="doodle-strip center-strip">
-            <Sparkle size={17} color="var(--note-yellow-d)" />
-            <HeartLegs size={32} />
-            <Sparkle size={17} color="var(--note-green-d)" />
+          <div className="section-head">
+            <h2>Studio</h2><Heart size={16} color="#e6a6ab" fill="same" /><Squiggle w={120} color="#d99a92" style={{ marginLeft: 12, marginBottom: 4 }} />
+            <Rabbit size={40} style={{ position: "absolute", right: 70, top: -26 }} /><Star size={16} fill="same" style={{ position: "absolute", right: 18, top: -8 }} />
           </div>
+          <div className="studio-grid">{STUDIO.map(m => <StudioCard key={m.id} mod={m} onClick={() => openStudio(m)} />)}</div>
 
-          <SectionHead title="Quick actions" doodle={<Sparkle size={17} color="var(--vermillion)" />} />
-          <div className="qa-grid">{QUICK_ACTIONS.map((qa) => {
-            const act = { qa1: () => onNewChat(), qa2: () => setEditingNote('new'), qa3: () => setEditingTask('new'), qa4: () => onNewChat() }[qa.id]
-            return (<QuickAction key={qa.id} qa={qa} onClick={act || (() => {})} />)
-          })}</div>
-
-          <SectionHead title="Studio" doodle={<><Heart size={15} color="var(--vermillion-l)" /><CloudFace size={34} /></>}
-            action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>只读手账 ✦</span>} />
-          <div className="studio-grid coming-grid" style={{ marginBottom: 12 }}>{LIVE_APPS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
-          <div className="studio-grid coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} onClick={() => setStudioModule(m.module)} />))}</div>
-          <div className="studio-grid coming-grid" style={{ marginTop: 12 }}>{STUDIO_LINKS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
+          <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><Heart size={16} color="var(--brick)" /><Star size={16} fill="same" /><Flower size={18} color="#d98c84" /></div>
         </div>
       </div>
-      <button className="fab" onClick={onNewChat} aria-label="新建"><Icon name="pencil" size={26} color="#faf3ec" stroke={1.8} /></button>
-
-      {editingNote !== null && (
-        <NoteEditor
-          note={editingNote === 'new' ? null : editingNote}
-          onSave={handleSaveNote}
-          onClose={() => setEditingNote(null)}
-        />
-      )}
-
-      {editingTask !== null && (
-        <TaskEditor
-          task={editingTask === 'new' ? null : editingTask}
-          onSave={handleSaveTask}
-          onClose={() => setEditingTask(null)}
-        />
-      )}
-
-      {studioModule && (
-        <StudioReader module={studioModule} onClose={() => setStudioModule(null)} />
-      )}
+      {editingNote !== null && <NoteEditor note={editingNote === 'new' ? null : editingNote} onSave={saveNote} onClose={() => setEditingNote(null)} />}
+      {editingTask !== null && <TaskEditor task={editingTask === 'new' ? null : editingTask} onSave={saveTask} onClose={() => setEditingTask(null)} />}
+      {reader && <StudioReader module={reader.module} title={reader.title} onClose={() => setReader(null)} />}
     </div>
   )
 }
