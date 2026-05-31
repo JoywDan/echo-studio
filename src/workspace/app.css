@@ -2309,3 +2309,67 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
   .quick-action .qa-card { min-height: 106px !important; }
   .sticky-body { min-height: 176px !important; padding-bottom: 78px !important; }
 }
+
+/* Refinement: task old boxes off, note frames grow with content */
+.task-card {
+  box-shadow: none !important;
+  filter: none !important;
+  overflow: visible !important;
+}
+
+.task-card::before,
+.task-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.task-card > .doodle-fill {
+  filter: url(#rough-paper-soft) drop-shadow(4px 7px 0 rgba(78, 60, 42, .055));
+}
+
+.task-edge-torn .task-card::after,
+.task-edge-dashed .task-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.sticky-card {
+  min-height: var(--note-min-h, 196px) !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.sticky-body {
+  min-height: var(--note-min-h, 196px) !important;
+  height: auto !important;
+  padding-bottom: 92px !important;
+}
+
+.sticky-list {
+  position: relative;
+  z-index: 8;
+  padding-bottom: 12px !important;
+}
+
+.sticky-list li {
+  min-height: 1.65em;
+  line-height: 1.55 !important;
+}
+
+.sticky .doodle-frame,
+.sticky .doodle-fill {
+  inset: -9px -10px -10px -9px !important;
+}
+
+.sticky .card-sticker {
+  z-index: 9;
+}
+
+.sticky-actions {
+  z-index: 10 !important;
+}
+
+@media (max-width: 480px) {
+  .sticky-card { min-height: var(--note-min-h, 190px) !important; }
+  .sticky-body { min-height: var(--note-min-h, 190px) !important; padding-bottom: 96px !important; }
+}
