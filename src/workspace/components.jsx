@@ -125,7 +125,7 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   const seed = note.id || note.title
   const itemCount = Array.isArray(note.items) ? note.items.length : 0
   const longestItem = Array.isArray(note.items) ? note.items.reduce((m, it) => Math.max(m, String(it || "").length), 0) : 0
-  const noteMinHeight = Math.max(190, 120 + itemCount * 34 + Math.ceil(longestItem / 12) * 18)
+  const noteMinHeight = Math.max(230, 150 + itemCount * 48 + Math.ceil(longestItem / 8) * 26)
   const tintKey = note.tint || pickBy(seed, ["cream", "pink", "sage", "blue", "yellow"])
   const [light, dark] = TINT_MAP[tintKey] || TINT_MAP.yellow
   const sticker = note.sticker || ({ bowl: "cloud", sparkle: "star", flower: "flowerface" }[note.doodle]) || pickBy(seed, ["heart", "cloud", "flower", "flowerface", "panther", "sparkle"])
@@ -136,10 +136,10 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   return (<div className={"sticky sticky-" + variant + " sticky-edge-" + edge + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate ?? pickBy(seed + "rot", [-3, -2, 1, 2, 3])) + "deg", "--note-min-h": noteMinHeight + "px" }} onClick={onClick}>
     {variant === "tape" && <Tape kind={tape} style={{ top: -13, left: pickBy(seed + "left", [-4, 18, 34, 62]) , transform: `rotate(${pickBy(seed + "tr", [-16, -9, 7, 12])}deg)`, width: pickBy(seed + "tw", [66, 78, 92]), height: 28 }} />}
     {variant === "pin" && <span className="sticky-pin"><Pin size={20} /></span>}
-    <CrayonCard tint={tintName} className="sticky-card" frame={hashText(seed)} style={{ "--tint": light, "--edge": dark }}>
+    <CrayonCard tint={tintName} className="sticky-card" frame={hashText(seed)} style={{ "--tint": light, "--edge": dark, minHeight: `var(--note-min-h)` }}>
       <span className="card-scribble card-scribble-a" />
       <span className="card-scribble card-scribble-b" />
-      <div className="sticky-body">
+      <div className="sticky-body" style={{ minHeight: `var(--note-min-h)` }}>
         <div className="sticky-title sticky-title-row">
           <span>{note.title}</span><Sticker name={titleDoodle} size={18} /></div>
         <span className="sticky-rule sticky-underline" style={{ background: "var(--vermillion-l)" }} />

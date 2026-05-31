@@ -2373,3 +2373,50 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
   .sticky-card { min-height: var(--note-min-h, 190px) !important; }
   .sticky-body { min-height: var(--note-min-h, 190px) !important; padding-bottom: 96px !important; }
 }
+
+/* Note height hardening: old notes with long wrapped text must expand the paper */
+.sticky {
+  min-height: calc(var(--note-min-h, 230px) + 22px) !important;
+}
+
+.sticky-card {
+  min-height: var(--note-min-h, 230px) !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.sticky-body {
+  min-height: var(--note-min-h, 230px) !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+  padding-bottom: 112px !important;
+}
+
+.sticky-title-row {
+  min-height: 34px;
+}
+
+.sticky-list {
+  display: block !important;
+  max-height: none !important;
+}
+
+.sticky-list li {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin-bottom: 9px !important;
+  line-height: 1.48 !important;
+}
+
+.sticky-list li:last-child {
+  margin-bottom: 0 !important;
+}
+
+.sticky-list li > *:not(.dot) {
+  min-width: 0;
+}
+
+.sticky .doodle-frame,
+.sticky .doodle-fill {
+  height: calc(100% + 18px) !important;
+}
