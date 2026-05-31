@@ -58,6 +58,9 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
   const [p1, p2, p3] = FRAME_PATHS[frameIdx]
   return (<div className={"crayon-card " + className} onClick={onClick} style={{ "--tint": fill, "--edge": edgeBorder || border, ...style }}>
     <div className="crayon-bg" />
+    <svg className={"doodle-fill frame-" + frameIdx} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d={p1} />
+    </svg>
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
     <svg className={"doodle-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path className="df df-shadow" d={p1} />

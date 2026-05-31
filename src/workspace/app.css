@@ -2122,3 +2122,85 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
 .search-wrap .search-border {
   opacity: .46 !important;
 }
+
+/* Cleaner paper fill: no background diagonals, fill follows the doodle frame path */
+.crayon-card > .crayon-bg {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+.crayon-card > .crayon-bg::before,
+.crayon-card > .crayon-bg::after,
+.sticky-card > .crayon-bg::before,
+.task-card > .crayon-bg::before,
+.qa-card > .crayon-bg::before,
+.studio-inner > .crayon-bg::before {
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+}
+
+.card-scribble,
+.card-scribble-a,
+.card-scribble-b,
+.qa-scribble,
+.studio-scribble,
+.studio-deco-fill {
+  display: none !important;
+}
+
+.doodle-fill {
+  position: absolute;
+  inset: -6px -7px -7px -6px;
+  z-index: 1 !important;
+  pointer-events: none;
+  overflow: visible;
+  filter: url(#rough-paper-soft);
+}
+
+.doodle-fill path {
+  fill: color-mix(in srgb, var(--tint) 78%, rgba(255,253,247,.76) 22%);
+  stroke: none;
+  opacity: .82;
+}
+
+.doodle-frame {
+  z-index: 5 !important;
+}
+
+.crayon-card > .doodle-fill + .hand-border + .doodle-frame,
+.crayon-card > .doodle-fill,
+.crayon-card > .doodle-frame {
+  transform-origin: center;
+}
+
+.sticky-card,
+.task-card,
+.qa-card,
+.studio-inner {
+  background: transparent !important;
+}
+
+.sticky-card > .doodle-fill,
+.task-card > .doodle-fill,
+.qa-card > .doodle-fill,
+.studio-inner > .doodle-fill {
+  opacity: .98;
+}
+
+.sticky-card > .doodle-fill path,
+.task-card > .doodle-fill path,
+.qa-card > .doodle-fill path,
+.studio-inner > .doodle-fill path {
+  fill: color-mix(in srgb, var(--tint) 72%, #fffaf0 28%);
+}
+
+.sticky-edge-torn .doodle-fill path,
+.task-edge-torn .doodle-fill path {
+  opacity: .88;
+}
+
+.workspace-panel .paper-bg::before,
+.chat-panel .paper-bg::before {
+  background-image: none !important;
+}
