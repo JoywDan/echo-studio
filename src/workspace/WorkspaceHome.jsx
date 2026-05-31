@@ -5,6 +5,7 @@ import { QUICK_ACTIONS, COMING_SOON, LIVE_APPS } from './data.jsx'
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
+import StudioReader from './StudioReader.jsx'
 
 export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onRenameConv, onDeleteConv, onOpenSettings, loading }) {
   const [tasks, setTasks] = React.useState([])
@@ -17,6 +18,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const [notesLoading, setNotesLoading] = React.useState(true)
   const [editingNote, setEditingNote] = React.useState(null) // null | 'new' | note object
   const [deletingId, setDeletingId] = React.useState(null)
+  const [studioModule, setStudioModule] = React.useState(null)
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
@@ -146,9 +148,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           })}</div>
 
           <SectionHead title="Studio" doodle={<Heart size={15} color="var(--vermillion-l)" />}
-            action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>陆续上线 ✦</span>} />
+            action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>只读手账 ✦</span>} />
           <div className="coming-grid" style={{ marginBottom: 12 }}>{LIVE_APPS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
-          <div className="coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} />))}</div>
+          <div className="coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} onClick={() => setStudioModule(m.module)} />))}</div>
         </div>
       </div>
       <button className="fab" onClick={onNewChat} aria-label="新建"><Icon name="pencil" size={26} color="#faf3ec" stroke={1.8} /></button>
@@ -167,6 +169,10 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           onSave={handleSaveTask}
           onClose={() => setEditingTask(null)}
         />
+      )}
+
+      {studioModule && (
+        <StudioReader module={studioModule} onClose={() => setStudioModule(null)} />
       )}
     </div>
   )

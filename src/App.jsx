@@ -4,12 +4,9 @@ import Login from './components/Login'
 import VoicePanel from './components/VoicePanel'
 import WechatPanel from './components/WechatPanel'
 import VPSPanel from './components/VPSPanel'
-import DiaryPanel from './components/DiaryPanel'
 import InnerWorldPanel from './components/InnerWorldPanel'
 import TimelinePanel from './components/TimelinePanel'
 import HealthPanel from './components/HealthPanel'
-import TravelPanel from './components/TravelPanel'
-import BrowsePanel from './components/BrowsePanel'
 import WatchPanel from './components/WatchPanel'
 import Sidebar from './components/Sidebar'
 import RoomV3 from './components/RoomV3/RoomV3'
@@ -40,14 +37,6 @@ const STATIONS = [
     objectClass: 'object-server',
   },
   {
-    id: 'diary',
-    name: "Echo's Diary",
-    accent: '#B87B68',
-    label: 'Notebook',
-    detail: '桌边日记',
-    objectClass: 'object-diary',
-  },
-  {
     id: 'inner',
     name: "Echo's Inner World",
     accent: '#a07ab8',
@@ -71,14 +60,6 @@ const STATIONS = [
     detail: '体检室',
     objectClass: 'object-diary',
   },
-  {
-    id: 'travel',
-    name: "Echo's Travel Journal",
-    accent: '#6b8fa0',
-    label: 'Travel Log',
-    detail: '旅行日记',
-    objectClass: 'object-travel',
-  },
 ]
 
 // Placeholder items — not yet functional, reserved for future features
@@ -92,18 +73,14 @@ const PANELS = {
   voice: VoicePanel,
   wechat: WechatPanel,
   vps: VPSPanel,
-  diary: DiaryPanel,
   inner: InnerWorldPanel,
   timeline: TimelinePanel,
   health: HealthPanel,
-  travel: TravelPanel,
-  browse: BrowsePanel,
   watch: WatchPanel,
 }
 
-// Virtual station info for panels that aren't in STATIONS (like browse opened from ph-sticky)
+// Virtual station info for panels that aren't in STATIONS.
 const VIRTUAL_STATIONS = {
-  browse: { id: 'browse', name: "Echo's Window", accent: '#e8a060' },
   watch: { id: 'watch', name: 'Watch Journal', accent: '#d97757' },
 }
 
@@ -131,7 +108,6 @@ export default function App() {
   const [hint, setHint] = useState(null)
   const [revealedStation, setRevealedStation] = useState(null)
   const [clock, setClock] = useState(() => getClockState())
-  const [hasBrowseNew, setHasBrowseNew] = useState(false)
 
   useEffect(() => {
     const isLocal = ['127.0.0.1', 'localhost'].includes(window.location.hostname)
@@ -151,17 +127,6 @@ export default function App() {
 
     return () => window.clearInterval(timer)
   }, [])
-
-  useEffect(() => {
-    if (!authed) return
-    let cancelled = false
-    const check = () => api.browse.hasNew()
-      .then(r => { if (!cancelled) setHasBrowseNew(!!r.hasNew) })
-      .catch(() => {})
-    check()
-    const t = setInterval(check, 5 * 60 * 1000)
-    return () => { cancelled = true; clearInterval(t) }
-  }, [authed])
 
   const handleStationClick = (stationId) => {
     const supportsHover = window.matchMedia('(hover: hover)').matches
@@ -227,11 +192,10 @@ export default function App() {
         <RoomV3
           stations={STATIONS}
           revealedStation={revealedStation}
-          hasBrowseNew={hasBrowseNew}
           onStationClick={handleStationClick}
           onDecorClick={(decorId) => {
             if (decorId === 'ph-sticky') {
-              setPanel('browse')
+              setHint(hint === 'ph-sticky' ? null : 'ph-sticky')
             } else if (decorId === 'ph-cup') {
               setHint(hint === 'ph-cup' ? null : 'ph-cup')
             }
@@ -241,6 +205,11 @@ export default function App() {
           {hint === 'ph-cup' && (
             <div className="decor-hint floating" role="tooltip">
               快捷操作（敬请期待）
+            </div>
+          )}
+          {hint === 'ph-sticky' && (
+            <div className="decor-hint floating" role="tooltip">
+              已搬到 Workspace 的 Studio 手账
             </div>
           )}
         </RoomV3>

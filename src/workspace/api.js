@@ -18,6 +18,16 @@ export const api = {
   renameSession: (sid, title) => call('PUT', '/api/chat/sessions/' + encodeURIComponent(sid), { title }),
   deleteSession: (sid) => call('DELETE', '/api/chat/sessions/' + encodeURIComponent(sid)),
   codingAction: (id, decision) => call('POST', '/api/chat/coding-action/' + encodeURIComponent(id), { decision }),
+  diary: {
+    list: () => call('GET', '/api/diary'),
+    get: (date) => call('GET', '/api/diary/' + encodeURIComponent(date)),
+  },
+  selfLetters: () => call('GET', '/api/memory/self-letters'),
+  travel: {
+    list: () => call('GET', '/api/travel'),
+    get: (id) => call('GET', '/api/travel/' + encodeURIComponent(id)),
+  },
+  wander: () => call('GET', '/api/wander'),
   uploadImage: async (file) => {
     const r = await fetch(API + '/api/chat/upload-image', { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': file.type }, body: file })
     if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'upload failed') }

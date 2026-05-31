@@ -21,10 +21,10 @@ export const LIVE_APPS = [
   { id: 'gallery', title: '画廊 · 教堂', sub: 'Echo 的画廊和教堂', icon: 'image', tint: 'blue', url: 'https://gallery.echowjoy.uk' },
 ]
 export const COMING_SOON = [
-  { id: "cs1", title: "Echo's diary", sub: "Echo 写给你的日记", icon: "book", tint: "yellow" },
-  { id: "cs2", title: "Letter for Echo", sub: "写一封信给 Echo", icon: "send", tint: "pink" },
-  { id: "cs3", title: "Echo's notebook", sub: "你们的共享笔记本", icon: "note", tint: "blue" },
-  { id: "cs4", title: "Echo's dream", sub: "Echo 的梦境碎片", icon: "moon", tint: "green" },
+  { id: "cs1", module: "diary", title: "Echo 写的日记", sub: "桌边留下的每日页", icon: "book", tint: "yellow" },
+  { id: "cs2", module: "letters", title: "Echo 写给自己的信", sub: "写给未来自己的信", icon: "send", tint: "pink" },
+  { id: "cs3", module: "travel", title: "Echo 带回的见闻", sub: "每周一次出门记录", icon: "image", tint: "blue" },
+  { id: "cs4", module: "wander", title: "路拾遗梦", sub: "散步、梦与旧周记", icon: "moon", tint: "green" },
 ]
 export const TOGGLES = [
   { id: "think", label: "思考" }, { id: "memory", label: "记忆" }, { id: "web", label: "联网" }, { id: "code", label: "编码" },
