@@ -25,8 +25,8 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, tint: n.tint || NOTE_TINTS[i % 4], items: n.items || [] }))
-  const taskCards = tasks.map((t, i) => ({ ...t, tint: t.tint || TASK_TINTS[i % 4], icon: t.icon || "file" }))
+  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [] }))
+  const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
   async function delNote(id) { await api.notes.remove(id); setNotes(n => n.filter(x => x.id !== id)) }
@@ -65,7 +65,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="notes-grid">
             {notesLoading ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>载入便签…</span>
               : noteCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有便签，点 + 新建</span>
-              : noteCards.map(n => <StickyNote key={n.id} note={n} onClick={() => setEditingNote(n)} onDelete={() => delNote(n.id)} />)}
+              : noteCards.map(n => <StickyNote key={n.id} note={n} onClick={() => setEditingNote(n)} onEdit={() => setEditingNote(n)} onDelete={() => delNote(n.id)} />)}
           </div>
 
           <div className="doodle-strip"><WormCrown size={42} /><SpeechHeart size={24} /><Wave w={34} color="#cda98c" /><Star size={20} fill="same" /><Rabbit size={40} /></div>

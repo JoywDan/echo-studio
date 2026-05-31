@@ -86,12 +86,15 @@ function SectionHead({ en, zh, underline = "#e6b4ac", action, onAction, doodle }
 }
 
 /* ——— pinned sticky note ——— */
-function StickyNote({ note, onClick, onDelete }) {
+function StickyNote({ note, onClick, onEdit, onDelete }) {
   const t = TINT[note.tint] || TINT.pink;
   const Creature = CREATURE[note.creature];
   return (
     <div className="sticky" style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
-      {onDelete && <button className="sticky-del round-btn sm" onClick={(e) => { e.stopPropagation(); onDelete() }} aria-label="删除"><Icon name="trash" size={13} color="var(--brick)" /></button>}
+      {(onEdit || onDelete) && <div className="sticky-acts">
+        {onEdit && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onEdit() }} aria-label="编辑"><Icon name="edit" size={13} color="var(--ink-soft)" /></button>}
+        {onDelete && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onDelete() }} aria-label="删除"><Icon name="trash" size={13} color="var(--brick)" /></button>}
+      </div>}
       <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />
       <CrayonCard tint={note.tint} className="sticky-card">
         <div className="sticky-body">
