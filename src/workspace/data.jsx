@@ -33,5 +33,5 @@ export const TOGGLES = [
   { id: "think", label: "思考" }, { id: "memory", label: "记忆" }, { id: "web", label: "联网" }, { id: "code", label: "编码" },
 ]
 // fallback avatars cycle for conversation rows
-export const AVATAR_CYCLE = ["cat", "rabbit", "cake", "leaf"]
+export const AVATAR_CYCLE = ["cloud", "heart", "cake", "rabbit", "leaf"]
 export const AVATAR_TINTS = ["#e4c3bc", "#dde3d0", "#f3e6bf", "#d8e0e4"]

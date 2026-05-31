@@ -1,5 +1,5 @@
 import React from 'react'
-import { Heart, Star, Sparkle, Flower, Pin, CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar, Icon } from './doodles.jsx'
+import { Heart, Star, Sparkle, Flower, Pin, CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar, CloudFace, HeartLegs, Icon } from './doodles.jsx'
 
 export const TINT_MAP = {
   yellow: ["var(--note-yellow)", "var(--note-yellow-d)"],
@@ -39,13 +39,13 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
     )}
   </div>)
 }
-const AV = { cat: CatAvatar, rabbit: RabbitAvatar, cake: CakeAvatar, leaf: LeafAvatar }
+const AV = { cat: CatAvatar, rabbit: RabbitAvatar, cake: CakeAvatar, leaf: LeafAvatar, cloud: CloudFace, heart: HeartLegs }
 export function ConversationRow({ conv, onClick, onDelete, onRename }) {
   const Avatar = AV[conv.avatar] || CatAvatar
-  return (<div className={"conv-row" + (conv.active ? " active" : "")}>
+  return (<div className={"conv-row doodle-row" + (conv.active ? " active" : "")}>
     {conv.active && <div className="conv-bg" />}
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 13, flex: 1, minWidth: 0, background: "none", textAlign: "left", padding: 0, position: "relative", zIndex: 1 }}>
-      <Avatar size={44} tint={conv.tint} />
+    <button className="conv-open" onClick={onClick}>
+      <span className="conv-avatar-wrap"><Avatar size={48} tint={conv.tint} /></span>
       <div className="conv-main">
         <div className="conv-top"><span className="conv-title">{conv.title}</span><span className="conv-time">{conv.time}</span></div>
         <div className="conv-preview">{conv.preview}</div>
@@ -59,7 +59,9 @@ export function ConversationRow({ conv, onClick, onDelete, onRename }) {
 }
 export function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const dueColor = task.dueType === "today" ? "var(--vermillion)" : "var(--vermillion-l)"
-  return (<TornCard className="task-card" rotate={0}>
+  const tint = ["task-pink", "task-green", "task-yellow", "task-blue"][Math.abs(String(task.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 4]
+  return (<TornCard className={"task-card " + tint} rotate={0}>
+    <Tape kind={tint === "task-green" ? "stripe" : tint === "task-blue" ? "blue" : "pink"} style={{ top: -11, left: 10, transform: "rotate(-14deg)", width: 58, height: 21 }} />
     <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="toggle">{task.done && <Icon name="check" size={15} color="#fff" />}</button>
     <div className="task-body"><span className={"task-text" + (task.done ? " done" : "")}>{task.text}</span>
       <span className="task-due" style={{ color: dueColor }}>{task.due}</span></div>
@@ -76,12 +78,12 @@ export function QuickAction({ qa, onClick }) {
     check: <Star size={12} color="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 8 }} />,
     star: <Star size={12} color="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 8 }} />,
   }[qa.doodle]
-  return (<button className="quick-action" onClick={onClick}><TornCard className="qa-card">{doodleEl}
+  return (<button className="quick-action" onClick={onClick}><TornCard className="qa-card hand-card">{doodleEl}
     <Icon name={qa.icon} size={26} color="var(--ink)" stroke={1.6} /><span className="qa-label">{qa.label}</span></TornCard></button>)
 }
 export function AppCard({ app }) {
   const [light] = TINT_MAP[app.tint] || TINT_MAP.yellow
-  return (<button className="coming-card" onClick={() => window.open(app.url, '_blank')}><div className="torn">
+  return (<button className="coming-card studio-card" onClick={() => window.open(app.url, '_blank')}><div className="torn">
     <div className="torn-bg" style={{ filter: "url(#rough-paper-soft)", background: "var(--card)" }} />
     <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
       <div className="coming-text"><span className="coming-title">{app.title}</span><span className="coming-sub">{app.sub}</span></div>
@@ -89,7 +91,7 @@ export function AppCard({ app }) {
 }
 export function ComingSoonCard({ mod, onClick }) {
   const [light] = TINT_MAP[mod.tint] || TINT_MAP.yellow
-  return (<button className="coming-card" onClick={onClick}><div className="torn">
+  return (<button className="coming-card studio-card" onClick={onClick}><div className="torn">
     <div className="torn-bg coming-bg" style={{ filter: "url(#rough-paper-soft)" }} />
     <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={mod.icon} size={20} color="var(--ink-soft)" /></span>
       <div className="coming-text"><span className="coming-title">{mod.title}</span><span className="coming-sub">{mod.sub}</span></div>

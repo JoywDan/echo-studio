@@ -72,10 +72,62 @@ export function LeafAvatar({ size = 40, tint = "#dde3d0", style }) {
     <path d="M15 32C15 22 22 15 32 15c0 10-7 17-17 17z" stroke={INK} strokeWidth="1.6" {...sk} fill="#f7f3ec" fillOpacity="0.5" />
     <path d="M18 29c4-4 7-7 11-9.5" stroke={INK} strokeWidth="1.3" {...sk} fill="none" /></svg>)
 }
+export function PantherAvatar({ size = 40, style }) {
+  return (<svg width={size} height={size} viewBox="0 0 48 48" style={style} aria-hidden="true">
+    <path d="M10.5 19.8c-2.2-6.1-.2-11.6 3.2-13.2 1.8 2.8 2.1 6.1 1.4 8.8 3.2-2.3 6.6-3.3 8.9-3.3s5.8 1 8.9 3.3c-.7-2.7-.4-6 1.4-8.8 3.4 1.6 5.4 7.1 3.2 13.2 1.5 2.1 2.2 4.8 2.2 7.8 0 8.2-6.1 13.3-15.7 13.3S8.3 35.8 8.3 27.6c0-3 .7-5.7 2.2-7.8z" {...sk} fill="#221f1b" stroke="#171411" strokeWidth="1.7" />
+    <path d="M13.5 10.4c.2 2.1.6 4.2 1.3 6.1M34.5 10.4c-.2 2.1-.6 4.2-1.3 6.1" stroke="#5b5148" strokeWidth="1.2" {...sk} />
+    <path d="M15.8 25.3c1.8-2.7 5.3-2.6 7.1-.1-1.8 2.1-5.3 2.1-7.1.1zM25.1 25.2c1.8-2.5 5.3-2.6 7.1.1-1.8 2-5.3 2-7.1-.1z" {...sk} fill="#f0df99" stroke="#171411" strokeWidth="0.9" />
+    <circle cx="19.3" cy="25.2" r="1.1" fill="#171411" /><circle cx="28.7" cy="25.2" r="1.1" fill="#171411" />
+    <path d="M22.5 30.2l1.5 1.2 1.5-1.2z" {...sk} fill="#d5a1a0" stroke="#171411" strokeWidth="0.8" />
+    <path d="M24 31.5v2M24 33.5c-1.5 1.2-3.1.8-3.9-.5M24 33.5c1.5 1.2 3.1.8 3.9-.5" stroke="#171411" strokeWidth="1.15" {...sk} />
+    <path d="M14 29.2l-6.2-1.1M14.8 31.7l-5.5 1.7M34 29.2l6.2-1.1M33.2 31.7l5.5 1.7" stroke="#8a8175" strokeWidth="1.05" {...sk} />
+    <path d="M12.5 21.4c2.4-1.7 5-2.4 8-2.1M27.5 19.3c3-.3 5.6.4 8 2.1" stroke="#4b443d" strokeWidth="1.1" {...sk} opacity="0.7" />
+  </svg>)
+}
 export function EchoAvatar({ size = 40, style, online }) {
   return (<div style={{ position: "relative", width: size, height: size, ...style }}>
-    <CatAvatar size={size} tint="#f3ece0" />
-    {online && (<span style={{ position: "absolute", right: 1, bottom: 1, width: size * 0.26, height: size * 0.26, background: "#6fa86b", borderRadius: "50%", border: "2px solid #f7f3ec" }} />)}</div>)
+    <svg width={size} height={size} viewBox="0 0 48 48" style={{ position: "absolute", inset: 0 }} aria-hidden="true">
+      <circle cx="24" cy="24" r="22" fill="#f2dcd7" opacity="0.5" />
+      <circle cx="24" cy="24" r="21" fill="none" stroke="#d8a89d" strokeWidth="2" strokeDasharray="1.6 3.4" />
+    </svg>
+    <PantherAvatar size={size * 0.86} style={{ position: "absolute", left: size * 0.07, top: size * 0.07 }} />
+    {online && (<span style={{ position: "absolute", right: 0, bottom: 1, width: size * 0.22, height: size * 0.22, background: "#52986c", borderRadius: "50%", border: "2px solid #f4ecdb" }} />)}</div>)
+}
+export function Crab({ size = 64, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 72 72" style={style} className={className} aria-hidden="true">
+    <path d="M17 43c-5-2-9 .4-11 4M55 43c5-2 9 .4 11 4M15 37c-5 .5-8 3.5-8 7M57 37c5 .5 8 3.5 8 7" stroke={INK} strokeWidth="1.8" {...sk} />
+    <ellipse cx="36" cy="43" rx="19" ry="14" {...sk} fill="#dd7c4e" stroke={INK} strokeWidth="1.8" />
+    <path d="M17 34c-6-1.8-12-.2-13.1-5.2-.8-3.9 4.7-6.2 8.7-3.7M14.8 30c-4.2-3.2-3.4-7 .2-8.7 2.2 3 4.2 4.5 5.2 6.7M55 34c6-1.8 12-.2 13.1-5.2.8-3.9-4.7-6.2-8.7-3.7M57.2 30c4.2-3.2 3.4-7-.2-8.7-2.2 3-4.2 4.5-5.2 6.7" {...sk} fill="#dd7c4e" stroke={INK} strokeWidth="1.8" />
+    <path d="M28 31V21M44 31V21" stroke={INK} strokeWidth="1.7" {...sk} />
+    <circle cx="28" cy="18" r="5.8" fill="#fff8ea" stroke={INK} strokeWidth="1.6" /><circle cx="44" cy="18" r="5.8" fill="#fff8ea" stroke={INK} strokeWidth="1.6" />
+    <circle cx="29" cy="19" r="2.2" fill={INK} /><circle cx="45" cy="19" r="2.2" fill={INK} />
+    <path d="M30 48c2.8 2.2 6.2 2.2 8.8 0" stroke={INK} strokeWidth="1.6" {...sk} />
+  </svg>)
+}
+export function TreasureChest({ size = 68, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 76 76" style={style} className={className} aria-hidden="true">
+    <rect x="12" y="38" width="52" height="25" rx="4" fill="#b46654" stroke={INK} strokeWidth="1.8" />
+    <path d="M12 42c0-10 8-16 26-16s26 6 26 16v2H12z" {...sk} fill="#c6816a" stroke={INK} strokeWidth="1.8" />
+    <path d="M22 27v36M54 27v36" stroke="#d7ad4a" strokeWidth="3.3" {...sk} />
+    <rect x="33" y="46" width="10" height="9" rx="2" fill="#d7ad4a" stroke={INK} strokeWidth="1.3" />
+    <path d="M30 30c1.1-4 3.4-4.9 4.4-2.2 2-2 4-.8 3.4 2.2zM44 29c1.1-4 3.4-4.9 4.4-2.2 2-2 4-.8 3.4 2.2z" {...sk} fill="#fff7e9" stroke={INK} strokeWidth="1.2" />
+    <path d="M37 19l1.4 3 3.2.4-2.4 2.2.7 3.2-2.9-1.7-2.9 1.7.7-3.2-2.4-2.2 3.2-.4z" {...sk} fill="#f0c65b" stroke="#c89b32" strokeWidth="1" />
+  </svg>)
+}
+export function CloudFace({ size = 38, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 44 40" style={style} className={className} aria-hidden="true">
+    <path d="M10 23c-4 0-6.5-3-5.4-6.3.7-2.9 3.8-4.8 6.8-3.6 1.1-4.1 5.2-6.3 9.1-4.5 3.8-1.4 7.7 1.1 7.9 5 3.5-.2 6.2 2.6 5.5 6-.7 3.4-4 4.5-7.2 3.7z" {...sk} fill="#afbd83" stroke={INK} strokeWidth="1.6" />
+    <circle cx="16" cy="17" r="1.5" fill={INK} /><circle cx="24" cy="17" r="1.5" fill={INK} />
+    <path d="M17 20c1.5 1.3 4 1.3 5.5 0" stroke={INK} strokeWidth="1.3" {...sk} />
+    <circle cx="13" cy="19.5" r="2" fill="#d9958d" opacity="0.45" /><circle cx="27" cy="19.5" r="2" fill="#d9958d" opacity="0.45" />
+  </svg>)
+}
+export function HeartLegs({ size = 34, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 48 48" style={style} className={className} aria-hidden="true">
+    <path d="M24 28C20 24.5 13 20 13 13.6 13 10 15.8 7.6 19 7.6c2.3 0 4 1.4 5 3.2 1-1.8 2.7-3.2 5-3.2 3.2 0 6 2.4 6 6 0 6.4-7 10.9-11 14.4z" {...sk} fill="#ea9a91" stroke={INK} strokeWidth="1.7" />
+    <circle cx="20.5" cy="16" r="1.2" fill={INK} /><circle cx="27.5" cy="16" r="1.2" fill={INK} /><path d="M21.5 19c1.4 1.2 3.6 1.2 5 0" stroke={INK} strokeWidth="1.3" {...sk} />
+    <path d="M9 22c-3 1-4 3-3.5 5M39 22c3 1 4 3 3.5 5M19 30v6M22 31l-2 7M29 30v6M26 31l2 7" stroke={INK} strokeWidth="1.6" {...sk} />
+  </svg>)
 }
 export function Icon({ name, size = 22, color = INK, stroke = 1.7, style, className }) {
   const p = { stroke: color, strokeWidth: stroke, ...sk, fill: "none" }
