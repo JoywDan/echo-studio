@@ -1,7 +1,7 @@
 import React from 'react'
 import { CoffeeCup, Heart, Star, Sparkle, Pin, Icon } from './doodles.jsx'
 import { SectionHead, StickyNote, ConversationRow, TaskCard, QuickAction, ComingSoonCard, AppCard } from './components.jsx'
-import { QUICK_ACTIONS, COMING_SOON, LIVE_APPS } from './data.jsx'
+import { QUICK_ACTIONS, COMING_SOON, LIVE_APPS, STUDIO_LINKS } from './data.jsx'
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
@@ -151,6 +151,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
             action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>只读手账 ✦</span>} />
           <div className="coming-grid" style={{ marginBottom: 12 }}>{LIVE_APPS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
           <div className="coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} onClick={() => setStudioModule(m.module)} />))}</div>
+          <div className="coming-grid" style={{ marginTop: 12 }}>{STUDIO_LINKS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
         </div>
       </div>
       <button className="fab" onClick={onNewChat} aria-label="新建"><Icon name="pencil" size={26} color="#faf3ec" stroke={1.8} /></button>
