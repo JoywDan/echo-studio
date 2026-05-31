@@ -129,6 +129,74 @@ export function HeartLegs({ size = 34, style, className }) {
     <path d="M9 22c-3 1-4 3-3.5 5M39 22c3 1 4 3 3.5 5M19 30v6M22 31l-2 7M29 30v6M26 31l2 7" stroke={INK} strokeWidth="1.6" {...sk} />
   </svg>)
 }
+export function FlowerFace({ size = 28, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 40 40" style={style} className={className} aria-hidden="true">
+    {[0, 60, 120, 180, 240, 300].map((a) => <ellipse key={a} cx="20" cy="9" rx="4.5" ry="6" transform={`rotate(${a} 20 20)`} fill="#e8b6ab" stroke={INK} strokeWidth="1.3" />)}
+    <circle cx="20" cy="20" r="7.5" fill="#f4e3b4" stroke={INK} strokeWidth="1.3" />
+    <circle cx="17.5" cy="19.5" r="1.1" fill={INK} /><circle cx="22.5" cy="19.5" r="1.1" fill={INK} />
+    <path d="M18 22.2c1.2 1.1 2.8 1.1 4 0" stroke={INK} strokeWidth="1.2" {...sk} />
+  </svg>)
+}
+export function BearWave({ size = 40, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 44 44" style={style} className={className} aria-hidden="true">
+    <circle cx="12" cy="13" r="4" fill="#f0e2cc" stroke={INK} strokeWidth="1.4" />
+    <circle cx="32" cy="13" r="4" fill="#f0e2cc" stroke={INK} strokeWidth="1.4" />
+    <circle cx="22" cy="24" r="13" fill="#f3e7d3" stroke={INK} strokeWidth="1.4" />
+    <path d="M8 16l-3-5M5 11c2-2 5-1 5 2" stroke={INK} strokeWidth="1.4" {...sk} />
+    <circle cx="18" cy="23" r="1.5" fill={INK} /><circle cx="26" cy="23" r="1.5" fill={INK} />
+    <ellipse cx="22" cy="27" rx="3" ry="2.2" fill="#e7d2b0" stroke={INK} strokeWidth="1" />
+    <circle cx="22" cy="26" r="1" fill={INK} />
+    <path d="M16 36c2-2 4-3 7-1" stroke="#c98a7c" strokeWidth="2" {...sk} />
+  </svg>)
+}
+export function PainterBlob({ size = 40, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 44 44" style={style} className={className} aria-hidden="true">
+    <path d="M8 18c-2-4 2-8 7-8 1-3 8-3 9 0 5 0 8 4 6 8 2 3-1 7-5 6H12c-4 1-6-3-4-6z" fill="#f3e0d0" stroke={INK} strokeWidth="1.4" {...sk} />
+    <ellipse cx="14.5" cy="11" rx="9" ry="2.5" fill="#caa18c" stroke={INK} strokeWidth="1.4" />
+    <path d="M30 16l5-5M35 11l1-2" stroke={INK} strokeWidth="1.4" {...sk} />
+    <circle cx="14" cy="17" r="1.4" fill={INK} /><circle cx="22" cy="17" r="1.4" fill={INK} />
+    <path d="M15 20c1.5 1.3 4 1.3 5.5 0" stroke={INK} strokeWidth="1.2" {...sk} />
+    <circle cx="35" cy="9" r="1.6" fill="#d36a6a" />
+  </svg>)
+}
+export function WriterPink({ size = 42, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 46 40" style={style} className={className} aria-hidden="true">
+    <path d="M4 34c4-4 14-5 20-2" stroke="#c9a98c" strokeWidth="1.4" {...sk} />
+    <path d="M6 30c2-9 16-9 18 0z" fill="#f3ece0" stroke={INK} strokeWidth="1.4" {...sk} />
+    <circle cx="13" cy="16" r="9" fill="#f1ddd6" stroke={INK} strokeWidth="1.4" />
+    <path d="M5 14c0-5 5-8 8-7M21 14c0-5-5-8-8-7" fill="#eeb6b8" stroke={INK} strokeWidth="1.4" {...sk} />
+    <path d="M22 30l8-4 2 3-8 4z" fill="#d8b98a" stroke={INK} strokeWidth="1.4" {...sk} />
+    <circle cx="10" cy="16" r="1.3" fill={INK} /><circle cx="16" cy="16" r="1.3" fill={INK} />
+    <path d="M11 19c1 1 3 1 4 0" stroke={INK} strokeWidth="1.2" {...sk} />
+  </svg>)
+}
+export function CatCamera({ size = 42, style, className }) {
+  return (<svg width={size} height={size} viewBox="0 0 46 40" style={style} className={className} aria-hidden="true">
+    <path d="M8 12l2-5 3 4zM18 11l3-4 1 5z" fill="#f3ece2" stroke={INK} strokeWidth="1.4" {...sk} />
+    <circle cx="15" cy="18" r="10" fill="#f5efe6" stroke={INK} strokeWidth="1.4" />
+    <rect x="22" y="16" width="16" height="12" rx="2.5" fill="#cdbfa8" stroke={INK} strokeWidth="1.4" />
+    <circle cx="30" cy="22" r="3.6" fill="#e6ddca" stroke={INK} strokeWidth="1.2" />
+    <circle cx="12" cy="18" r="1.3" fill={INK} /><circle cx="18" cy="18" r="1.3" fill={INK} />
+    <path d="M13.5 21c.8.8 2.2.8 3 0M24 16l3-3h6l3 3" stroke={INK} strokeWidth="1.2" {...sk} />
+  </svg>)
+}
+export function BlobTrio({ size = 56, style, className }) {
+  const cfg = [[12, 22, "#eeb6b8"], [27, 20, "#aebd86"], [42, 22, "#e8c98c"]]
+  return (<svg width={size} height={size * 0.62} viewBox="0 0 56 34" style={style} className={className} aria-hidden="true">
+    {cfg.map(([x, y, c], i) => <g key={i} stroke={INK} strokeWidth="1.3" {...sk}>
+      <circle cx={x} cy={y} r="8" fill={c} />
+      <circle cx={x - 2.5} cy={y - 1} r="1.2" fill={INK} /><circle cx={x + 2.5} cy={y - 1} r="1.2" fill={INK} />
+      <path d={`M${x - 2} ${y + 2.5}c1.3 1.2 2.7 1.2 4 0`} />
+    </g>)}
+  </svg>)
+}
+export function SleepCloud({ size = 50, style, className }) {
+  return (<svg width={size} height={size * 0.62} viewBox="0 0 52 32" style={style} className={className} aria-hidden="true">
+    <ellipse cx="26" cy="27" rx="22" ry="4.5" fill="#bcd0d6" stroke={INK} strokeWidth="1.2" />
+    <path d="M12 22c-4 0-6-3-5-6 0-3 4-5 7-3 1-4 6-5 9-2 3-1 7 1 6 5 3 0 4 4 1 6z" fill="#cdd6b8" stroke={INK} strokeWidth="1.4" {...sk} />
+    <path d="M15 17c1.2 1 3 1 4 0M22 17c1.2 1 3 1 4 0" stroke={INK} strokeWidth="1.2" {...sk} />
+  </svg>)
+}
 export function Icon({ name, size = 22, color = INK, stroke = 1.7, style, className }) {
   const p = { stroke: color, strokeWidth: stroke, ...sk, fill: "none" }
   const paths = {

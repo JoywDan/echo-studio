@@ -1,5 +1,10 @@
 import React from 'react'
-import { Heart, Star, Sparkle, Flower, Pin, CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar, CloudFace, HeartLegs, Icon } from './doodles.jsx'
+import {
+  Heart, Star, Sparkle, Flower, FlowerFace, Pin,
+  CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar,
+  CloudFace, HeartLegs, BearWave, PainterBlob, WriterPink,
+  CatCamera, BlobTrio, SleepCloud, Icon
+} from './doodles.jsx'
 
 export const TINT_MAP = {
   yellow: ["var(--note-yellow)", "var(--note-yellow-d)"],
@@ -30,6 +35,27 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
 }
 export function Tape({ kind = "warm", style, className = "" }) {
   return <span className={"tape " + kind + " " + className} style={style} aria-hidden="true" />
+}
+export function Paperclip({ size = 30, color = "#b39a86", style }) {
+  return (<svg className="clip" width={size} height={size} viewBox="0 0 30 30" style={style} aria-hidden="true">
+    <path d="M9 22V11a4 4 0 0 1 8 0v12a6 6 0 0 1-12 0V12" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>)
+}
+export function MiniIcon({ name, size = 30, style }) {
+  const I = "#5a4e42"
+  const s = { stroke: I, strokeWidth: 1.5, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }
+  const m = {
+    monitor: <><rect x="4" y="4" width="20" height="15" rx="2" {...s} fill="#cfd8de" /><path d="M10 12l3 3 5-6" {...s} stroke="#b1492f" /><path d="M11 19h6M9 23h10" {...s} /><path d="M21 2l1 2.5 2.5 .5-2 1.8.5 2.5L21 8l-2.5 1.3.5-2.5-2-1.8 2.5-.5z" fill="#e6c45f" stroke="#d6a83e" strokeWidth="0.8" /></>,
+    pic: <><rect x="4" y="5" width="20" height="15" rx="2" {...s} fill="#cdd8de" /><circle cx="9" cy="10" r="1.6" fill="#e8c45f" stroke="none" /><path d="M5 18l5-5 3 3 4-4 6 6" {...s} /><circle cx="13" cy="12" r="1" fill="#3a3027" stroke="none" /></>,
+    book: <><path d="M14 6c-3-2-7-2-10 0v16c3-2 7-2 10 0M14 6c3-2 7-2 10 0v16c-3-2-7-2-10 0M14 6v16" {...s} fill="#f1e6c4" /></>,
+    envelope: <><rect x="4" y="6" width="20" height="14" rx="2" {...s} fill="#f3ece0" /><path d="M4 8l10 7 10-7" {...s} /><path d="M14 14.5c.5-.8 1.8-.5 1.8.4 0 .8-1.8 1.9-1.8 1.9s-1.8-1.1-1.8-1.9c0-.9 1.3-1.2 1.8-.4z" fill="#b1492f" stroke="none" /></>,
+    moon: <><path d="M21 15A8 8 0 0 1 10 4 8.5 8.5 0 1 0 21 15z" {...s} fill="#f1e2b0" /></>,
+    river: <><path d="M6 4c-3 4 4 7 1 11s2 7-1 11" {...s} stroke="#8fa6c0" /><path d="M11 4c-3 4 4 7 1 11s2 7-1 11" {...s} stroke="#a7bcc6" /></>,
+    task: <><rect x="5" y="4" width="18" height="18" rx="2" {...s} fill="#e9e0d2" /><path d="M9 12l3 3 6-7" {...s} stroke="#b1492f" /></>,
+    image: <><rect x="4" y="5" width="20" height="15" rx="2" {...s} fill="#cdd8de" /><circle cx="9" cy="10" r="1.6" fill="#e8c45f" /><path d="M5 18l5-5 4 3 3-3 5 5" {...s} /></>,
+    send: <><path d="M4 14l20-9-8 20-3-8z" {...s} fill="#f3ece0" /><path d="M13 17L24 5" {...s} /></>,
+  }
+  return <svg width={size} height={size} viewBox="0 0 28 28" style={style} aria-hidden="true">{m[name] || m.task}</svg>
 }
 export function SectionHead({ title, doodle, action, onAction }) {
   return (<div className="section-head"><h2>{title}</h2>{doodle}
@@ -110,25 +136,47 @@ export function QuickAction({ qa, onClick }) {
     </CrayonCard>
   </button>)
 }
+const STUDIO_VISUALS = {
+  cc: { edge: "pink", icon: "monitor", creature: BearWave, deco: ["heart", "arrow"] },
+  gallery: { edge: "blue", icon: "pic", creature: PainterBlob, deco: ["flower", "star"] },
+  diary: { edge: "cream", icon: "book", creature: WriterPink, clip: true, deco: ["star", "heart", "flower"] },
+  letters: { edge: "pink", icon: "envelope", creature: null, deco: ["plane", "star"] },
+  travel: { edge: "blue", icon: "pic", creature: CatCamera, clip: true, deco: ["flower"] },
+  wander: { edge: "sage", icon: "moon", creature: SleepCloud, deco: ["star"] },
+  "agent-room": { edge: "pink", icon: "send", creature: BlobTrio, clip: true, deco: ["star", "heart"] },
+  river: { edge: "sage", icon: "river", creature: null, deco: ["flowerface", "star"], english: true },
+}
+function studioVisual(item) {
+  return STUDIO_VISUALS[item.module] || STUDIO_VISUALS[item.id] || STUDIO_VISUALS.river
+}
+function StudioCardShell({ item, badge, onClick }) {
+  const visual = studioVisual(item)
+  const Creature = visual.creature
+  return (<button className="studio-card" onClick={onClick}>
+    {visual.clip && <Paperclip size={30} color="#b39a86" style={{ top: -14, right: 22, transform: "rotate(12deg)" }} />}
+    <CrayonCard tint="pink" edge={visual.edge} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.54)" }}>
+      <span className="studio-deco-fill" style={{ "--scol": `var(--${visual.edge === "sage" ? "sage" : visual.edge === "blue" ? "blue" : visual.edge === "cream" ? "cream" : "pink"}-edge)` }} />
+      {visual.icon && <span className="studio-icon"><MiniIcon name={visual.icon} size={34} /></span>}
+      <span className={"studio-title" + (visual.english ? " en" : "")}>{item.title}</span>
+      {item.sub && <span className="studio-subtitle">{item.sub}</span>}
+      {Creature && <Creature size={Creature === BlobTrio ? 58 : 42} style={{ position: "absolute", left: 12, bottom: 10 }} />}
+      <span className="studio-doodles">
+        {visual.deco.includes("heart") && <Heart size={16} color="var(--brick)" fill="same" style={{ position: "absolute", right: 14, top: 12 }} />}
+        {visual.deco.includes("star") && <Star size={15} fill="same" style={{ position: "absolute", right: 16, top: 30 }} />}
+        {visual.deco.includes("flower") && <Flower size={16} color="#d98c84" style={{ position: "absolute", right: 18, top: 16 }} />}
+        {visual.deco.includes("flowerface") && <FlowerFace size={26} style={{ position: "absolute", right: 12, bottom: 12 }} />}
+        {visual.deco.includes("arrow") && <span className="studio-arrow">↗</span>}
+        {visual.deco.includes("plane") && <span className="studio-plane">✈</span>}
+      </span>
+      <span className="coming-badge studio-badge">{badge}</span>
+    </CrayonCard>
+  </button>)
+}
 export function AppCard({ app }) {
-  const [light] = TINT_MAP[app.tint] || TINT_MAP.yellow
-  return (<button className="coming-card studio-card" onClick={() => window.open(app.url, '_blank')}>
-    <CrayonCard tint={app.tint === "green" ? "sage" : app.tint === "blue" ? "blue" : app.tint === "yellow" ? "cream" : "pink"} className="studio-inner" dbl={false} style={{ "--tint": "rgba(255,253,247,0.58)" }}>
-    <span className="studio-deco-fill" />
-    <div className="coming-body"><span className="coming-icon studio-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
-      <div className="coming-text"><span className="coming-title">{app.title}</span><span className="coming-sub">{app.sub}</span></div>
-      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>打开 ↗</span></div>
-    </CrayonCard></button>)
+  return <StudioCardShell item={app} badge="打开 ↗" onClick={() => window.open(app.url, '_blank')} />
 }
 export function ComingSoonCard({ mod, onClick }) {
-  const [light] = TINT_MAP[mod.tint] || TINT_MAP.yellow
-  return (<button className="coming-card studio-card" onClick={onClick}>
-    <CrayonCard tint={mod.tint === "green" ? "sage" : mod.tint === "blue" ? "blue" : mod.tint === "yellow" ? "cream" : "pink"} className="studio-inner" dbl={false} style={{ "--tint": "rgba(255,253,247,0.58)" }}>
-    <span className="studio-deco-fill" />
-    <div className="coming-body"><span className="coming-icon studio-icon" style={{ background: light }}><Icon name={mod.icon} size={20} color="var(--ink-soft)" /></span>
-      <div className="coming-text"><span className="coming-title">{mod.title}</span><span className="coming-sub">{mod.sub}</span></div>
-      <span className="coming-badge">Coming soon</span></div>
-    </CrayonCard></button>)
+  return <StudioCardShell item={mod} badge="Coming soon" onClick={onClick} />
 }
 export function WashiToggle({ on, onChange, label, disabled }) {
   return (<button className="wtoggle-wrap" onClick={() => !disabled && onChange(!on)} style={disabled ? { opacity: 0.4, pointerEvents: "none" } : undefined}>
