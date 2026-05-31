@@ -5,6 +5,23 @@ import { TOGGLES } from './data.jsx'
 import { api, uploadsUrl } from './api.js'
 
 function now() { const d = new Date(); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") }
+const DEFAULT_TOGGLES = { think: false, memory: true, web: false, code: false }
+const settingsKey = (sessionId) => `ws_chat_settings_${sessionId}`
+
+function readSessionSettings(sessionId) {
+  if (!sessionId) return null
+  try {
+    return JSON.parse(localStorage.getItem(settingsKey(sessionId)) || 'null')
+  } catch {
+    return null
+  }
+}
+
+function writeSessionSettings(sessionId, patch) {
+  if (!sessionId) return
+  const prev = readSessionSettings(sessionId) || {}
+  localStorage.setItem(settingsKey(sessionId), JSON.stringify({ ...prev, ...patch }))
+}
 
 function ThinkingBlock({ text }) {
   const [open, setOpen] = React.useState(false)
@@ -73,11 +90,11 @@ function Message({ msg, onImage, onDecide }) {
 export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   const [messages, setMessages] = React.useState([])
   const [model, setModel] = React.useState('')
-  const [toggles, setToggles] = React.useState({ think: false, memory: true, web: false, code: false })
+  const [toggles, setToggles] = React.useState(DEFAULT_TOGGLES)
   const [draft, setDraft] = React.useState("")
   const [lightbox, setLightbox] = React.useState(null)
   const [sending, setSending] = React.useState(false)
-  const [toolbarOpen, setToolbarOpen] = React.useState(() => localStorage.getItem('ws_toolbar_open') === '1')
+  const [toolbarOpen, setToolbarOpen] = React.useState(false)
   const [pendingFile, setPendingFile] = React.useState(null)
   const scrollRef = React.useRef(null)
   const fileInputRef = React.useRef(null)
@@ -88,14 +105,24 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   const summaryToggles = [toggles.think && '思考', toggles.memory && '记忆', toggles.web && '联网', toggles.code && '编码'].filter(Boolean).join('·')
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
 
-  // init model when models load
+  // Load per-session model + toggles. Each chat keeps its own little control panel.
   React.useEffect(() => {
-    if (!models.length) return
-    const saved = sessionId && localStorage.getItem('ws_model_' + sessionId)
-    const def = (saved && models.some(m => m.id === saved)) ? saved : (localStorage.getItem('ws_model_default') || models[0].id)
-    setModel(def)
-    const m = models.find(x => x.id === def)
-    setToggles((t) => ({ ...t, think: m ? !!m.defaultThinking : false }))
+    if (!models.length || !sessionId) return
+    const saved = readSessionSettings(sessionId)
+    const legacyModel = localStorage.getItem('ws_model_' + sessionId)
+    const savedModel = saved && saved.model
+    const nextModel = [savedModel, legacyModel, models[0].id].find((id) => id && models.some((m) => m.id === id))
+    const m = models.find((x) => x.id === nextModel)
+    const nextToggles = {
+      ...DEFAULT_TOGGLES,
+      think: m ? !!m.defaultThinking : false,
+      ...(saved && saved.toggles ? saved.toggles : {}),
+    }
+    if (m && !m.supportsThinking) nextToggles.think = false
+    setModel(nextModel)
+    setToggles(nextToggles)
+    setToolbarOpen(!!(saved && saved.toolbarOpen))
+    if (!saved) writeSessionSettings(sessionId, { model: nextModel, toggles: nextToggles, toolbarOpen: false })
   }, [models, sessionId])
 
   // load history when session changes
@@ -119,10 +146,21 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
 
   React.useEffect(() => { scrollToEnd(false) }, [])
   const onModelChange = (id) => {
-    setModel(id); if (sessionId) localStorage.setItem('ws_model_' + sessionId, id); localStorage.setItem('ws_model_default', id)
-    const m = models.find(x => x.id === id); setToggles((t) => ({ ...t, think: m ? !!m.defaultThinking : false }))
+    setModel(id)
+    const m = models.find(x => x.id === id)
+    const nextToggles = { ...toggles, think: m ? !!m.defaultThinking : false }
+    setToggles(nextToggles)
+    writeSessionSettings(sessionId, { model: id, toggles: nextToggles, toolbarOpen })
+    if (sessionId) localStorage.setItem('ws_model_' + sessionId, id) // one-time compatibility for older saved sessions
   }
-  const flipToggle = (id) => { if (id === 'think' && curModel && !curModel.supportsThinking) return; setToggles((t) => ({ ...t, [id]: !t[id] })) }
+  const flipToggle = (id) => {
+    if (id === 'think' && curModel && !curModel.supportsThinking) return
+    setToggles((t) => {
+      const next = { ...t, [id]: !t[id] }
+      writeSessionSettings(sessionId, { model, toggles: next, toolbarOpen })
+      return next
+    })
+  }
 
   const pickFile = (e, kind) => { const f = e.target.files[0]; if (!f) return; const lim = kind === 'image' ? 5 : 10; if (f.size > lim * 1024 * 1024) { alert(`文件太大，最大${lim}MB`); return } setPendingFile({ file: f, kind }); e.target.value = '' }
 
@@ -173,7 +211,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
             <button className="icon-btn" onClick={onBack}><Icon name="menu" size={20} color="var(--ink-soft)" /></button></div>
         </header>
         <div className="chat-toolbar">
-          <button className={"toolbar-toggle" + (toolbarOpen ? " open" : "")} onClick={() => { const v = !toolbarOpen; setToolbarOpen(v); localStorage.setItem('ws_toolbar_open', v ? '1' : '0') }}>
+          <button className={"toolbar-toggle" + (toolbarOpen ? " open" : "")} onClick={() => { const v = !toolbarOpen; setToolbarOpen(v); writeSessionSettings(sessionId, { model, toggles, toolbarOpen: v }) }}>
             <Heart size={12} color="var(--vermillion-l)" fill="var(--vermillion-l)" />
             <span className="tt-text">{toolbarOpen ? '收起设置' : ((curModel ? curModel.label : '模型') + (summaryToggles ? ' · ' + summaryToggles : ''))}</span>
             <span className="tt-chev"><Icon name="chevron" size={15} color="var(--vermillion)" /></span>
