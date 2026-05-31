@@ -34,6 +34,11 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
   return (<div className={"crayon-card " + className} onClick={onClick} style={{ "--tint": fill, "--edge": edgeBorder || border, ...style }}>
     <div className="crayon-bg" />
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
+    <svg className={"doodle-frame" + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path className="df df1" d="M6 11 C16 5 31 8 45 7 C61 6 74 5 91 10 C96 24 92 35 94 49 C96 64 95 78 88 91 C72 96 58 92 43 94 C29 96 15 95 7 88 C3 73 8 62 6 47 C4 33 2 21 6 11Z" />
+      <path className="df df2" d="M9 14 C23 9 35 12 50 10 C66 8 78 9 89 14 C92 28 89 40 91 54 C93 68 91 80 85 88 C69 91 55 88 40 90 C27 92 17 90 10 84 C8 71 11 59 9 45 C7 31 6 22 9 14Z" />
+      {dbl && <path className="df df3" d="M12 17 C25 14 39 16 52 14 C67 13 78 14 86 18 C88 31 86 43 88 56 C89 69 86 78 81 84 C67 87 54 84 41 86 C29 87 20 85 14 80 C12 68 15 57 13 44 C11 32 10 24 12 17Z" />}
+    </svg>
     {children}
   </div>)
 }

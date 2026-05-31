@@ -1885,3 +1885,118 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
   .studio-inner { min-height: 164px !important; }
   .studio-title { font-size: 22px !important; }
 }
+
+/* Hand-drawn frames: replace regular UI borders with loose doodle outlines */
+.crayon-card {
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.crayon-card > .hand-border {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.crayon-card > .hand-border::after {
+  border-color: transparent !important;
+}
+
+.crayon-card > .crayon-bg {
+  inset: 3px 4px 4px 3px !important;
+  border-radius: 18px 11px 22px 13px !important;
+  clip-path: polygon(3% 7%, 12% 3%, 28% 5%, 43% 3%, 60% 5%, 76% 3%, 94% 8%, 97% 23%, 94% 38%, 97% 54%, 95% 72%, 89% 93%, 72% 96%, 56% 93%, 41% 97%, 24% 94%, 7% 89%, 3% 70%, 6% 53%, 3% 36%, 5% 20%);
+}
+
+.doodle-frame {
+  position: absolute;
+  inset: -5px -6px -6px -5px;
+  z-index: 6;
+  pointer-events: none;
+  overflow: visible;
+  filter: url(#crayon-edge-2);
+}
+
+.doodle-frame .df {
+  fill: none;
+  stroke: var(--edge);
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.doodle-frame .df1 {
+  stroke-width: 2.8px;
+  opacity: .92;
+  stroke-dasharray: 4.5 1.6 11 2.4;
+}
+
+.doodle-frame .df2 {
+  stroke-width: 1.7px;
+  opacity: .62;
+  transform: translate(.8px, -1px) rotate(.35deg);
+  transform-origin: center;
+}
+
+.doodle-frame .df3 {
+  stroke-width: 1.15px;
+  opacity: .36;
+  stroke-dasharray: 2.2 3.2;
+  transform: translate(-1.2px, 1px) rotate(-.45deg);
+  transform-origin: center;
+}
+
+.sticky-card,
+.task-card,
+.qa-card,
+.studio-inner {
+  border-radius: 0 !important;
+  box-shadow: 6px 7px 0 rgba(69,58,51,.07), 0 10px 18px rgba(88,65,45,.08) !important;
+}
+
+.sticky-edge-dashed .doodle-frame .df1,
+.task-edge-dashed .doodle-frame .df1 {
+  stroke-dasharray: 2.5 3.5 !important;
+}
+
+.sticky-edge-torn .crayon-card > .crayon-bg,
+.task-edge-torn .crayon-card > .crayon-bg {
+  clip-path: polygon(2% 8%, 11% 4%, 22% 7%, 35% 3%, 47% 6%, 61% 4%, 72% 7%, 86% 3%, 96% 9%, 93% 25%, 97% 38%, 94% 51%, 98% 65%, 92% 82%, 87% 93%, 74% 90%, 62% 96%, 49% 92%, 36% 97%, 25% 91%, 12% 94%, 4% 86%, 7% 72%, 3% 59%, 6% 43%, 3% 28%);
+}
+
+.sticky-edge-torn .doodle-frame .df1,
+.task-edge-torn .doodle-frame .df1 {
+  stroke-dasharray: 7 2 2 2 12 3 !important;
+}
+
+.quick-action .doodle-frame,
+.studio-card .doodle-frame {
+  inset: -7px -8px -8px -7px;
+}
+
+.search-border {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.search-wrap::after {
+  content: "";
+  position: absolute;
+  inset: -8px -9px;
+  pointer-events: none;
+  border: 3px solid rgba(70, 58, 48, .55);
+  border-radius: 42% 58% 50% 50% / 44% 45% 55% 56%;
+  filter: url(#crayon-edge-2);
+  clip-path: polygon(2% 30%, 5% 18%, 18% 10%, 37% 11%, 55% 8%, 77% 10%, 94% 17%, 98% 35%, 96% 62%, 90% 82%, 73% 91%, 51% 89%, 31% 92%, 12% 86%, 3% 69%);
+}
+
+.head-action,
+.chip,
+.toolbar-toggle,
+.model-trigger,
+.input-field,
+.input-icon-btn,
+.send-btn,
+.fab {
+  border-radius: 42% 58% 48% 52% / 55% 45% 55% 45% !important;
+}
