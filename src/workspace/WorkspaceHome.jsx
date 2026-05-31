@@ -16,7 +16,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
   const [notes, setNotes] = React.useState([])
   const [notesLoading, setNotesLoading] = React.useState(true)
-  const [editingNote, setEditingNote] = React.useState(null) // null | 'new' | note object
+  const [editingNote, setEditingNote] = React.useState(null)
   const [deletingId, setDeletingId] = React.useState(null)
   const [studioModule, setStudioModule] = React.useState(null)
 
@@ -97,7 +97,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="search-wrap">
             <div className="search-border" />
             <span className="search-ico"><Icon name="search" size={19} color="var(--ink-faint)" /></span>
-            <input className="search-box" placeholder="Search chats, notes, tasks..." value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className="search-box" placeholder="搜索聊天、笔记、任务..." value={query} onChange={(e) => setQuery(e.target.value)} />
             <button className="search-end"><Icon name="filter" size={19} color="var(--ink-soft)" /></button>
           </div>
 
@@ -106,7 +106,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
             onAction={() => setEditingNote('new')} />
           <div className="notes-grid pinned-row">
             {notesLoading
-              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading…</span>
+              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading...</span>
               : notes.length === 0
                 ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>还没有便签，点 + Add note 新建</span>
                 : notes.map((n) => (
@@ -132,8 +132,8 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <SectionHead title="Conversations"
             action={<span className="chip" style={{ pointerEvents: "none" }}><Icon name="sort" size={14} color="var(--ink-soft)" />Recent</span>} />
           <div className="conv-list">
-            {loading && convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话…</div>)
-              : convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>{q ? "没找到相关对话" : "还没有对话，点右下角新建 ✏️"}</div>)
+            {loading && convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话...</div>)
+              : convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>{q ? "没找到相关对话" : "还没有对话，点右下角新建 ✏"}</div>)
               : convs.map((c) => (<ConversationRow key={c.id} conv={c} onClick={() => onOpenChat(c)} onRename={() => onRenameConv && onRenameConv(c)} onDelete={() => onDeleteConv && onDeleteConv(c)} />))}
           </div>
           {filtered.length > 4 && (<button className="show-more" onClick={() => setShowAll((s) => !s)}>
@@ -146,7 +146,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
             onAction={() => setEditingTask('new')} />
           <div className="task-grid">
             {tasksLoading
-              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading…</span>
+              ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading...</span>
               : tasks.length === 0
                 ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>还没有任务，点 + New task 新建</span>
                 : tasks.map((t) => (<TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => handleDeleteTask(t.id)} />))}

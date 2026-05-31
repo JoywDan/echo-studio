@@ -3,7 +3,7 @@ import {
   Heart, Star, Sparkle, Flower, FlowerFace, Pin,
   CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar,
   CloudFace, HeartLegs, BearWave, PainterBlob, WriterPink,
-  CatCamera, BlobTrio, SleepCloud, Icon
+  CatCamera, BlobTrio, SleepCloud, PantherAvatar, Icon
 } from './doodles.jsx'
 
 export const TINT_MAP = {
@@ -11,6 +11,10 @@ export const TINT_MAP = {
   blue:   ["var(--note-blue)",   "var(--note-blue-d)"],
   pink:   ["var(--note-pink)",   "var(--note-pink-d)"],
   green:  ["var(--note-green)",  "var(--note-green-d)"],
+  cream:  ["var(--cream)",       "var(--cream-edge)"],
+  sage:   ["var(--sage)",        "var(--sage-edge)"],
+  rose:   ["var(--pink)",        "var(--pink-edge)"],
+  kraft:  ["#e8d8bf",            "#b99d78"],
 }
 export function TornCard({ children, bg = "var(--card)", rotate = 0, style, className = "", onClick, soft = true }) {
   return (<div className={"torn " + className} onClick={onClick} style={{ transform: rotate ? `rotate(${rotate}deg)` : undefined, ...style }}>
@@ -35,6 +39,22 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
 }
 export function Tape({ kind = "warm", style, className = "" }) {
   return <span className={"tape " + kind + " " + className} style={style} aria-hidden="true" />
+}
+export function Sticker({ name = "sparkle", size = 30, style, className = "" }) {
+  const common = { style, className: "sticker sticker-" + name + " " + className }
+  const map = {
+    sparkle: <Sparkle size={size} color="var(--vermillion-l)" {...common} />,
+    flower: <Flower size={size} color="#d98c84" {...common} />,
+    star: <Star size={size} color="#d7a742" fill="#f3d47c" {...common} />,
+    heart: <HeartLegs size={size} {...common} />,
+    cloud: <CloudFace size={size} {...common} />,
+    flowerface: <FlowerFace size={size} {...common} />,
+    panther: <PantherAvatar size={size} {...common} />,
+    camera: <CatCamera size={size} {...common} />,
+    trio: <BlobTrio size={size + 14} {...common} />,
+    sleep: <SleepCloud size={size + 12} {...common} />,
+  }
+  return map[name] || map.sparkle
 }
 export function Paperclip({ size = 30, color = "#b39a86", style }) {
   return (<svg className="clip" width={size} height={size} viewBox="0 0 30 30" style={style} aria-hidden="true">
@@ -63,17 +83,21 @@ export function SectionHead({ title, doodle, action, onAction }) {
 }
 export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, deleting }) {
   const [light, dark] = TINT_MAP[note.tint] || TINT_MAP.yellow
-  const doodleEl = { bowl: <Sparkle size={16} color="var(--vermillion-l)" />, sparkle: <Sparkle size={16} color="var(--vermillion-l)" />, flower: <Flower size={18} /> }[note.doodle]
-  return (<div className={"sticky sticky-" + variant + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
+  const sticker = note.sticker || note.doodle || "sparkle"
+  const edge = note.edge || "crayon"
+  const tintName = note.tint === "green" ? "sage" : note.tint === "blue" ? "blue" : note.tint === "pink" || note.tint === "rose" ? "pink" : note.tint === "sage" ? "sage" : "cream"
+  const titleDoodle = { bowl: "cloud", sparkle: "sparkle", flower: "flower" }[note.doodle] || sticker
+  return (<div className={"sticky sticky-" + variant + " sticky-edge-" + edge + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
     {variant === "tape" && <Tape kind={note.tape || "gingham"} style={{ top: -13, left: 24, transform: "rotate(-8deg)", width: 72, height: 28 }} />}
     {variant === "pin" && <span className="sticky-pin"><Pin size={20} /></span>}
-    <CrayonCard tint={note.tint === "green" ? "sage" : note.tint === "blue" ? "blue" : note.tint === "pink" ? "pink" : "cream"} className="sticky-card" style={{ "--tint": light, "--edge": dark }}>
+    <CrayonCard tint={tintName} className="sticky-card" style={{ "--tint": light, "--edge": dark }}>
       <div className="sticky-body">
         <div className="sticky-title sticky-title-row">
-          <span>{note.title}</span>{doodleEl}</div>
+          <span>{note.title}</span><Sticker name={titleDoodle} size={18} /></div>
         <span className="sticky-rule sticky-underline" style={{ background: "var(--vermillion-l)" }} />
         <ul className="sticky-list">{note.items.map((it, i) => (<li key={i}><span className="dot" style={{ background: dark }} />{it}</li>))}</ul>
       </div>
+      <Sticker name={sticker} size={34} className="card-sticker" />
     </CrayonCard>
     {(onEdit || onDelete) && (
       <div className="sticky-actions">
@@ -104,15 +128,19 @@ export function ConversationRow({ conv, onClick, onDelete, onRename }) {
 export function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const dueColor = task.dueType === "today" ? "var(--vermillion)" : "var(--vermillion-l)"
   const keys = ["pink", "sage", "cream", "blue"]
-  const tint = keys[Math.abs(String(task.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % keys.length]
-  return (<div className="task-wrap" style={{ "--rot": tint === "sage" ? "1.2deg" : tint === "blue" ? "-0.4deg" : "-1deg" }}>
-    <Tape kind={tint === "sage" ? "gingham" : tint === "blue" ? "plain" : "polka"} style={{ top: -12, left: -4, transform: "rotate(-18deg)", width: 62, height: 24 }} />
-    <CrayonCard tint={tint} className="task-card" dbl>
+  const tint = task.tint || keys[Math.abs(String(task.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % keys.length]
+  const tape = task.tape || (tint === "sage" ? "gingham" : tint === "blue" ? "plain" : "polka")
+  const sticker = task.sticker || task.icon || "star"
+  const edge = task.edge || "crayon"
+  return (<div className={"task-wrap task-edge-" + edge} style={{ "--rot": tint === "sage" || tint === "green" ? "1.2deg" : tint === "blue" ? "-0.4deg" : "-1deg" }}>
+    <Tape kind={tape} style={{ top: -12, left: -4, transform: "rotate(-18deg)", width: 62, height: 24 }} />
+    <CrayonCard tint={tint === "green" ? "sage" : tint} className="task-card" dbl>
       <div className="task-inner">
         <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="toggle">{task.done && <Icon name="check" size={15} color="#fff" />}</button>
         <div className="task-body"><span className={"task-text" + (task.done ? " done" : "")}>{task.text}</span>
           <span className="task-due" style={{ color: dueColor }}>{task.due}</span></div>
       </div>
+      <Sticker name={sticker} size={32} className="card-sticker task-sticker" />
       <div className="task-foot">
         <span className="task-icon"><Icon name={task.icon} size={18} color="var(--ink-faint)" /></span>
         {(onEdit || onDelete) && (<span className="task-actions">

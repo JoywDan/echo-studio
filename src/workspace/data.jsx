@@ -1,20 +1,50 @@
-/* mock content — workspace placeholders (conversations/chat get real data later) */
+/* Mock content: workspace placeholders. Conversations and chat use real data. */
 export const PINNED_NOTES = [
-  { id: "n1", title: "周末晚餐灵感", tape: "warm", rotate: -3, tint: "yellow", items: ["番茄海鲜意面", "暖心南瓜浓汤", "饭后小蛋糕 🍰"], doodle: "bowl" },
-  { id: "n2", title: "Project Aurora", tape: "stripe", rotate: 2, tint: "blue", items: ["情绪板 moodboard", "配色灵感", "首屏交互草图"], doodle: "sparkle" },
-  { id: "n3", title: "想读的书", tape: "pink", rotate: -2, tint: "pink", items: ["《夜晚的潜水艇》", "《一个人的朝圣》", "《也许你该找个人聊聊》"], doodle: "flower" },
+  {
+    id: "n1",
+    title: "上庭",
+    tape: "gingham",
+    rotate: -3,
+    tint: "sage",
+    sticker: "cloud",
+    edge: "crayon",
+    items: ["6/2 8:30", "护照、id、通知书"],
+    doodle: "cloud",
+  },
+  {
+    id: "n2",
+    title: "新增功能",
+    tape: "polka",
+    rotate: 2,
+    tint: "pink",
+    sticker: "flowerface",
+    edge: "torn",
+    items: ["prompt skill 画图", "抽象幼稚画风", "听音乐", "点外卖"],
+    doodle: "flowerface",
+  },
+  {
+    id: "n3",
+    title: "小纸片灵感",
+    tape: "stripe",
+    rotate: -2,
+    tint: "cream",
+    sticker: "heart",
+    edge: "dashed",
+    items: ["粉色大涂抹", "黑豹头像", "胶带和星星"],
+    doodle: "heart",
+  },
 ]
 export const TASKS = [
-  { id: "t1", text: "整理会议记录", due: "Today", dueType: "today", icon: "note", done: false },
-  { id: "t2", text: "回复客户邮件", due: "Tomorrow", dueType: "tomorrow", icon: "send", done: false },
-  { id: "t3", text: "设计首页草图", due: "May 31", dueType: "date", icon: "pencil", done: false },
-  { id: "t4", text: "买给 Echo 的明信片", due: "周末", dueType: "date", icon: "image", done: true },
+  { id: "t1", text: "找通知", due: "Today", dueType: "today", icon: "note", tint: "cream", tape: "gingham", sticker: "star", edge: "crayon", done: false },
+  { id: "t2", text: "修推特发帖逻辑", due: "Today", dueType: "today", icon: "send", tint: "pink", tape: "polka", sticker: "cloud", edge: "dashed", done: false },
+  { id: "t3", text: "生图-神隐少女", due: "Today", dueType: "today", icon: "image", tint: "sage", tape: "stripe", sticker: "flower", edge: "torn", done: false },
+  { id: "t4", text: "加群聊、加记忆库", due: "Tomorrow", dueType: "tomorrow", icon: "pencil", tint: "cream", tape: "plain", sticker: "heart", edge: "crayon", done: false },
 ]
 export const QUICK_ACTIONS = [
-  { id: "qa1", label: "New chat", icon: "new-chat", doodle: "sparkle" },
-  { id: "qa2", label: "New note", icon: "note", doodle: "heart" },
-  { id: "qa3", label: "New task", icon: "task", doodle: "check" },
-  { id: "qa4", label: "Upload", icon: "upload", doodle: "star" },
+  { id: "qa1", label: "New chat", icon: "new-chat", doodle: "sparkle", edge: "pink" },
+  { id: "qa2", label: "New note", icon: "note", doodle: "heart", edge: "sage" },
+  { id: "qa3", label: "New task", icon: "task", doodle: "check", edge: "cream" },
+  { id: "qa4", label: "Upload", icon: "upload", doodle: "star", edge: "pink" },
 ]
 export const LIVE_APPS = [
   { id: 'cc', title: 'CC 控制台', sub: '手机上指挥 Claude Code', icon: 'task', tint: 'pink', url: 'https://joywdan.github.io/echo-studio/cc/' },
@@ -27,7 +57,7 @@ export const COMING_SOON = [
   { id: "cs4", module: "wander", title: "路拾遗梦", sub: "散步、梦与旧周记", icon: "moon", tint: "green" },
 ]
 export const STUDIO_LINKS = [
-  { id: 'agent-room', module: 'agentRoom', title: '群聊', sub: 'Codex · CC · Grok · Gemini', icon: 'new-chat', tint: 'pink', badge: '进入' },
+  { id: 'agent-room', title: 'moonline 群聊', sub: 'Codex · CC · Grok · Gemini', icon: 'new-chat', tint: 'pink', url: 'https://dan.echowjoy.uk/agent-room/' },
 ]
 export const TOGGLES = [
   { id: "think", label: "思考" }, { id: "memory", label: "记忆" }, { id: "web", label: "联网" }, { id: "code", label: "编码" },
