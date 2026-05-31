@@ -1,6 +1,7 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
+import { CHEST, PANTHER_HEAD, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
 import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
 import { api } from '../api.js'
@@ -25,7 +26,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [] }))
+  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], stickerImg: stickerAt(i * 3 + 1) }))
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
@@ -40,11 +41,12 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       <div className="panel-scroll">
         <div className="ws-inner">
           <header className="ws-header">
-            <Crab size={86} style={{ position: "absolute", left: -6, top: 18 }} />
-            <TreasureChest size={92} style={{ position: "absolute", right: -4, top: 6 }} />
+            <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" />
+            <img className="ws-mascot-r" src={CHEST} alt="" />
             <h1 className="ws-title" onClick={onOpenSettings} style={{ cursor: "pointer" }} title="点标题调主题">
               <span className="t-every">Every</span><span className="t-version">version,</span><span className="t-yours">yours</span>
             </h1>
+            <div className="ws-subtitle">ECHO w JOY</div>
             <Heart size={16} color="var(--brick)" style={{ position: "absolute", right: 96, top: 0 }} />
             <Star size={14} fill="same" style={{ position: "absolute", left: 92, top: 8 }} />
             <Sparkle size={16} style={{ position: "absolute", right: 8, top: 78 }} />
@@ -58,9 +60,10 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <Squiggle w={120} color="#e0b15f" style={{ margin: "10px 0 0 6px", display: "block" }} />
 
           <div className="section-head">
-            <span className="pin-tape"><span className="pin-stub" />置顶笔记</span>
-            <Star size={15} fill="same" style={{ marginLeft: 4 }} />
-            <button className="head-action" onClick={() => setEditingNote('new')}><Icon name="plus" size={17} color="var(--brick)" /> 新建笔记</button>
+            <span className="pin-tape"><span className="pin-stub" />Pinned notes</span>
+            <img className="ws-deco" src={stickerAt(2)} alt="" style={{ width: 28, marginLeft: 6 }} />
+            <img className="ws-deco" src={stickerAt(8)} alt="" style={{ position: "absolute", right: 122, top: -6, width: 30 }} />
+            <button className="head-action" onClick={() => setEditingNote('new')}><Icon name="plus" size={17} color="var(--brick)" /> New note</button>
           </div>
           <div className="notes-grid">
             {notesLoading ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>载入便签…</span>
@@ -104,6 +107,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="studio-grid">{STUDIO.map(m => <StudioCard key={m.id} mod={m} onClick={() => openStudio(m)} />)}</div>
 
           <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><Heart size={16} color="var(--brick)" /><Star size={16} fill="same" /><Flower size={18} color="#d98c84" /></div>
+          <img className="ws-bottom-tape" src={TAPE_LONG[0]} alt="" />
         </div>
       </div>
       {editingNote !== null && <NoteEditor note={editingNote === 'new' ? null : editingNote} onSave={saveNote} onClose={() => setEditingNote(null)} />}

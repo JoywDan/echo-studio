@@ -95,7 +95,7 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
         {onEdit && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onEdit() }} aria-label="编辑"><Icon name="edit" size={13} color="var(--ink-soft)" /></button>}
         {onDelete && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onDelete() }} aria-label="删除"><Icon name="trash" size={13} color="var(--brick)" /></button>}
       </div>}
-      <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />
+      {note.washiUrl ? <img className="washi-tape" src={note.washiUrl} alt="" /> : <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />}
       <CrayonCard tint={note.tint} className="sticky-card">
         <div className="sticky-body">
           <div className="sticky-title-row">
@@ -109,7 +109,7 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
           ) : (
             <ul className="sticky-ul">{note.items.map((it, i) => <li key={i}><span className="bull" style={{ background: t.ink }} />{it}</li>)}</ul>
           )}
-          {Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />}
+          {note.stickerImg ? <img className="note-sticker" src={note.stickerImg} alt="" /> : (Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />)}
         </div>
       </CrayonCard>
     </div>
