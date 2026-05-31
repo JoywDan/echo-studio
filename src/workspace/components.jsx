@@ -88,6 +88,9 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
   const [, edgeBorder] = palette[edge] || []
   const frameIdx = Math.abs(Number(frame) || 0) % FRAME_PATHS.length
   const [p1, p2, p3] = FRAME_PATHS[frameIdx]
+  const grainId = React.useId().replace(/:/g, "")
+  const maskId = `crayonMask${grainId}`
+  const filterId = `crayonNoise${grainId}`
   return (<div className={"crayon-card " + className} onClick={onClick} style={{ "--tint": fill, "--edge": edgeBorder || border, ...style }}>
     <div className="crayon-bg" />
     <svg className={"doodle-fill frame-" + frameIdx} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -99,6 +102,25 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
       <path className="wash-corner" d="M12 26 C18 20 27 20 34 23 C27 30 19 33 12 26Z" />
     </svg>
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
+    <svg className={"crayon-grain-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <filter id={filterId} x="-15%" y="-15%" width="130%" height="130%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="3" seed={(Math.abs(Number(frame) || 3) % 89) + 7} result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.25" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <mask id={maskId} maskUnits="userSpaceOnUse">
+          <rect x="-10" y="-10" width="120" height="120" fill="black" />
+          <path className="grain-mask-line wide" d={p1} />
+          <path className="grain-mask-line skip" d={p1} />
+          <path className="grain-mask-line soft" d={p2} />
+          {dbl && <path className="grain-mask-line inner" d={p3} />}
+        </mask>
+      </defs>
+      <path className="grain-shadow-line" d={p1} />
+      <path className="grain-line grain-line-main" d={p1} mask={`url(#${maskId})`} filter={`url(#${filterId})`} />
+      <path className="grain-line grain-line-offset" d={p2} mask={`url(#${maskId})`} />
+      {dbl && <path className="grain-line grain-line-inner" d={p3} mask={`url(#${maskId})`} />}
+    </svg>
     <RoughFrame frame={hashText(String(frame) + className)} dbl={dbl} />
     <svg className={"doodle-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path className="df df-shadow" d={p1} />
