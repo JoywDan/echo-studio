@@ -6,7 +6,6 @@ import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
 import StudioReader from './StudioReader.jsx'
-import AgentRoomPanel from './AgentRoomPanel.jsx'
 
 export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onRenameConv, onDeleteConv, onOpenSettings, loading }) {
   const [tasks, setTasks] = React.useState([])
@@ -20,7 +19,6 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const [editingNote, setEditingNote] = React.useState(null) // null | 'new' | note object
   const [deletingId, setDeletingId] = React.useState(null)
   const [studioModule, setStudioModule] = React.useState(null)
-  const [agentRoomOpen, setAgentRoomOpen] = React.useState(false)
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
@@ -97,15 +95,16 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           </header>
 
           <div className="search-wrap">
-            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}><Icon name="search" size={19} color="var(--ink-faint)" /></span>
+            <div className="search-border" />
+            <span className="search-ico"><Icon name="search" size={19} color="var(--ink-faint)" /></span>
             <input className="search-box" placeholder="Search chats, notes, tasks..." value={query} onChange={(e) => setQuery(e.target.value)} />
-            <button style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)" }}><Icon name="filter" size={19} color="var(--ink-soft)" /></button>
+            <button className="search-end"><Icon name="filter" size={19} color="var(--ink-soft)" /></button>
           </div>
 
           <SectionHead title="置顶笔记" doodle={<><Pin size={17} /><Star size={14} fill="var(--note-yellow)" /></>}
             action={<><Icon name="plus" size={14} color="var(--vermillion)" /> Add note</>}
             onAction={() => setEditingNote('new')} />
-          <div className="pinned-row">
+          <div className="notes-grid pinned-row">
             {notesLoading
               ? <span className="muted" style={{ fontSize: 13, padding: '8px 4px' }}>loading…</span>
               : notes.length === 0
@@ -167,9 +166,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
           <SectionHead title="Studio" doodle={<><Heart size={15} color="var(--vermillion-l)" /><CloudFace size={34} /></>}
             action={<span className="muted" style={{ fontFamily: "var(--font-hand)", fontSize: 15 }}>只读手账 ✦</span>} />
-          <div className="coming-grid" style={{ marginBottom: 12 }}>{LIVE_APPS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
-          <div className="coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} onClick={() => setStudioModule(m.module)} />))}</div>
-          <div className="coming-grid" style={{ marginTop: 12 }}>{STUDIO_LINKS.map((a) => (<AppCard key={a.id} app={a} onClick={a.module === 'agentRoom' ? () => setAgentRoomOpen(true) : undefined} />))}</div>
+          <div className="studio-grid coming-grid" style={{ marginBottom: 12 }}>{LIVE_APPS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
+          <div className="studio-grid coming-grid">{COMING_SOON.map((m) => (<ComingSoonCard key={m.id} mod={m} onClick={() => setStudioModule(m.module)} />))}</div>
+          <div className="studio-grid coming-grid" style={{ marginTop: 12 }}>{STUDIO_LINKS.map((a) => (<AppCard key={a.id} app={a} />))}</div>
         </div>
       </div>
       <button className="fab" onClick={onNewChat} aria-label="新建"><Icon name="pencil" size={26} color="#faf3ec" stroke={1.8} /></button>
@@ -192,10 +191,6 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
       {studioModule && (
         <StudioReader module={studioModule} onClose={() => setStudioModule(null)} />
-      )}
-
-      {agentRoomOpen && (
-        <AgentRoomPanel onClose={() => setAgentRoomOpen(false)} />
       )}
     </div>
   )

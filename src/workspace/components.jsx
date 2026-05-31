@@ -11,6 +11,23 @@ export function TornCard({ children, bg = "var(--card)", rotate = 0, style, clas
   return (<div className={"torn " + className} onClick={onClick} style={{ transform: rotate ? `rotate(${rotate}deg)` : undefined, ...style }}>
     <div className="torn-bg" style={{ background: bg, filter: soft ? "url(#rough-paper-soft)" : "url(#rough-paper)" }} />{children}</div>)
 }
+export function CrayonCard({ children, tint = "pink", edge, className = "", style, onClick, dbl = true }) {
+  const palette = {
+    pink: ["var(--pink)", "var(--pink-edge)"],
+    sage: ["var(--sage)", "var(--sage-edge)"],
+    cream: ["var(--cream)", "var(--cream-edge)"],
+    blue: ["var(--blue)", "var(--blue-edge)"],
+    yellow: ["var(--cream)", "var(--cream-edge)"],
+    green: ["var(--sage)", "var(--sage-edge)"],
+  }
+  const [fill, border] = palette[tint] || palette.pink
+  const [, edgeBorder] = palette[edge] || []
+  return (<div className={"crayon-card " + className} onClick={onClick} style={{ "--tint": fill, "--edge": edgeBorder || border, ...style }}>
+    <div className="crayon-bg" />
+    <div className={"hand-border" + (dbl ? " dbl" : "")} />
+    {children}
+  </div>)
+}
 export function Tape({ kind = "warm", style, className = "" }) {
   return <span className={"tape " + kind + " " + className} style={style} aria-hidden="true" />
 }
@@ -22,15 +39,16 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   const [light, dark] = TINT_MAP[note.tint] || TINT_MAP.yellow
   const doodleEl = { bowl: <Sparkle size={16} color="var(--vermillion-l)" />, sparkle: <Sparkle size={16} color="var(--vermillion-l)" />, flower: <Flower size={18} /> }[note.doodle]
   return (<div className={"sticky sticky-" + variant + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate || 0) + "deg" }} onClick={onClick}>
-    {variant === "tape" && <Tape kind={note.tape} style={{ top: -12, left: "50%", transform: "translateX(-50%) rotate(-3deg)" }} />}
+    {variant === "tape" && <Tape kind={note.tape || "gingham"} style={{ top: -13, left: 24, transform: "rotate(-8deg)", width: 72, height: 28 }} />}
     {variant === "pin" && <span className="sticky-pin"><Pin size={20} /></span>}
-    <div className="torn"><div className="torn-bg" style={{ background: light, filter: "url(#rough-paper)" }} />
+    <CrayonCard tint={note.tint === "green" ? "sage" : note.tint === "blue" ? "blue" : note.tint === "pink" ? "pink" : "cream"} className="sticky-card" style={{ "--tint": light, "--edge": dark }}>
       <div className="sticky-body">
-        <div className="sticky-title">
-          <span style={{ fontFamily: "var(--font-cute)", fontWeight: 400, fontSize: "14px", lineHeight: 1.15 }}>{note.title}</span>{doodleEl}</div>
-        <span className="sticky-underline" style={{ background: "var(--vermillion-l)" }} />
+        <div className="sticky-title sticky-title-row">
+          <span>{note.title}</span>{doodleEl}</div>
+        <span className="sticky-rule sticky-underline" style={{ background: "var(--vermillion-l)" }} />
         <ul className="sticky-list">{note.items.map((it, i) => (<li key={i}><span className="dot" style={{ background: dark }} />{it}</li>))}</ul>
-      </div></div>
+      </div>
+    </CrayonCard>
     {(onEdit || onDelete) && (
       <div className="sticky-actions">
         {onEdit && <button className="sticky-act-btn" onClick={(e) => { e.stopPropagation(); onEdit() }} title="编辑"><Icon name="pencil" size={13} color="var(--ink-soft)" /></button>}
@@ -43,7 +61,7 @@ const AV = { cat: CatAvatar, rabbit: RabbitAvatar, cake: CakeAvatar, leaf: LeafA
 export function ConversationRow({ conv, onClick, onDelete, onRename }) {
   const Avatar = AV[conv.avatar] || CatAvatar
   return (<div className={"conv-row doodle-row" + (conv.active ? " active" : "")}>
-    {conv.active && <div className="conv-bg" />}
+    {conv.active && <span className="wash conv-wash" />}
     <button className="conv-open" onClick={onClick}>
       <span className="conv-avatar-wrap"><Avatar size={48} tint={conv.tint} /></span>
       <div className="conv-main">
@@ -59,17 +77,25 @@ export function ConversationRow({ conv, onClick, onDelete, onRename }) {
 }
 export function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const dueColor = task.dueType === "today" ? "var(--vermillion)" : "var(--vermillion-l)"
-  const tint = ["task-pink", "task-green", "task-yellow", "task-blue"][Math.abs(String(task.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 4]
-  return (<TornCard className={"task-card " + tint} rotate={0}>
-    <Tape kind={tint === "task-green" ? "stripe" : tint === "task-blue" ? "blue" : "pink"} style={{ top: -11, left: 10, transform: "rotate(-14deg)", width: 58, height: 21 }} />
-    <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="toggle">{task.done && <Icon name="check" size={15} color="#fff" />}</button>
-    <div className="task-body"><span className={"task-text" + (task.done ? " done" : "")}>{task.text}</span>
-      <span className="task-due" style={{ color: dueColor }}>{task.due}</span></div>
-    <span className="task-icon"><Icon name={task.icon} size={18} color="var(--ink-faint)" /></span>
-    {(onEdit || onDelete) && (<span className="task-actions">
+  const keys = ["pink", "sage", "cream", "blue"]
+  const tint = keys[Math.abs(String(task.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % keys.length]
+  return (<div className="task-wrap" style={{ "--rot": tint === "sage" ? "1.2deg" : tint === "blue" ? "-0.4deg" : "-1deg" }}>
+    <Tape kind={tint === "sage" ? "gingham" : tint === "blue" ? "plain" : "polka"} style={{ top: -12, left: -4, transform: "rotate(-18deg)", width: 62, height: 24 }} />
+    <CrayonCard tint={tint} className="task-card" dbl>
+      <div className="task-inner">
+        <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="toggle">{task.done && <Icon name="check" size={15} color="#fff" />}</button>
+        <div className="task-body"><span className={"task-text" + (task.done ? " done" : "")}>{task.text}</span>
+          <span className="task-due" style={{ color: dueColor }}>{task.due}</span></div>
+      </div>
+      <div className="task-foot">
+        <span className="task-icon"><Icon name={task.icon} size={18} color="var(--ink-faint)" /></span>
+        {(onEdit || onDelete) && (<span className="task-actions">
       {onEdit && <button className="task-act-btn" onClick={(e) => { e.stopPropagation(); onEdit() }} title="编辑"><Icon name="pencil" size={13} color="var(--ink-soft)" /></button>}
       {onDelete && <button className="task-act-btn" onClick={(e) => { e.stopPropagation(); onDelete() }} title="删除"><Icon name="trash" size={13} color="var(--vermillion)" /></button>}
-    </span>)}</TornCard>)
+        </span>)}
+      </div>
+    </CrayonCard>
+  </div>)
 }
 export function QuickAction({ qa, onClick }) {
   const doodleEl = {
@@ -78,24 +104,31 @@ export function QuickAction({ qa, onClick }) {
     check: <Star size={12} color="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 8 }} />,
     star: <Star size={12} color="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 8 }} />,
   }[qa.doodle]
-  return (<button className="quick-action" onClick={onClick}><TornCard className="qa-card hand-card">{doodleEl}
-    <Icon name={qa.icon} size={26} color="var(--ink)" stroke={1.6} /><span className="qa-label">{qa.label}</span></TornCard></button>)
+  return (<button className="quick-action" onClick={onClick}>
+    <CrayonCard tint="pink" edge={qa.edge || "pink"} className="qa-card" dbl={false} style={{ "--tint": "rgba(255,253,247,0.62)" }}>{doodleEl}
+      <span className="qa-icon"><Icon name={qa.icon} size={28} color="var(--ink)" stroke={1.6} /></span><span className="qa-label">{qa.label}</span>
+    </CrayonCard>
+  </button>)
 }
-export function AppCard({ app, onClick }) {
+export function AppCard({ app }) {
   const [light] = TINT_MAP[app.tint] || TINT_MAP.yellow
-  return (<button className="coming-card studio-card" onClick={() => onClick ? onClick() : app.url && window.open(app.url, '_blank')}><div className="torn">
-    <div className="torn-bg" style={{ filter: "url(#rough-paper-soft)", background: "var(--card)" }} />
-    <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
+  return (<button className="coming-card studio-card" onClick={() => window.open(app.url, '_blank')}>
+    <CrayonCard tint={app.tint === "green" ? "sage" : app.tint === "blue" ? "blue" : app.tint === "yellow" ? "cream" : "pink"} className="studio-inner" dbl={false} style={{ "--tint": "rgba(255,253,247,0.58)" }}>
+    <span className="studio-deco-fill" />
+    <div className="coming-body"><span className="coming-icon studio-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
       <div className="coming-text"><span className="coming-title">{app.title}</span><span className="coming-sub">{app.sub}</span></div>
-      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>{app.badge || '打开 ↗'}</span></div></div></button>)
+      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>打开 ↗</span></div>
+    </CrayonCard></button>)
 }
 export function ComingSoonCard({ mod, onClick }) {
   const [light] = TINT_MAP[mod.tint] || TINT_MAP.yellow
-  return (<button className="coming-card studio-card" onClick={onClick}><div className="torn">
-    <div className="torn-bg coming-bg" style={{ filter: "url(#rough-paper-soft)" }} />
-    <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={mod.icon} size={20} color="var(--ink-soft)" /></span>
+  return (<button className="coming-card studio-card" onClick={onClick}>
+    <CrayonCard tint={mod.tint === "green" ? "sage" : mod.tint === "blue" ? "blue" : mod.tint === "yellow" ? "cream" : "pink"} className="studio-inner" dbl={false} style={{ "--tint": "rgba(255,253,247,0.58)" }}>
+    <span className="studio-deco-fill" />
+    <div className="coming-body"><span className="coming-icon studio-icon" style={{ background: light }}><Icon name={mod.icon} size={20} color="var(--ink-soft)" /></span>
       <div className="coming-text"><span className="coming-title">{mod.title}</span><span className="coming-sub">{mod.sub}</span></div>
-      <span className="coming-badge">Coming soon</span></div></div></button>)
+      <span className="coming-badge">Coming soon</span></div>
+    </CrayonCard></button>)
 }
 export function WashiToggle({ on, onChange, label, disabled }) {
   return (<button className="wtoggle-wrap" onClick={() => !disabled && onChange(!on)} style={disabled ? { opacity: 0.4, pointerEvents: "none" } : undefined}>

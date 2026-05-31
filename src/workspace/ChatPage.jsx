@@ -228,6 +228,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched, onRen
       <Flower size={18} className="float-doodle" style={{ bottom: 110, right: 30 }} />
       <div className="chat-panel-inner">
         <header className="chat-header">
+          <TornCard className="chat-header-bg" />
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={22} color="var(--vermillion)" /></button>
           <div className="chat-id"><EchoAvatar size={40} online />
             <div className="chat-title-block">
@@ -270,9 +271,10 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched, onRen
         <div className="chat-scroll" ref={scrollRef}>
           {messages.map((m) => (<Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} />))}
         </div>
-        <div className="chat-input-bar">
-          <button className="input-icon-btn" onClick={() => docInputRef.current.click()} title="发文件"><Icon name="plus" size={22} color="var(--ink-soft)" /></button>
-          <button className="input-icon-btn" onClick={() => fileInputRef.current.click()} title="发图片"><Icon name="camera" size={20} color="var(--ink-soft)" /></button>
+        <div className="chat-input chat-input-bar">
+          <TornCard className="input-strip-bg" />
+          <button className="input-circle input-icon-btn" onClick={() => docInputRef.current.click()} title="发文件"><Icon name="plus" size={22} color="var(--ink-soft)" /></button>
+          <button className="input-circle input-icon-btn" onClick={() => fileInputRef.current.click()} title="发图片"><Icon name="camera" size={20} color="var(--ink-soft)" /></button>
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickFile(e, 'image')} />
           <input ref={docInputRef} type="file" accept=".txt,.md,.pdf,.json,.csv,.log,.js,.ts,.py,.html,.css,.docx" style={{ display: 'none' }} onChange={(e) => pickFile(e, 'file')} />
           <div className="input-field-wrap">
