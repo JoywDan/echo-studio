@@ -2204,3 +2204,108 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
 .chat-panel .paper-bg::before {
   background-image: none !important;
 }
+
+/* Refinement: remove old square card boxes, lift quick labels, let notes grow */
+.quick-action .qa-card,
+.studio-card .studio-inner {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.quick-action .qa-card::before,
+.quick-action .qa-card::after,
+.studio-card .studio-inner::before,
+.studio-card .studio-inner::after {
+  display: none !important;
+  content: none !important;
+}
+
+.quick-action .doodle-fill,
+.studio-card .doodle-fill {
+  filter: url(#rough-paper-soft) drop-shadow(3px 5px 0 rgba(78, 60, 42, .055));
+}
+
+.quick-action {
+  min-height: 118px !important;
+}
+
+.quick-action .qa-card {
+  min-height: 112px !important;
+  padding: 15px 8px 16px !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.qa-icon {
+  margin-top: 0 !important;
+  transform: rotate(-6deg) scale(1.04) translateY(-2px) !important;
+}
+
+.qa-label {
+  display: block;
+  margin-top: 0 !important;
+  transform: translateY(-3px) rotate(-2deg);
+  line-height: 1 !important;
+}
+
+.qa-sticker {
+  top: 5px !important;
+  right: 7px !important;
+}
+
+.pinned-row.notes-grid {
+  align-items: start !important;
+}
+
+.sticky,
+.sticky-card {
+  height: auto !important;
+}
+
+.sticky-card {
+  min-height: 0 !important;
+  padding-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+.sticky-card > .doodle-fill {
+  filter: url(#rough-paper-soft) drop-shadow(4px 7px 0 rgba(78, 60, 42, .055));
+}
+
+.sticky-body {
+  min-height: 184px !important;
+  height: auto !important;
+  padding: 24px 18px 74px !important;
+}
+
+.sticky-list {
+  padding-bottom: 0 !important;
+  overflow: visible !important;
+}
+
+.sticky-list li {
+  align-items: flex-start !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.sticky-list .dot {
+  margin-top: .62em;
+}
+
+.sticky .card-sticker {
+  bottom: 20px !important;
+  right: 12px !important;
+}
+
+.sticky-actions {
+  bottom: 18px !important;
+  top: auto !important;
+  right: auto !important;
+  left: 18px !important;
+}
+
+@media (max-width: 480px) {
+  .quick-action .qa-card { min-height: 106px !important; }
+  .sticky-body { min-height: 176px !important; padding-bottom: 78px !important; }
+}
