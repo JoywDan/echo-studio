@@ -81,13 +81,13 @@ export function QuickAction({ qa, onClick }) {
   return (<button className="quick-action" onClick={onClick}><TornCard className="qa-card hand-card">{doodleEl}
     <Icon name={qa.icon} size={26} color="var(--ink)" stroke={1.6} /><span className="qa-label">{qa.label}</span></TornCard></button>)
 }
-export function AppCard({ app }) {
+export function AppCard({ app, onClick }) {
   const [light] = TINT_MAP[app.tint] || TINT_MAP.yellow
-  return (<button className="coming-card studio-card" onClick={() => window.open(app.url, '_blank')}><div className="torn">
+  return (<button className="coming-card studio-card" onClick={() => onClick ? onClick() : app.url && window.open(app.url, '_blank')}><div className="torn">
     <div className="torn-bg" style={{ filter: "url(#rough-paper-soft)", background: "var(--card)" }} />
     <div className="coming-body"><span className="coming-icon" style={{ background: light }}><Icon name={app.icon} size={20} color="var(--ink-soft)" /></span>
       <div className="coming-text"><span className="coming-title">{app.title}</span><span className="coming-sub">{app.sub}</span></div>
-      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>打开 ↗</span></div></div></button>)
+      <span className="coming-badge" style={{ color: "var(--vermillion)" }}>{app.badge || '打开 ↗'}</span></div></div></button>)
 }
 export function ComingSoonCard({ mod, onClick }) {
   const [light] = TINT_MAP[mod.tint] || TINT_MAP.yellow

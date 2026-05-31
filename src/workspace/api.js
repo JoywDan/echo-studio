@@ -1,4 +1,5 @@
 const API = 'https://studio.echowjoy.uk'
+const AGENT_ROOM_API = 'https://dan.echowjoy.uk/agent-room/api'
 export function getToken() { return localStorage.getItem('studio_token') || '' }
 export function setToken(t) { localStorage.setItem('studio_token', t) }
 export function clearToken() { localStorage.removeItem('studio_token') }
@@ -7,6 +8,13 @@ async function call(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } }
   if (body) opts.body = JSON.stringify(body)
   const r = await fetch(API + path, opts)
+  if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
+  return r.json()
+}
+async function agentRoomCall(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } }
+  if (body) opts.body = JSON.stringify(body)
+  const r = await fetch(AGENT_ROOM_API + path, opts)
   if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
   return r.json()
 }
@@ -28,6 +36,12 @@ export const api = {
     get: (id) => call('GET', '/api/travel/' + encodeURIComponent(id)),
   },
   wander: () => call('GET', '/api/wander'),
+  agentRoom: {
+    session: () => agentRoomCall('GET', '/session'),
+    messages: () => agentRoomCall('GET', '/messages'),
+    send: (d) => agentRoomCall('POST', '/send', d),
+    image: (d) => agentRoomCall('POST', '/image', d),
+  },
   uploadImage: async (file) => {
     const r = await fetch(API + '/api/chat/upload-image', { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': file.type }, body: file })
     if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'upload failed') }
@@ -68,3 +82,8 @@ export const api = {
 }
 export const API_BASE = API
 export function uploadsUrl(u, filename) { return API + (u && u !== '/x' ? u : ('/api/chat/uploads/' + filename)) }
+export function agentRoomUrl(u) {
+  if (!u) return ''
+  if (/^https?:\/\//i.test(u)) return u
+  return 'https://dan.echowjoy.uk' + u
+}

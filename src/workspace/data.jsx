@@ -27,7 +27,7 @@ export const COMING_SOON = [
   { id: "cs4", module: "wander", title: "路拾遗梦", sub: "散步、梦与旧周记", icon: "moon", tint: "green" },
 ]
 export const STUDIO_LINKS = [
-  { id: 'agent-room', title: '群聊', sub: 'Codex · CC · Grok · Gemini', icon: 'new-chat', tint: 'pink', url: 'https://dan.echowjoy.uk/agent-room/' },
+  { id: 'agent-room', module: 'agentRoom', title: '群聊', sub: 'Codex · CC · Grok · Gemini', icon: 'new-chat', tint: 'pink', badge: '进入' },
 ]
 export const TOGGLES = [
   { id: "think", label: "思考" }, { id: "memory", label: "记忆" }, { id: "web", label: "联网" }, { id: "code", label: "编码" },
