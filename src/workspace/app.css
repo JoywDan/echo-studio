@@ -2000,3 +2000,125 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
 .fab {
   border-radius: 42% 58% 48% 52% / 55% 45% 55% 45% !important;
 }
+
+/* Crayon correction: grainy varied outlines, calmer card backs */
+.sticky-card > .crayon-bg::before,
+.task-card > .crayon-bg::before,
+.qa-card > .crayon-bg::before,
+.studio-inner > .crayon-bg::before {
+  opacity: .22 !important;
+  background:
+    repeating-linear-gradient(158deg, transparent 0 30px, rgba(154, 87, 73, .08) 31px 32px, transparent 33px 70px),
+    repeating-linear-gradient(28deg, transparent 0 44px, rgba(117, 137, 97, .06) 45px 46px, transparent 47px 88px) !important;
+}
+
+.card-scribble-a,
+.card-scribble-b,
+.qa-scribble,
+.studio-scribble {
+  opacity: .22 !important;
+}
+
+.doodle-frame {
+  inset: -8px -9px -9px -8px !important;
+  filter: url(#rough-paper-soft) drop-shadow(1px 1px 0 rgba(255,250,238,.45));
+}
+
+.doodle-frame .df {
+  fill: none;
+  stroke: var(--edge);
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.doodle-frame .df-shadow {
+  stroke: rgba(80, 64, 50, .12);
+  stroke-width: 7px;
+  opacity: .42;
+  stroke-dasharray: 1.2 5.5 8 3;
+  transform: translate(1.4px, 2.3px);
+  transform-origin: center;
+}
+
+.doodle-frame .df-crayon {
+  paint-order: stroke;
+}
+
+.doodle-frame .df1 {
+  stroke-width: 5.2px !important;
+  opacity: .72 !important;
+  stroke-dasharray: .7 2.1 1.1 3.4 8 2.3 !important;
+}
+
+.doodle-frame .df2 {
+  stroke-width: 3.2px !important;
+  opacity: .48 !important;
+  stroke-dasharray: 5 2 1 3 2 4 !important;
+  transform: translate(1px, -1px) rotate(.25deg);
+  transform-origin: center;
+}
+
+.doodle-frame .df3 {
+  stroke-width: 2.2px !important;
+  opacity: .32 !important;
+  stroke-dasharray: .9 3.2 4 2.4 !important;
+  transform: translate(-1.4px, 1.2px) rotate(-.35deg);
+  transform-origin: center;
+}
+
+.doodle-frame.frame-1 .df1 { stroke-dasharray: 1 2.8 7 1.7 2 3.6 !important; }
+.doodle-frame.frame-1 .df2 { transform: translate(-1px, .8px) rotate(-.45deg); }
+.doodle-frame.frame-2 .df1 { stroke-dasharray: 6 1.5 .8 3.6 2 2.4 !important; }
+.doodle-frame.frame-2 .df2 { transform: translate(1.3px, 1px) rotate(.55deg); }
+.doodle-frame.frame-3 .df1 { stroke-dasharray: 2 2.2 1 4 9 2 !important; }
+.doodle-frame.frame-3 .df2 { transform: translate(-.6px, -1.2px) rotate(-.2deg); }
+
+.quick-action .doodle-frame,
+.studio-card .doodle-frame {
+  inset: -10px -11px -11px -10px !important;
+}
+
+.sticky-card,
+.task-card,
+.qa-card,
+.studio-inner {
+  box-shadow: 4px 6px 0 rgba(69,58,51,.055), 0 8px 13px rgba(88,65,45,.06) !important;
+}
+
+.sticky-card > .crayon-bg,
+.task-card > .crayon-bg,
+.qa-card > .crayon-bg,
+.studio-inner > .crayon-bg {
+  opacity: .78 !important;
+}
+
+.tape {
+  opacity: .55 !important;
+}
+
+.sticky-edge-dashed .doodle-frame .df1,
+.task-edge-dashed .doodle-frame .df1 {
+  stroke-dasharray: .8 4.2 !important;
+  stroke-width: 4.4px !important;
+}
+
+.sticky-edge-dashed .doodle-frame .df2,
+.task-edge-dashed .doodle-frame .df2 {
+  stroke-dasharray: 1.2 5 !important;
+}
+
+.sticky-edge-torn .doodle-frame .df1,
+.task-edge-torn .doodle-frame .df1 {
+  stroke-dasharray: 7 2 1 3 13 2 !important;
+}
+
+.search-wrap::after {
+  border-width: 0 !important;
+  background: none !important;
+  outline: none !important;
+}
+
+.search-wrap .search-border {
+  opacity: .46 !important;
+}

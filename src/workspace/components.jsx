@@ -20,7 +20,30 @@ export function TornCard({ children, bg = "var(--card)", rotate = 0, style, clas
   return (<div className={"torn " + className} onClick={onClick} style={{ transform: rotate ? `rotate(${rotate}deg)` : undefined, ...style }}>
     <div className="torn-bg" style={{ background: bg, filter: soft ? "url(#rough-paper-soft)" : "url(#rough-paper)" }} />{children}</div>)
 }
-export function CrayonCard({ children, tint = "pink", edge, className = "", style, onClick, dbl = true }) {
+const FRAME_PATHS = [
+  [
+    "M7 12 C18 7 30 10 43 8 C59 6 73 7 90 12 C94 24 92 36 94 50 C96 65 93 78 87 90 C71 96 57 91 43 94 C28 96 15 93 8 86 C4 72 8 61 6 47 C4 32 3 22 7 12Z",
+    "M10 15 C24 10 36 12 50 10 C66 8 78 10 88 15 C91 28 88 41 90 54 C92 68 89 80 83 87 C68 90 55 87 40 90 C27 92 17 89 11 82 C8 70 11 58 9 45 C7 31 7 23 10 15Z",
+    "M12 18 C26 15 38 17 53 15 C67 14 77 15 85 19 C87 31 85 43 87 56 C88 68 85 77 80 83 C66 86 54 83 41 85 C29 86 20 84 15 79 C12 68 14 57 13 44 C11 32 10 25 12 18Z",
+  ],
+  [
+    "M5 18 C14 8 31 11 45 9 C61 7 80 5 94 15 C91 29 97 42 93 55 C89 68 97 80 84 91 C68 92 55 96 40 92 C26 88 13 97 6 82 C8 68 3 55 7 42 C11 29 2 24 5 18Z",
+    "M9 20 C20 13 32 13 47 12 C63 11 78 10 90 18 C88 31 93 43 90 56 C87 69 91 78 82 86 C67 88 55 91 41 88 C28 85 17 91 10 80 C12 67 7 56 10 43 C13 31 7 25 9 20Z",
+    "M13 22 C23 17 35 17 48 16 C63 15 75 15 86 21 C84 33 89 44 86 57 C84 68 87 76 79 82 C66 84 55 86 42 84 C30 82 21 86 14 78 C15 66 11 56 13 44 C16 33 11 27 13 22Z",
+  ],
+  [
+    "M8 10 C25 5 34 8 49 7 C64 6 79 10 91 8 C98 22 91 35 96 50 C91 66 97 79 89 92 C74 89 60 97 44 92 C28 96 17 89 5 91 C2 76 8 62 5 48 C9 33 2 23 8 10Z",
+    "M11 14 C25 10 36 11 50 10 C65 9 77 13 88 12 C93 24 88 37 91 50 C88 64 92 76 85 87 C72 85 59 91 44 87 C30 90 20 84 10 86 C7 73 12 61 9 48 C12 35 7 24 11 14Z",
+    "M14 18 C27 15 38 15 51 14 C64 13 75 16 84 16 C88 27 84 38 87 50 C84 62 88 73 81 82 C70 80 58 85 45 82 C32 85 23 80 14 81 C11 70 15 60 13 48 C15 37 11 27 14 18Z",
+  ],
+  [
+    "M9 15 C17 11 28 5 42 9 C56 13 74 4 89 13 C94 27 93 37 92 50 C91 65 98 79 86 88 C70 97 58 91 44 93 C30 95 15 94 8 84 C2 70 6 60 7 47 C8 34 2 24 9 15Z",
+    "M12 18 C21 15 31 10 43 13 C57 16 72 9 86 16 C90 28 89 39 89 51 C88 64 93 76 83 84 C69 90 58 86 44 89 C31 91 19 89 12 80 C7 68 10 59 10 47 C11 35 7 26 12 18Z",
+    "M15 21 C24 18 33 14 44 16 C57 18 70 13 82 19 C85 30 85 40 85 51 C84 62 88 73 80 80 C68 85 58 82 45 85 C33 87 23 85 16 77 C11 66 14 58 14 47 C14 37 11 29 15 21Z",
+  ],
+]
+
+export function CrayonCard({ children, tint = "pink", edge, className = "", style, onClick, dbl = true, frame = 0 }) {
   const palette = {
     pink: ["var(--pink)", "var(--pink-edge)"],
     sage: ["var(--sage)", "var(--sage-edge)"],
@@ -31,13 +54,16 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
   }
   const [fill, border] = palette[tint] || palette.pink
   const [, edgeBorder] = palette[edge] || []
+  const frameIdx = Math.abs(Number(frame) || 0) % FRAME_PATHS.length
+  const [p1, p2, p3] = FRAME_PATHS[frameIdx]
   return (<div className={"crayon-card " + className} onClick={onClick} style={{ "--tint": fill, "--edge": edgeBorder || border, ...style }}>
     <div className="crayon-bg" />
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
-    <svg className={"doodle-frame" + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <path className="df df1" d="M6 11 C16 5 31 8 45 7 C61 6 74 5 91 10 C96 24 92 35 94 49 C96 64 95 78 88 91 C72 96 58 92 43 94 C29 96 15 95 7 88 C3 73 8 62 6 47 C4 33 2 21 6 11Z" />
-      <path className="df df2" d="M9 14 C23 9 35 12 50 10 C66 8 78 9 89 14 C92 28 89 40 91 54 C93 68 91 80 85 88 C69 91 55 88 40 90 C27 92 17 90 10 84 C8 71 11 59 9 45 C7 31 6 22 9 14Z" />
-      {dbl && <path className="df df3" d="M12 17 C25 14 39 16 52 14 C67 13 78 14 86 18 C88 31 86 43 88 56 C89 69 86 78 81 84 C67 87 54 84 41 86 C29 87 20 85 14 80 C12 68 15 57 13 44 C11 32 10 24 12 17Z" />}
+    <svg className={"doodle-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path className="df df-shadow" d={p1} />
+      <path className="df df-crayon df1" d={p1} />
+      <path className="df df-crayon df2" d={p2} />
+      {dbl && <path className="df df-crayon df3" d={p3} />}
     </svg>
     {children}
   </div>)
@@ -104,7 +130,7 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   return (<div className={"sticky sticky-" + variant + " sticky-edge-" + edge + (deleting ? " sticky-deleting" : "")} style={{ "--rot": (note.rotate ?? pickBy(seed + "rot", [-3, -2, 1, 2, 3])) + "deg" }} onClick={onClick}>
     {variant === "tape" && <Tape kind={tape} style={{ top: -13, left: pickBy(seed + "left", [-4, 18, 34, 62]) , transform: `rotate(${pickBy(seed + "tr", [-16, -9, 7, 12])}deg)`, width: pickBy(seed + "tw", [66, 78, 92]), height: 28 }} />}
     {variant === "pin" && <span className="sticky-pin"><Pin size={20} /></span>}
-    <CrayonCard tint={tintName} className="sticky-card" style={{ "--tint": light, "--edge": dark }}>
+    <CrayonCard tint={tintName} className="sticky-card" frame={hashText(seed)} style={{ "--tint": light, "--edge": dark }}>
       <span className="card-scribble card-scribble-a" />
       <span className="card-scribble card-scribble-b" />
       <div className="sticky-body">
@@ -151,7 +177,7 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const edge = task.edge || pickBy(seed + "edge", ["crayon", "torn", "dashed"])
   return (<div className={"task-wrap task-edge-" + edge} style={{ "--rot": tint === "sage" || tint === "green" ? "1.2deg" : tint === "blue" ? "-0.4deg" : "-1deg" }}>
     <Tape kind={tape} style={{ top: -12, left: -4, transform: "rotate(-18deg)", width: 62, height: 24 }} />
-    <CrayonCard tint={tint === "green" ? "sage" : tint} className="task-card" dbl>
+    <CrayonCard tint={tint === "green" ? "sage" : tint} className="task-card" frame={hashText(seed)} dbl>
       <span className="card-scribble card-scribble-a" />
       <span className="card-scribble card-scribble-b" />
       <div className="task-inner">
@@ -179,7 +205,7 @@ export function QuickAction({ qa, onClick }) {
     star: <Star size={12} color="var(--vermillion-l)" style={{ position: "absolute", top: 6, right: 8 }} />,
   }[qa.doodle]
   return (<button className="quick-action" onClick={onClick}>
-    <CrayonCard tint="pink" edge={qa.edge || "pink"} className="qa-card" dbl={false} style={{ "--tint": "rgba(255,253,247,0.62)" }}>{doodleEl}
+    <CrayonCard tint="pink" edge={qa.edge || "pink"} className="qa-card" frame={hashText(qa.id)} dbl={false} style={{ "--tint": "rgba(255,253,247,0.62)" }}>{doodleEl}
       <Sticker name={stickerName} size={28} className="qa-sticker" />
       <span className="card-scribble qa-scribble" />
       <span className="qa-icon"><Icon name={qa.icon} size={28} color="var(--ink)" stroke={1.6} /></span><span className="qa-label">{qa.label}</span>
@@ -204,7 +230,7 @@ function StudioCardShell({ item, badge, onClick }) {
   const Creature = visual.creature
   return (<button className="studio-card" onClick={onClick}>
     {visual.clip && <Paperclip size={30} color="#b39a86" style={{ top: -14, right: 22, transform: "rotate(12deg)" }} />}
-    <CrayonCard tint="pink" edge={visual.edge} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.54)" }}>
+    <CrayonCard tint="pink" edge={visual.edge} frame={hashText(item.id || item.module || item.title)} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.54)" }}>
       <span className="studio-deco-fill" style={{ "--scol": `var(--${visual.edge === "sage" ? "sage" : visual.edge === "blue" ? "blue" : visual.edge === "cream" ? "cream" : "pink"}-edge)` }} />
       {visual.icon && <span className="studio-icon"><MiniIcon name={visual.icon} size={34} /></span>}
       <span className={"studio-title" + (visual.english ? " en" : "")}>{item.title}</span>
