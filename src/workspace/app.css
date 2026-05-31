@@ -1588,3 +1588,300 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
   .card-sticker { right: 8px; bottom: 8px; }
   .scrapbook-editor { max-height: calc(100vh - 34px); overflow: auto; }
 }
+
+/* Aggressive rough pass: make existing real data look doodled too */
+.workspace-panel.paper-bg,
+.chat-panel.paper-bg {
+  background-color: color-mix(in srgb, var(--washi) 92%, #f6efe0 8%);
+}
+
+.ws-inner {
+  background:
+    radial-gradient(ellipse at 50% 37%, rgba(221, 139, 145, .13) 0 110px, transparent 190px),
+    radial-gradient(ellipse at 22% 67%, rgba(217, 173, 77, .09) 0 70px, transparent 125px);
+}
+
+.search-wrap {
+  transform: rotate(-.7deg);
+  filter: drop-shadow(2px 3px 0 rgba(64, 52, 43, .06));
+}
+
+.search-border {
+  opacity: .92 !important;
+  filter: url(#crayon-edge-2);
+}
+
+.notes-grid,
+.task-grid,
+.qa-grid,
+.studio-grid {
+  align-items: stretch;
+}
+
+.sticky {
+  transform: rotate(var(--rot, -2deg)) translateZ(0) !important;
+  margin-bottom: 12px;
+}
+
+.sticky-card,
+.task-card,
+.qa-card,
+.studio-inner {
+  border-radius: 20px 12px 23px 14px !important;
+  box-shadow: 4px 5px 0 rgba(69,58,51,.09), 0 7px 14px rgba(88,65,45,.10) !important;
+}
+
+.sticky-card > .crayon-bg,
+.task-card > .crayon-bg,
+.qa-card > .crayon-bg,
+.studio-inner > .crayon-bg {
+  opacity: .88;
+  background:
+    linear-gradient(0deg, rgba(255,253,247,.22), rgba(255,253,247,.22)),
+    var(--tint) !important;
+}
+
+.sticky-card > .crayon-bg::before,
+.task-card > .crayon-bg::before,
+.qa-card > .crayon-bg::before,
+.studio-inner > .crayon-bg::before {
+  opacity: .95 !important;
+  background:
+    repeating-linear-gradient(158deg, transparent 0 16px, rgba(154, 87, 73, .13) 17px 19px, transparent 20px 39px),
+    repeating-linear-gradient(28deg, transparent 0 24px, rgba(117, 137, 97, .10) 25px 27px, transparent 28px 55px) !important;
+}
+
+.sticky-card > .hand-border,
+.task-card > .hand-border,
+.qa-card > .hand-border,
+.studio-inner > .hand-border {
+  border-color: var(--edge) !important;
+  border-width: 3px !important;
+  border-radius: 20px 12px 23px 14px !important;
+  filter: url(#crayon-edge-2);
+}
+
+.sticky-card > .hand-border::after,
+.task-card > .hand-border::after,
+.qa-card > .hand-border::after,
+.studio-inner > .hand-border::after {
+  inset: 5px 4px 4px 5px !important;
+  border-width: 1.7px !important;
+  opacity: .68 !important;
+  border-radius: 18px 14px 20px 12px !important;
+}
+
+.card-scribble {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  opacity: .54;
+  filter: url(#crayon-edge-2);
+}
+
+.card-scribble-a {
+  right: 18px;
+  top: 52%;
+  width: 82px;
+  height: 32px;
+  background: repeating-linear-gradient(167deg, rgba(147, 133, 103, .42) 0 2px, transparent 2px 7px);
+  transform: rotate(-5deg);
+}
+
+.card-scribble-b {
+  left: 15px;
+  bottom: 15px;
+  width: 54px;
+  height: 18px;
+  background: repeating-linear-gradient(9deg, rgba(190, 74, 66, .36) 0 2px, transparent 2px 7px);
+  transform: rotate(8deg);
+}
+
+.card-sticker {
+  right: 8px !important;
+  bottom: 7px !important;
+  opacity: .96;
+  transform: rotate(-10deg) scale(1.06);
+}
+
+.sticky-title {
+  font-size: 24px !important;
+  line-height: 1.08 !important;
+  font-weight: 500;
+}
+
+.sticky-list {
+  font-size: 17px !important;
+  line-height: 1.82 !important;
+}
+
+.sticky-list li {
+  transform: rotate(-.4deg);
+}
+
+.sticky-list li:nth-child(2n) {
+  transform: rotate(.5deg) translateX(4px);
+}
+
+.task-wrap:nth-child(odd) { --rot: -2.5deg !important; }
+.task-wrap:nth-child(even) { --rot: 1.4deg !important; }
+.task-wrap:nth-child(3n) { --rot: -1deg !important; }
+
+.task-card {
+  min-height: 148px !important;
+  padding: 18px 15px 13px !important;
+}
+
+.task-text {
+  font-size: 21px !important;
+  line-height: 1.13 !important;
+  max-width: 78%;
+}
+
+.task-due {
+  font-size: 18px !important;
+}
+
+.task-sticker {
+  right: 10px !important;
+  bottom: 38px !important;
+}
+
+.tape {
+  height: 30px !important;
+  clip-path: polygon(0 10%, 7% 0, 18% 8%, 31% 1%, 47% 8%, 62% 3%, 78% 10%, 92% 2%, 100% 9%, 96% 100%, 82% 88%, 68% 98%, 51% 91%, 33% 100%, 20% 90%, 4% 100%);
+  opacity: .78;
+}
+
+.qa-grid {
+  gap: 16px !important;
+}
+
+.quick-action {
+  min-height: 132px;
+}
+
+.quick-action .qa-card {
+  min-height: 130px !important;
+  padding: 15px 9px !important;
+}
+
+.qa-sticker {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  transform: rotate(12deg);
+}
+
+.qa-scribble {
+  left: 13px;
+  bottom: 13px;
+  width: 48px;
+  height: 22px;
+  background: repeating-linear-gradient(165deg, rgba(190,74,66,.42) 0 2px, transparent 2px 8px);
+}
+
+.qa-icon {
+  margin-top: 6px;
+  transform: rotate(-6deg) scale(1.08) !important;
+}
+
+.qa-label {
+  font-size: 18px !important;
+}
+
+.studio-grid.coming-grid {
+  gap: 18px !important;
+}
+
+.studio-card {
+  min-height: 156px;
+}
+
+.studio-inner {
+  min-height: 156px !important;
+  padding: 18px 16px 14px !important;
+}
+
+.studio-title {
+  font-size: 23px !important;
+  line-height: 1.08 !important;
+  max-width: 82% !important;
+  margin-top: 8px;
+}
+
+.studio-subtitle {
+  font-size: 14px !important;
+  line-height: 1.24 !important;
+  max-width: 70% !important;
+  margin-top: 8px !important;
+  opacity: .82;
+}
+
+.studio-badge {
+  position: absolute !important;
+  left: 16px;
+  bottom: 12px;
+  margin: 0 !important;
+  transform: rotate(-5deg);
+  font-size: 17px !important;
+  color: var(--doodle-red) !important;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.3px;
+  text-decoration-color: rgba(168,77,66,.42);
+}
+
+.studio-icon {
+  width: 42px !important;
+  height: 42px !important;
+  background: transparent !important;
+}
+
+.studio-scribble {
+  right: 16px;
+  bottom: 28px;
+  width: 84px;
+  height: 34px;
+  background: repeating-linear-gradient(161deg, rgba(126, 148, 159, .38) 0 2px, transparent 2px 7px);
+}
+
+.studio-arrow,
+.studio-plane {
+  font-size: 30px !important;
+  right: 22px !important;
+  bottom: 22px !important;
+}
+
+.studio-card svg:not(.clip) {
+  overflow: visible;
+}
+
+.conv-list {
+  position: relative;
+}
+
+.conv-list::before {
+  content: "";
+  position: absolute;
+  width: 230px;
+  height: 250px;
+  right: 12px;
+  top: 18px;
+  background: rgba(221, 139, 145, .16);
+  border-radius: 48% 52% 45% 55%;
+  transform: rotate(-13deg);
+  filter: url(#crayon-edge-2);
+  pointer-events: none;
+}
+
+.fab {
+  border-radius: 46% 54% 48% 52% !important;
+  transform: rotate(-7deg);
+}
+
+@media (max-width: 480px) {
+  .sticky-card { min-height: 230px !important; }
+  .task-card { min-height: 150px !important; }
+  .studio-inner { min-height: 164px !important; }
+  .studio-title { font-size: 22px !important; }
+}
