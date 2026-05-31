@@ -2543,3 +2543,34 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
     padding: 12px 11px 32px !important;
   }
 }
+
+/* rough.js trial: real hand-drawn card outlines over the old fallback paths. */
+.rough-frame {
+  position: absolute;
+  inset: -8px -9px -9px -8px;
+  z-index: 7;
+  pointer-events: none;
+  overflow: visible;
+  opacity: .72;
+  filter: url(#rough-paper-soft) drop-shadow(1px 1px 0 rgba(255,250,238,.36));
+}
+
+.rough-frame path {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.crayon-card > .rough-frame + .doodle-frame {
+  opacity: .22 !important;
+}
+
+.quick-action .rough-frame,
+.studio-card .rough-frame {
+  inset: -10px -11px -11px -10px;
+}
+
+.pinned-row .rough-frame {
+  inset: -5px -6px -6px -5px;
+  opacity: .62;
+}

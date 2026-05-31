@@ -1,4 +1,5 @@
 import React from 'react'
+import rough from 'roughjs/bundled/rough.esm.js'
 import {
   Heart, Star, Sparkle, Flower, FlowerFace, Pin,
   CatAvatar, RabbitAvatar, CakeAvatar, LeafAvatar,
@@ -43,6 +44,37 @@ const FRAME_PATHS = [
   ],
 ]
 
+function RoughFrame({ frame = 0, dbl = true }) {
+  const svgRef = React.useRef(null)
+
+  React.useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    while (svg.firstChild) svg.removeChild(svg.firstChild)
+
+    const frameIdx = Math.abs(Number(frame) || 0) % FRAME_PATHS.length
+    const [p1, p2, p3] = FRAME_PATHS[frameIdx]
+    const seed = Math.max(1, Math.abs(Number(frame) || 1) % 2147483647)
+    const rc = rough.svg(svg)
+    const base = {
+      fill: 'none',
+      stroke: 'var(--edge)',
+      strokeWidth: 2.2,
+      roughness: 2.4,
+      bowing: 1.8,
+      seed,
+      disableMultiStroke: false,
+      preserveVertices: false,
+    }
+
+    svg.appendChild(rc.path(p1, { ...base, strokeWidth: 2.7, roughness: 2.9, seed }))
+    svg.appendChild(rc.path(p2, { ...base, strokeWidth: 1.35, roughness: 2.1, seed: seed + 17 }))
+    if (dbl) svg.appendChild(rc.path(p3, { ...base, strokeWidth: 1, roughness: 1.8, seed: seed + 31 }))
+  }, [frame, dbl])
+
+  return <svg ref={svgRef} className={"rough-frame" + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" />
+}
+
 export function CrayonCard({ children, tint = "pink", edge, className = "", style, onClick, dbl = true, frame = 0 }) {
   const palette = {
     pink: ["var(--pink)", "var(--pink-edge)"],
@@ -62,6 +94,7 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
       <path d={p1} />
     </svg>
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
+    <RoughFrame frame={hashText(String(frame) + className)} dbl={dbl} />
     <svg className={"doodle-frame frame-" + frameIdx + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path className="df df-shadow" d={p1} />
       <path className="df df-crayon df1" d={p1} />
