@@ -60,16 +60,16 @@ function RoughFrame({ frame = 0, dbl = true }) {
       fill: 'none',
       stroke: 'var(--edge)',
       strokeWidth: 2.2,
-      roughness: 2.4,
-      bowing: 1.8,
+      roughness: 1.65,
+      bowing: 1.15,
       seed,
       disableMultiStroke: false,
       preserveVertices: false,
     }
 
-    svg.appendChild(rc.path(p1, { ...base, strokeWidth: 2.7, roughness: 2.9, seed }))
-    svg.appendChild(rc.path(p2, { ...base, strokeWidth: 1.35, roughness: 2.1, seed: seed + 17 }))
-    if (dbl) svg.appendChild(rc.path(p3, { ...base, strokeWidth: 1, roughness: 1.8, seed: seed + 31 }))
+    svg.appendChild(rc.path(p1, { ...base, strokeWidth: 2.2, roughness: 1.8, seed }))
+    svg.appendChild(rc.path(p2, { ...base, strokeWidth: 1.05, roughness: 1.25, seed: seed + 17 }))
+    if (dbl) svg.appendChild(rc.path(p3, { ...base, strokeWidth: 0.75, roughness: 1.05, seed: seed + 31 }))
   }, [frame, dbl])
 
   return <svg ref={svgRef} className={"rough-frame" + (dbl ? " dbl" : "")} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" />
@@ -92,6 +92,11 @@ export function CrayonCard({ children, tint = "pink", edge, className = "", styl
     <div className="crayon-bg" />
     <svg className={"doodle-fill frame-" + frameIdx} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path d={p1} />
+    </svg>
+    <svg className={"crayon-wash frame-" + frameIdx} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path className="wash-main" d="M13 21 C24 14 38 17 50 15 C64 13 78 16 86 24 C84 36 88 48 85 60 C81 74 70 81 56 82 C42 83 28 85 17 77 C12 64 16 52 13 39 C11 31 9 25 13 21Z" />
+      <path className="wash-side" d="M18 70 C29 65 40 68 53 66 C65 64 75 66 83 72 C74 80 62 84 47 83 C34 82 25 80 18 70Z" />
+      <path className="wash-corner" d="M12 26 C18 20 27 20 34 23 C27 30 19 33 12 26Z" />
     </svg>
     <div className={"hand-border" + (dbl ? " dbl" : "")} />
     <RoughFrame frame={hashText(String(frame) + className)} dbl={dbl} />
