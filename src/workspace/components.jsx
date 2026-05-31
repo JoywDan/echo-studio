@@ -40,7 +40,7 @@ export function StickyNote({ note, variant = "tape", onClick, onEdit, onDelete, 
   </div>)
 }
 const AV = { cat: CatAvatar, rabbit: RabbitAvatar, cake: CakeAvatar, leaf: LeafAvatar }
-export function ConversationRow({ conv, onClick, onDelete }) {
+export function ConversationRow({ conv, onClick, onDelete, onRename }) {
   const Avatar = AV[conv.avatar] || CatAvatar
   return (<div className={"conv-row" + (conv.active ? " active" : "")}>
     {conv.active && <div className="conv-bg" />}
@@ -51,6 +51,8 @@ export function ConversationRow({ conv, onClick, onDelete }) {
         <div className="conv-preview">{conv.preview}</div>
       </div>
     </button>
+    <button className="conv-pin" onClick={(e) => { e.stopPropagation(); onRename && onRename() }} style={{ position: "relative", zIndex: 1 }} title="改名">
+      <Icon name="pencil" size={15} color="var(--ink-faint)" /></button>
     <button className="conv-pin" onClick={(e) => { e.stopPropagation(); onDelete && onDelete() }} style={{ position: "relative", zIndex: 1 }} title="删除">
       <Icon name={onDelete ? "trash" : "pin"} size={15} color="var(--ink-faint)" /></button>
   </div>)

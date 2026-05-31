@@ -6,7 +6,7 @@ import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
 
-export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
+export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onRenameConv, onDeleteConv, onOpenSettings, loading }) {
   const [tasks, setTasks] = React.useState([])
   const [tasksLoading, setTasksLoading] = React.useState(true)
   const [editingTask, setEditingTask] = React.useState(null)
@@ -121,7 +121,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="conv-list">
             {loading && convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话…</div>)
               : convs.length === 0 ? (<div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>{q ? "没找到相关对话" : "还没有对话，点右下角新建 ✏️"}</div>)
-              : convs.map((c) => (<ConversationRow key={c.id} conv={c} onClick={() => onOpenChat(c)} onDelete={() => onDeleteConv && onDeleteConv(c)} />))}
+              : convs.map((c) => (<ConversationRow key={c.id} conv={c} onClick={() => onOpenChat(c)} onRename={() => onRenameConv && onRenameConv(c)} onDelete={() => onDeleteConv && onDeleteConv(c)} />))}
           </div>
           {filtered.length > 4 && (<button className="show-more" onClick={() => setShowAll((s) => !s)}>
             {showAll ? "收起" : "Show more"} <Icon name="chevron" size={15} color="var(--ink-soft)" style={{ transform: showAll ? "rotate(180deg)" : "none" }} /></button>)}

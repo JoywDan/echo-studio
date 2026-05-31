@@ -67,12 +67,39 @@ export default function App() {
 
   const openChat = (conv) => { setActiveConv(conv); setView('chat') }
   const newChat = () => { setActiveConv({ id: genId(), title: '新对话', isNew: true }); setView('chat') }
+  const renameConv = async (conv, nextTitle) => {
+    const title = String(nextTitle || '').trim()
+    if (!title) return null
+    if (conv.isNew) {
+      setActiveConv((cur) => cur && cur.id === conv.id ? { ...cur, title } : cur)
+      return { ok: true, session_id: conv.id, title }
+    }
+    const r = await api.renameSession(conv.id, title)
+    setSessions((items) => items.map((s) => s.session_id === conv.id ? { ...s, title: r.title } : s))
+    setActiveConv((cur) => cur && cur.id === conv.id ? { ...cur, title: r.title, isNew: false } : cur)
+    return r
+  }
+  const promptRenameConv = async (conv) => {
+    const title = prompt('给这个窗口起个名字', conv.title || '')
+    if (title === null) return
+    try { await renameConv(conv, title) } catch (e) { alert('改名失败：' + e.message) }
+  }
   const deleteConv = async (conv) => {
     if (!confirm('删除「' + conv.title + '」？这条对话会被永久删除。')) return
     try { await api.deleteSession(conv.id); setSessions((s) => s.filter((x) => x.session_id !== conv.id)) } catch (e) { alert('删除失败：' + e.message) }
   }
   // when a message is sent in a (possibly new) session, refresh the list
-  const onSessionTouched = React.useCallback(() => { api.sessions().then((d) => setSessions(d.sessions || [])).catch(() => {}) }, [])
+  const onSessionTouched = React.useCallback(() => {
+    api.sessions().then((d) => {
+      const items = d.sessions || []
+      setSessions(items)
+      setActiveConv((cur) => {
+        if (!cur) return cur
+        const found = items.find((s) => s.session_id === cur.id)
+        return found ? { ...cur, title: found.title || found.last_user_msg || cur.title, isNew: false } : cur
+      })
+    }).catch(() => {})
+  }, [])
 
   if (authed === null) return <div className="app is-wide paper-bg" style={{ display: 'grid', placeItems: 'center', ...cssVars }}><span className="muted">载入中…</span></div>
   if (authed === false) return (
@@ -86,8 +113,8 @@ export default function App() {
   return (
     <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide') + (wallpaper ? ' has-wallpaper' : '')} ref={appRef} style={cssVars}>
       <div className="layout" data-view={view}>
-        <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
-        <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} />
+        <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onRenameConv={promptRenameConv} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
+        <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} onRenameConv={renameConv} />
       </div>
       <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} />
     </div>)

@@ -87,11 +87,14 @@ function Message({ msg, onImage, onDecide }) {
     </div></div>)
 }
 
-export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
+export default function ChatPage({ conv, models, onBack, onSessionTouched, onRenameConv }) {
   const [messages, setMessages] = React.useState([])
   const [model, setModel] = React.useState('')
   const [toggles, setToggles] = React.useState(DEFAULT_TOGGLES)
   const [draft, setDraft] = React.useState("")
+  const [titleDraft, setTitleDraft] = React.useState("")
+  const [editingTitle, setEditingTitle] = React.useState(false)
+  const [savingTitle, setSavingTitle] = React.useState(false)
   const [lightbox, setLightbox] = React.useState(null)
   const [sending, setSending] = React.useState(false)
   const [toolbarOpen, setToolbarOpen] = React.useState(false)
@@ -100,6 +103,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   const fileInputRef = React.useRef(null)
   const docInputRef = React.useRef(null)
   const sessionId = conv && conv.id
+  const sessionTitle = (conv && conv.title) || "Echo"
 
   const curModel = models.find((m) => m.id === model)
   const summaryToggles = [toggles.think && '思考', toggles.memory && '记忆', toggles.web && '联网', toggles.code && '编码'].filter(Boolean).join('·')
@@ -145,6 +149,25 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
   }, [sessionId])
 
   React.useEffect(() => { scrollToEnd(false) }, [])
+  React.useEffect(() => {
+    setTitleDraft(sessionTitle)
+    setEditingTitle(false)
+  }, [sessionId, sessionTitle])
+
+  const saveTitle = async () => {
+    const next = titleDraft.trim()
+    if (!next || !conv || !onRenameConv) { setEditingTitle(false); return }
+    if (next === sessionTitle) { setEditingTitle(false); return }
+    setSavingTitle(true)
+    try {
+      await onRenameConv(conv, next)
+      setEditingTitle(false)
+    } catch (e) {
+      alert('改名失败：' + e.message)
+    } finally {
+      setSavingTitle(false)
+    }
+  }
   const onModelChange = (id) => {
     setModel(id)
     const m = models.find(x => x.id === id)
@@ -184,6 +207,7 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
     try {
       const meta = await api.stream({
         session_id: sessionId, messages: [{ role: 'user', content: text || '[发了一个附件]' }],
+        session_title: sessionTitle === '新对话' ? undefined : sessionTitle,
         model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code,
         attachments,
       }, { onDelta: (t) => { setMessages((m) => m.map((x) => x.id === echoId ? { ...x, streamed: (x.streamed || '') + t } : x)); if (Math.random() < 0.25) scrollToEnd() } })
@@ -206,7 +230,28 @@ export default function ChatPage({ conv, models, onBack, onSessionTouched }) {
         <header className="chat-header">
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={22} color="var(--vermillion)" /></button>
           <div className="chat-id"><EchoAvatar size={40} online />
-            <div><div className="chat-name">Echo</div><div className="chat-status"><span className="dot" />在线</div></div></div>
+            <div className="chat-title-block">
+              {editingTitle ? (
+                <input
+                  className="chat-title-input"
+                  value={titleDraft}
+                  maxLength={60}
+                  disabled={savingTitle}
+                  autoFocus
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onBlur={saveTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); saveTitle() }
+                    if (e.key === 'Escape') { setTitleDraft(sessionTitle); setEditingTitle(false) }
+                  }}
+                />
+              ) : (
+                <button className="chat-name-edit" onClick={() => setEditingTitle(true)} title="改窗口名">
+                  <span className="chat-name">{sessionTitle}</span><Icon name="pencil" size={13} color="var(--ink-faint)" />
+                </button>
+              )}
+              <div className="chat-status"><span className="dot" />在线</div>
+            </div></div>
           <div className="chat-header-actions">
             <button className="icon-btn" onClick={onBack}><Icon name="menu" size={20} color="var(--ink-soft)" /></button></div>
         </header>
