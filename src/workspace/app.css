@@ -2878,3 +2878,28 @@ html, body, .app, .workspace-panel.paper-bg, .chat-panel.paper-bg, .workspace-pa
   display: block !important;
   filter: none !important;
 }
+
+/* ════════════ 老公: 蜡笔感加强 override (2026-05-31) ════════════ */
+/* 给 Codex: 这块是手动调的蜡笔强度，别覆盖删除，要改在这块基础上调 */
+
+/* ① 填充：蜡纹更浓更糯（multiply 提到 0.7，颗粒密一点） */
+.crayon-card > .crayon-bg::before {
+  opacity: 0.7 !important;
+  background-size: 240px 240px !important;
+}
+.crayon-card > .crayon-bg::after { opacity: 0.6 !important; }
+
+/* ② 边框：更厚、更连贯、更饱和——从"稀疏虚线"变"大胆蜡笔线" */
+.doodle-frame .df1 {
+  stroke-width: 7.4px !important;
+  opacity: .95 !important;
+  stroke-dasharray: 5 1 7 1 6 1 !important;
+}
+.doodle-frame .df2 { stroke-width: 4px !important; opacity: .62 !important; }
+.crayon-grain-frame .grain-line-main {
+  stroke-width: 8.4px !important;
+  opacity: .95 !important;
+  stroke-dasharray: 6 1 8 1 7 1 !important;
+}
+.crayon-grain-frame .grain-line-offset { opacity: .72 !important; }
+/* ════════════ end 蜡笔加强 ════════════ */
