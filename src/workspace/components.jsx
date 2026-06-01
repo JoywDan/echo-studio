@@ -209,48 +209,56 @@ function StudioCard({ mod, onClick }) {
   const studioStickers = {
     s1: [
       ["kawaii_computer_monitor_with_checkmark_face", "studio-kai monitor"],
-      ["kawaii_teddy_bear_waving_sticker", "studio-kai bear"],
-      ["03_star", "studio-st star"],
-      ["09_lightning", "studio-st spark"],
+      ["kawaii_teddy_bear_waving_sticker", "studio-kai bear side"],
+      ["03_star", "studio-st star top"],
+      ["04_heart", "studio-st heart tiny"],
+      ["09_lightning", "studio-st spark corner"],
     ],
     s2: [
-      ["cute_girl_drawing_in_notebook", "studio-kai girl"],
-      ["05_flower", "studio-st flower"],
+      ["cute_girl_drawing_in_notebook", "studio-kai girl side"],
+      ["05_flower", "studio-st flower top"],
       ["07_cloud", "studio-st cloud small"],
+      ["03_star", "studio-st star mini"],
     ],
     s3: [
-      ["cute_girl_drawing_in_notebook", "studio-kai writer"],
-      ["04_heart", "studio-st heart big"],
-      ["05_flower", "studio-st flower"],
+      ["cute_girl_drawing_in_notebook", "studio-kai writer side"],
+      ["04_heart", "studio-st heart top"],
+      ["05_flower", "studio-st flower mid"],
+      ["03_star", "studio-st star gold"],
     ],
     s4: [
       ["smiling_kawaii_envelope_with_heart_seal", "studio-kai envelope"],
-      ["09_lightning", "studio-st spark"],
-      ["10_music_notes", "studio-st music"],
+      ["09_lightning", "studio-st spark top"],
+      ["10_music_notes", "studio-st music top"],
+      ["04_heart", "studio-st heart side"],
     ],
     s5: [
       ["kawaii_paper_sheet_with_smile", "studio-kai pic"],
-      ["05_flower", "studio-st flower"],
+      ["kawaii_teddy_bear_waving_sticker", "studio-kai bear small"],
+      ["05_flower", "studio-st flower top"],
       ["11_latte_cup", "studio-st cup"],
     ],
     s6: [
       ["sleepy_cloud_and_starry_night", "studio-kai cloud"],
       ["08_moon", "studio-st moon"],
-      ["03_star", "studio-st star"],
+      ["03_star", "studio-st star top"],
+      ["07_cloud", "studio-st cloud puff"],
     ],
     s7: [
       ["01_bear", "studio-st blob a"],
       ["02_bunny", "studio-st blob b"],
       ["06_cactus", "studio-st cactus"],
+      ["04_heart", "studio-st heart top"],
     ],
     s8: [
       ["05_flower", "studio-st flower river"],
       ["07_cloud", "studio-st cloud"],
       ["04_heart", "studio-st heart river"],
+      ["03_star", "studio-st star river"],
     ],
   }[mod.id] || [];
   return (
-    <button className="studio-card" onClick={onClick}>
+    <button className={`studio-card studio-${mod.id}`} onClick={onClick}>
       {mod.clip && <Paperclip size={28} color="#b39a86" style={{ top: -14, right: 22, transform: "rotate(12deg)" }} />}
       <CrayonCard tint="pink" edge={mod.edge} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.5)" }}>
         <span className="studio-deco-fill" style={{ "--scol": (TINT[mod.edge] || TINT.pink).edge }} />
