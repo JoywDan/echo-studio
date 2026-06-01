@@ -910,7 +910,7 @@ input, textarea { font-family: inherit; }
   width: 50px !important;
 }
 .task-section-tape {
-  margin-top: 2px !important;
+  margin-top: -16px !important;
   margin-bottom: 14px !important;
   transform: rotate(-1.2deg);
 }
@@ -1489,6 +1489,36 @@ input, textarea { font-family: inherit; }
   scroll-snap-align: start;
 }
 
+/* —— tasks 也横向手滑：超过 2 张往右延伸，不拉长页面 —— */
+.task-grid {
+  grid-template-columns: none !important;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 16px) / 2);
+  gap: 18px 16px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  margin: 4px -8px 0 !important;
+  padding: 26px 8px 34px !important;
+}
+.task-grid::-webkit-scrollbar {
+  display: none;
+}
+.task-grid .task-wrap {
+  width: 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.task-grid .task-card {
+  min-height: 150px;
+}
+.task-grid .task-foot {
+  padding-bottom: 18px;
+}
+
 @media (max-width: 390px) {
   .ne-asset-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1501,5 +1531,11 @@ input, textarea { font-family: inherit; }
     gap: 26px 18px !important;
     margin: -30px -6px 0 !important;
     padding: 50px 6px 30px !important;
+  }
+  .task-grid {
+    grid-auto-columns: calc((100% - 14px) / 2);
+    gap: 16px 14px !important;
+    margin: 2px -6px 0 !important;
+    padding: 24px 6px 32px !important;
   }
 }
