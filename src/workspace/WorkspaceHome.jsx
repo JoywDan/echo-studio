@@ -1,7 +1,7 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard, DecoLayer } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
-import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, PAPERCLIPS, stickerAt } from './assets.js'
+import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, PAPERCLIPS, PANTHER_AVATARS, TITLE_IMAGES, stickerAt } from './assets.js'
 
 const WASHI_POS = [
   { top: '-29px', left: '48px', transform: 'rotate(4deg)' },
@@ -33,6 +33,11 @@ const STICKER_SLOTS = [
   { left: '20px', bottom: '22px', width: '78px', transform: 'rotate(-8deg)' },
   { right: '24px', bottom: '84px', width: '54px', transform: 'rotate(10deg)' },
   { left: '18px', bottom: '88px', width: '50px', transform: 'rotate(-6deg)' },
+]
+const TASK_STICKER_SLOTS = [
+  { right: '12px', bottom: '8px', width: '44px', transform: 'rotate(5deg)' },
+  { left: '14px', bottom: '10px', width: '38px', transform: 'rotate(-7deg)' },
+  { right: '14px', top: '10px', width: '30px', transform: 'rotate(10deg)' },
 ]
 const assetIndex = (key, fallback = 0) => {
   const m = String(key || '').match(/-(\d+)$/)
@@ -66,7 +71,11 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
-  const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
+  const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({
+    ...c,
+    creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length],
+    avatarUrl: PANTHER_AVATARS.length ? PANTHER_AVATARS[stableShift(c.id || c.title, i) % PANTHER_AVATARS.length] : null,
+  }))
   const noteCards = notes.map((n, i) => {
     const fastener = n.accessoryAsset ?? (n.clipAsset && n.clipAsset !== 'none' ? n.clipAsset : n.tapeAsset)
     const fastenerKey = String(fastener || '')
@@ -90,7 +99,27 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
         : NOTE_STICKERS[i % NOTE_STICKERS.length].map(s => ({ src: stickerAt(s.idx + i), style: s.style }))
     }
   })
-  const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
+  const taskCards = tasks.map((t, i) => {
+    const fastener = t.accessoryAsset ?? (t.clipAsset && t.clipAsset !== 'none' ? t.clipAsset : t.tapeAsset)
+    const fastenerKey = String(fastener || '')
+    const chosenTape = fastener === 'none' ? null : (fastenerKey.startsWith('clip-') || fastenerKey.startsWith('paperclip-') ? null : pick(WASHIS, fastener || ('washi-' + (i % WASHIS.length)), i))
+    const chosenClip = fastenerKey.startsWith('clip-') ? pick(CLIPS, fastener, i) : (fastenerKey.startsWith('paperclip-') ? pick(PAPERCLIPS, fastener, i) : null)
+    const stickerKeys = Array.isArray(t.stickerAssets) && t.stickerAssets.length ? t.stickerAssets.slice(0, 3) : (t.stickerAsset ? [t.stickerAsset] : null)
+    return {
+      ...t,
+      layout: i % 4,
+      tint: t.tint || TASK_TINTS[i % TASK_TINTS.length],
+      icon: t.icon || "file",
+      washiUrl: chosenTape,
+      washiStyle: chosenTape ? { left: i % 2 ? 'auto' : '-8px', right: i % 2 ? '18px' : 'auto', top: '-25px', width: '82px', transform: i % 2 ? 'rotate(6deg)' : 'rotate(-18deg)' } : null,
+      clipUrl: chosenClip,
+      clipStyle: chosenClip ? { left: '50%', top: '-24px', width: fastenerKey.startsWith('paperclip-') ? '50px' : '64px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
+      stickers: stickerKeys ? stickerKeys.map((key, si) => ({
+        src: stickerAt(assetIndex(key, 2 + si)),
+        style: TASK_STICKER_SLOTS[(i + si) % TASK_STICKER_SLOTS.length],
+      })) : null,
+    }
+  })
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
   async function delNote(id) { await api.notes.remove(id); setNotes(n => n.filter(x => x.id !== id)) }
@@ -141,9 +170,12 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           </div>
           <img className="ws-section-tape" src={TAPE_LONG[0]} alt="" />
 
-          <div className="section-head">
-            <h2>Conversations</h2><Star size={14} fill="same" style={{ marginLeft: 2 }} />
-            <button className="head-action recent-pill" onClick={() => setShowAll(s => !s)}><Icon name="sort" size={16} color="var(--ink)" /> Recent</button>
+          <div className="section-head conv-section-head">
+            <img className="title-img title-conversations-img" src={TITLE_IMAGES.conversations} alt="Conversations" />
+            <Star size={14} fill="same" style={{ marginLeft: 2 }} />
+            <button className="head-action recent-pill title-recent-pill" onClick={() => setShowAll(s => !s)}>
+              <img className="title-recent-img" src={TITLE_IMAGES.recent} alt="Recent" />
+            </button>
           </div>
           <div className="conv-list">
             {loading && convs.length === 0 ? <div className="muted" style={{ padding: "20px 12px", fontSize: 14 }}>载入对话…</div>
@@ -152,16 +184,20 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           </div>
           {filtered.length > 3 && <button className="show-more" onClick={() => setShowAll(s => !s)}>{showAll ? "收起" : "展开更多"} <Icon name="chevron" size={15} color="var(--ink-soft)" style={{ transform: showAll ? "rotate(180deg)" : "none" }} /></button>}
 
-          <div className="section-head">
-            <h2>Tasks</h2><span className="tasks-check"><Icon name="check" size={16} color="var(--brick)" /></span>
-            <button className="head-action" onClick={() => setEditingTask('new')}><Icon name="plus" size={16} color="var(--brick)" /> New task</button>
+          <div className="section-head task-section-head">
+            <img className="title-img title-tasks-img" src={TITLE_IMAGES.tasks} alt="Tasks" />
+            <span className="tasks-check"><Icon name="check" size={16} color="var(--brick)" /></span>
+            <button className="head-action task-new-action" onClick={() => setEditingTask('new')}>
+              <img className="title-new-task-img" src={TITLE_IMAGES.new_task} alt="New task" />
+            </button>
           </div>
           <div className="task-grid">
             {tasksLoading ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>载入任务…</span>
               : taskCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有任务，点 + New task</span>
               : taskCards.map(t => <TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => delTask(t.id)} />)}
           </div>
-          <div className="doodle-strip center-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(17)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(9)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
+          <div className="doodle-strip center-strip task-doodle-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(3)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(7)} alt="" /><img className="ds-sticker" src={stickerAt(11)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
+          <img className="ws-section-tape task-section-tape" src={TAPE_LONG[1] || TAPE_LONG[0]} alt="" />
 
           <div className="section-head"><h2>Quick actions</h2><Star size={14} fill="same" /><Heart size={22} color="#e6a6ab" fill="same" style={{ marginLeft: "auto" }} /></div>
           <div className="qa-grid">

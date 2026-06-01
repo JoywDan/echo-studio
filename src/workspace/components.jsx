@@ -125,7 +125,7 @@ function ConversationRow({ conv, onClick, last, onDelete }) {
   return (
     <div className={"conv-row" + (conv.active ? " active" : "")} onClick={onClick}>
       {conv.active && <span className="wash conv-wash" />}
-      <span className="conv-av"><Creature size={48} /></span>
+      <span className="conv-av">{conv.avatarUrl ? <img className="conv-panther-avatar" src={conv.avatarUrl} alt="" /> : <Creature size={48} />}</span>
       <div className="conv-main">
         <div className="conv-top">
           <span className="conv-title">{conv.title}</span>
@@ -148,8 +148,8 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const stop = (e) => e.stopPropagation();
   return (
     <div className="task-wrap" style={{ "--rot": (task.rot || 0) + "deg" }}>
-      {task.tape && <Tape kind={task.tape} style={{ top: -12, left: -6, transform: "rotate(-24deg)", width: 62, height: 26 }} />}
-      {task.clip && <BinderClip size={26} style={{ top: -16, left: "50%", marginLeft: -13 }} />}
+      {task.washiUrl ? <img className={"task-washi-tape task-washi-layout-" + (task.layout || 0)} src={task.washiUrl} alt="" style={task.washiStyle} /> : (task.tape && <Tape kind={task.tape} style={{ top: -12, left: -6, transform: "rotate(-24deg)", width: 62, height: 26 }} />)}
+      {task.clipUrl ? <img className="task-clip-asset" src={task.clipUrl} alt="" style={task.clipStyle} /> : (task.clip && <BinderClip size={26} style={{ top: -16, left: "50%", marginLeft: -13 }} />)}
       <CrayonCard tint={task.tint} className={"task-card" + (task.punch ? " punch" : "") + (task.receipt ? " receipt" : "")}>
         <div className="task-inner">
           <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="完成">
@@ -165,9 +165,10 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
             <button className="round-btn sm" onClick={(e) => { stop(e); onDelete && onDelete() }}><Icon name="trash" size={13} color="var(--brick)" /></button>
           </span>
         </div>
-        {task.sticker === "star" && <StarFace size={26} style={{ position: "absolute", right: 14, bottom: -6 }} />}
-        {task.sticker === "flower" && <Flower size={22} color="#d98c84" style={{ position: "absolute", right: 14, bottom: 8 }} />}
-        {task.sticker === "heartlegs" && <HeartLegs size={34} style={{ position: "absolute", right: 8, bottom: -4 }} />}
+        {task.stickers ? task.stickers.map((s, si) => <img key={si} className="task-sticker-img" src={s.src} alt="" style={s.style} />) : null}
+        {!task.stickers && task.sticker === "star" && <StarFace size={26} style={{ position: "absolute", right: 14, bottom: -6 }} />}
+        {!task.stickers && task.sticker === "flower" && <Flower size={22} color="#d98c84" style={{ position: "absolute", right: 14, bottom: 8 }} />}
+        {!task.stickers && task.sticker === "heartlegs" && <HeartLegs size={34} style={{ position: "absolute", right: 8, bottom: -4 }} />}
         {task.cloud && <Cloud size={26} style={{ position: "absolute", right: 14, top: 10 }} />}
         {task.stamp && <span className="task-stamp" />}
       </CrayonCard>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from './doodles.jsx'
-import { Sticker, TINT_MAP } from './components.jsx'
+import { TINT_MAP } from './components.jsx'
+import { WASHIS, CLIPS, PAPERCLIPS, STICKERS as ASSET_STICKERS } from './assets.js'
 
 const ICONS = ['note', 'pencil', 'send', 'image', 'star']
 const DUE_TYPES = [
@@ -15,20 +16,16 @@ const TINTS = [
   { key: 'blue', label: '蓝灰' },
   { key: 'yellow', label: '奶油黄' },
 ]
-const TAPES = [
-  { key: 'gingham', label: '绿格子' },
-  { key: 'polka', label: '粉圆点' },
-  { key: 'stripe', label: '红斜纹' },
-  { key: 'plain', label: '粉胶带' },
+const FASTENER_CHOICES = [
+  ...WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src, kind: 'tape' })),
+  ...CLIPS.map((src, i) => ({ key: 'clip-' + i, label: '夹子 ' + (i + 1), src, kind: 'clip' })),
+  ...PAPERCLIPS.map((src, i) => ({ key: 'paperclip-' + i, label: '回形针 ' + (i + 1), src, kind: 'paperclip' })),
+  { key: 'none', label: '不加固定物', src: null, kind: 'none' },
 ]
-const STICKERS = [
-  { key: 'star', label: '星星' },
-  { key: 'heart', label: '心心' },
-  { key: 'cloud', label: '小云' },
-  { key: 'flower', label: '小花' },
-  { key: 'panther', label: '黑豹' },
-  { key: 'trio', label: '三小团' },
-]
+const STICKER_CHOICES = ASSET_STICKERS
+  .filter((src) => !String(src).includes('pack_'))
+  .slice(0, 12)
+  .map((src, i) => ({ key: 'sticker-' + i, label: '贴纸 ' + (i + 1), src }))
 const EDGES = [
   { key: 'crayon', label: '蜡笔框' },
   { key: 'torn', label: '撕纸边' },
@@ -41,10 +38,25 @@ export default function TaskEditor({ task, onSave, onClose }) {
   const [dueType, setDueType] = React.useState(task?.dueType ?? 'today')
   const [icon, setIcon] = React.useState(task?.icon ?? 'note')
   const [tint, setTint] = React.useState(task?.tint ?? 'pink')
-  const [tape, setTape] = React.useState(task?.tape ?? 'polka')
-  const [sticker, setSticker] = React.useState(task?.sticker ?? task?.icon ?? 'star')
+  const initialFastener = task?.accessoryAsset ?? (task?.clipAsset && task.clipAsset !== 'none' ? task.clipAsset : task?.tapeAsset) ?? 'washi-0'
+  const initialStickers = Array.isArray(task?.stickerAssets)
+    ? task.stickerAssets
+    : (task?.stickerAsset ? [task.stickerAsset] : ['sticker-2'])
+  const [fastenerAsset, setFastenerAsset] = React.useState(initialFastener)
+  const [stickerAssets, setStickerAssets] = React.useState(initialStickers)
   const [edge, setEdge] = React.useState(task?.edge ?? 'crayon')
   const [saving, setSaving] = React.useState(false)
+
+  const tapeAsset = fastenerAsset.startsWith('washi-') ? fastenerAsset : 'none'
+  const clipAsset = fastenerAsset.startsWith('clip-') || fastenerAsset.startsWith('paperclip-') ? fastenerAsset : 'none'
+  const primarySticker = stickerAssets[0] || ''
+
+  function toggleSticker(key) {
+    setStickerAssets((cur) => {
+      if (cur.includes(key)) return cur.filter((v) => v !== key)
+      return [...cur, key].slice(0, 4)
+    })
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -53,7 +65,21 @@ export default function TaskEditor({ task, onSave, onClose }) {
     try {
       let d = due.trim()
       if (!d) d = dueType === 'today' ? 'Today' : dueType === 'tomorrow' ? 'Tomorrow' : ''
-      await onSave({ text: text.trim(), due: d, dueType, icon, tint, tape, sticker, edge })
+      await onSave({
+        text: text.trim(),
+        due: d,
+        dueType,
+        icon,
+        tint,
+        accessoryAsset: fastenerAsset,
+        tapeAsset,
+        clipAsset,
+        stickerAssets,
+        stickerAsset: primarySticker,
+        tape: tapeAsset,
+        sticker: primarySticker,
+        edge,
+      })
     } finally {
       setSaving(false)
     }
@@ -99,21 +125,25 @@ export default function TaskEditor({ task, onSave, onClose }) {
             })}
           </div>
 
-          <label className="ne-label">胶带和贴纸</label>
-          <div className="ne-row">
-            {TAPES.map((k) => (
+          <label className="ne-label">顶部固定物 <span className="ne-hint">胶带 / 夹子只能选一个</span></label>
+          <div className="ne-asset-grid fastener-asset-grid">
+            {FASTENER_CHOICES.map((k) => (
               <button key={k.key} type="button"
-                className={"ne-chip tape-choice " + k.key + (tape === k.key ? " sel" : "")}
-                onClick={() => setTape(k.key)}
-              >{k.label}</button>
+                className={"ne-asset-choice " + (k.kind === 'tape' ? 'tape-asset-choice' : 'clip-asset-choice') + (fastenerAsset === k.key ? " sel" : "")}
+                onClick={() => setFastenerAsset(k.key)}
+                title={k.label}
+              >{k.src ? <img src={k.src} alt="" /> : <span>无</span>}</button>
             ))}
           </div>
-          <div className="ne-row sticker-choice-row">
-            {STICKERS.map((d) => (
+
+          <label className="ne-label">贴纸小生物 <span className="ne-hint">可多选，最多 4 个</span></label>
+          <div className="ne-asset-grid sticker-asset-grid">
+            {STICKER_CHOICES.map((d) => (
               <button key={d.key} type="button"
-                className={"ne-chip sticker-choice" + (sticker === d.key ? " sel" : "")}
-                onClick={() => setSticker(d.key)}
-              ><Sticker name={d.key} size={20} />{d.label}</button>
+                className={"ne-asset-choice sticker-asset-choice" + (stickerAssets.includes(d.key) ? " sel" : "")}
+                onClick={() => toggleSticker(d.key)}
+                title={d.label}
+              ><img src={d.src} alt="" /></button>
             ))}
           </div>
 

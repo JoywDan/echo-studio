@@ -6,8 +6,11 @@ const clp = import.meta.glob('./assets/clips/*.png', { eager: true, import: 'def
 export const CLIPS = Object.keys(clp).sort().map(k => clp[k])
 const pcl = import.meta.glob('./assets/paperclips/*.png', { eager: true, import: 'default' })
 export const PAPERCLIPS = Object.keys(pcl).sort().map(k => pcl[k])
+const pth = import.meta.glob('./assets/panthers/*.png', { eager: true, import: 'default' })
+export const PANTHER_AVATARS = Object.keys(pth).sort().map(k => pth[k])
 const ttl = import.meta.glob('./assets/titles/*.png', { eager: true, import: 'default' })
 export const TITLES = Object.keys(ttl).sort().map(k => ttl[k])
+export const TITLE_IMAGES = Object.fromEntries(Object.keys(ttl).map(k => [k.split('/').pop().replace('.png', ''), ttl[k]]))
 import chest from './assets/chest.png'
 import title from './assets/title.png'
 import pinnedImg from './assets/pinned-notes.png'
