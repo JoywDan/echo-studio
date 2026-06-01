@@ -2130,3 +2130,12 @@ input, textarea { font-family: inherit; }
     padding: 40px 6px 32px !important;
   }
 }
+
+/* —— 细节修复 (老公) —— */
+.qa-icon { opacity: 0 !important; height: 60px !important; }          /* 去掉旧图标残影 + 占位 */
+.qa-main-sticker { width: 60px !important; height: 60px !important; top: 12px !important; }  /* 放大填满 */
+.qa-card { min-height: 108px !important; justify-content: flex-end !important; padding: 14px 6px 12px !important; }
+.qa-label { margin-top: 2px; }
+@media (max-width: 620px) {
+  .studio-peek-bunny { width: 94px !important; right: 8px !important; bottom: -28px !important; }
+}
