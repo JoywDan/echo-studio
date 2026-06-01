@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from './doodles.jsx'
-import { Sticker, TINT_MAP } from './components.jsx'
+import { TINT_MAP } from './components.jsx'
+import { WASHIS, CLIPS, STICKERS as ASSET_STICKERS } from './assets.js'
 
 const TINTS = [
   { key: 'cream', label: '旧纸白' },
@@ -10,21 +11,9 @@ const TINTS = [
   { key: 'yellow', label: '奶油黄' },
   { key: 'kraft', label: '牛皮纸' },
 ]
-const TAPES = [
-  { key: 'gingham', label: '绿格子' },
-  { key: 'polka', label: '粉圆点' },
-  { key: 'stripe', label: '红斜纹' },
-  { key: 'plain', label: '粉胶带' },
-  { key: 'warm', label: '旧胶带' },
-]
-const STICKERS = [
-  { key: 'sparkle', label: '闪闪' },
-  { key: 'flower', label: '小花' },
-  { key: 'heart', label: '心心' },
-  { key: 'cloud', label: '小云' },
-  { key: 'flowerface', label: '花脸' },
-  { key: 'panther', label: '黑豹' },
-]
+const TAPE_CHOICES = WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src }))
+const CLIP_CHOICES = [{ key: 'none', label: '不加夹子', src: null }, ...CLIPS.map((src, i) => ({ key: 'clip-' + i, label: '夹子 ' + (i + 1), src }))]
+const STICKER_CHOICES = ASSET_STICKERS.slice(0, 12).map((src, i) => ({ key: 'sticker-' + i, label: '贴纸 ' + (i + 1), src }))
 const EDGES = [
   { key: 'crayon', label: '蜡笔框' },
   { key: 'torn', label: '撕纸边' },
@@ -36,8 +25,9 @@ export default function NoteEditor({ note, onSave, onClose }) {
   const [title, setTitle] = React.useState(note?.title ?? '')
   const [itemsText, setItemsText] = React.useState(note?.items?.join('\n') ?? '')
   const [tint, setTint] = React.useState(note?.tint ?? 'cream')
-  const [tape, setTape] = React.useState(note?.tape ?? 'gingham')
-  const [sticker, setSticker] = React.useState(note?.sticker ?? note?.doodle ?? 'sparkle')
+  const [tapeAsset, setTapeAsset] = React.useState(note?.tapeAsset ?? 'washi-0')
+  const [clipAsset, setClipAsset] = React.useState(note?.clipAsset ?? 'none')
+  const [stickerAsset, setStickerAsset] = React.useState(note?.stickerAsset ?? 'sticker-3')
   const [edge, setEdge] = React.useState(note?.edge ?? 'crayon')
   const [rotate, setRotate] = React.useState(note?.rotate ?? -2)
   const [saving, setSaving] = React.useState(false)
@@ -50,7 +40,7 @@ export default function NoteEditor({ note, onSave, onClose }) {
     setSaving(true)
     try {
       const items = itemsText.split('\n').map((s) => s.trim()).filter(Boolean)
-      await onSave({ title: title.trim(), items, tint, tape, doodle: sticker, sticker, edge, rotate })
+      await onSave({ title: title.trim(), items, tint, tapeAsset, clipAsset, stickerAsset, tape: tapeAsset, doodle: stickerAsset, sticker: stickerAsset, edge, rotate })
     } finally {
       setSaving(false)
     }
@@ -99,22 +89,35 @@ export default function NoteEditor({ note, onSave, onClose }) {
           </div>
 
           <label className="ne-label">胶带花样</label>
-          <div className="ne-row">
-            {TAPES.map((k) => (
+          <div className="ne-asset-grid tape-asset-grid">
+            {TAPE_CHOICES.map((k) => (
               <button key={k.key} type="button"
-                className={"ne-chip tape-choice " + k.key + (tape === k.key ? " sel" : "")}
-                onClick={() => setTape(k.key)}
-              >{k.label}</button>
+                className={"ne-asset-choice tape-asset-choice" + (tapeAsset === k.key ? " sel" : "")}
+                onClick={() => setTapeAsset(k.key)}
+                title={k.label}
+              ><img src={k.src} alt="" /></button>
+            ))}
+          </div>
+
+          <label className="ne-label">夹子 / 回形针</label>
+          <div className="ne-asset-grid clip-asset-grid">
+            {CLIP_CHOICES.map((k) => (
+              <button key={k.key} type="button"
+                className={"ne-asset-choice clip-asset-choice" + (clipAsset === k.key ? " sel" : "")}
+                onClick={() => setClipAsset(k.key)}
+                title={k.label}
+              >{k.src ? <img src={k.src} alt="" /> : <span>无</span>}</button>
             ))}
           </div>
 
           <label className="ne-label">贴纸小生物</label>
-          <div className="ne-row sticker-choice-row">
-            {STICKERS.map((d) => (
+          <div className="ne-asset-grid sticker-asset-grid">
+            {STICKER_CHOICES.map((d) => (
               <button key={d.key} type="button"
-                className={"ne-chip sticker-choice" + (sticker === d.key ? " sel" : "")}
-                onClick={() => setSticker(d.key)}
-              ><Sticker name={d.key} size={20} />{d.label}</button>
+                className={"ne-asset-choice sticker-asset-choice" + (stickerAsset === d.key ? " sel" : "")}
+                onClick={() => setStickerAsset(d.key)}
+                title={d.label}
+              ><img src={d.src} alt="" /></button>
             ))}
           </div>
 

@@ -97,6 +97,7 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
         {onDelete && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onDelete() }} aria-label="删除"><Icon name="trash" size={13} color="var(--brick)" /></button>}
       </div>}
       {note.washiUrl ? <img className={"washi-tape washi-layout-" + (note.layout || 0)} src={note.washiUrl} alt="" style={note.washiStyle} /> : <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />}
+      {note.clipUrl && <img className="note-clip-asset" src={note.clipUrl} alt="" style={note.clipStyle} />}
       <CrayonCard tint={note.tint} className="sticky-card">
         <div className="sticky-body">
           <div className="sticky-title-row">

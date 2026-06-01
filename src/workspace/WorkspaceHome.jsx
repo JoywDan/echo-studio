@@ -1,7 +1,7 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard, DecoLayer } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
-import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
+import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, stickerAt } from './assets.js'
 
 const WASHI_POS = [
   { top: '-29px', left: '48px', transform: 'rotate(4deg)' },
@@ -28,6 +28,11 @@ const NOTE_STICKERS = [
     { idx: 0, style: { left: '14px', bottom: '20px', width: '58px', transform: 'rotate(-5deg)' } },
   ],
 ]
+const assetIndex = (key, fallback = 0) => {
+  const m = String(key || '').match(/-(\d+)$/)
+  return m ? Number(m[1]) : fallback
+}
+const pick = (items, key, fallback = 0) => items.length ? items[((assetIndex(key, fallback) % items.length) + items.length) % items.length] : null
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
 import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
 import { api } from '../api.js'
@@ -52,9 +57,18 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, layout: i % 4, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], washiStyle: WASHI_POS[i % WASHI_POS.length],
-    stickers: NOTE_STICKERS[i % NOTE_STICKERS.length].map(s => ({ src: stickerAt(s.idx + i), style: s.style }))
-  }))
+  const noteCards = notes.map((n, i) => {
+    const chosenTape = n.tapeAsset ? pick(WASHIS, n.tapeAsset, i) : WASHIS[i % WASHIS.length]
+    const chosenClip = n.clipAsset && n.clipAsset !== 'none' ? pick(CLIPS, n.clipAsset, i) : null
+    const chosenSticker = n.stickerAsset ? stickerAt(assetIndex(n.stickerAsset, 3)) : null
+    return { ...n, layout: i % 4, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: chosenTape, washiStyle: WASHI_POS[i % WASHI_POS.length],
+      clipUrl: chosenClip,
+      clipStyle: chosenClip ? { left: i % 2 ? 'auto' : '14px', right: i % 2 ? '18px' : 'auto', top: '-28px', width: i % 2 ? '92px' : '82px', transform: i % 2 ? 'rotate(8deg)' : 'rotate(-9deg)' } : null,
+      stickers: chosenSticker
+        ? [{ src: chosenSticker, style: { right: '22px', bottom: '18px', width: i % 2 ? '104px' : '92px', transform: i % 2 ? 'rotate(5deg)' : 'rotate(-7deg)' } }]
+        : NOTE_STICKERS[i % NOTE_STICKERS.length].map(s => ({ src: stickerAt(s.idx + i), style: s.style }))
+    }
+  })
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
