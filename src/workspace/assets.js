@@ -4,6 +4,8 @@ const wsh = import.meta.glob('./assets/washi/*.png', { eager: true, import: 'def
 export const WASHIS = Object.keys(wsh).sort().map(k => wsh[k])
 const clp = import.meta.glob('./assets/clips/*.png', { eager: true, import: 'default' })
 export const CLIPS = Object.keys(clp).sort().map(k => clp[k])
+const pcl = import.meta.glob('./assets/paperclips/*.png', { eager: true, import: 'default' })
+export const PAPERCLIPS = Object.keys(pcl).sort().map(k => pcl[k])
 const ttl = import.meta.glob('./assets/titles/*.png', { eager: true, import: 'default' })
 export const TITLES = Object.keys(ttl).sort().map(k => ttl[k])
 import chest from './assets/chest.png'

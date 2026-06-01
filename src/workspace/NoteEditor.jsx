@@ -1,7 +1,7 @@
 import React from 'react'
 import { Icon } from './doodles.jsx'
 import { TINT_MAP } from './components.jsx'
-import { WASHIS, CLIPS, STICKERS as ASSET_STICKERS } from './assets.js'
+import { WASHIS, CLIPS, PAPERCLIPS, STICKERS as ASSET_STICKERS } from './assets.js'
 
 const TINTS = [
   { key: 'cream', label: '旧纸白' },
@@ -14,9 +14,13 @@ const TINTS = [
 const FASTENER_CHOICES = [
   ...WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src, kind: 'tape' })),
   ...CLIPS.map((src, i) => ({ key: 'clip-' + i, label: '夹子 ' + (i + 1), src, kind: 'clip' })),
+  ...PAPERCLIPS.map((src, i) => ({ key: 'paperclip-' + i, label: '回形针 ' + (i + 1), src, kind: 'paperclip' })),
   { key: 'none', label: '不加固定物', src: null, kind: 'none' },
 ]
-const STICKER_CHOICES = ASSET_STICKERS.slice(0, 12).map((src, i) => ({ key: 'sticker-' + i, label: '贴纸 ' + (i + 1), src }))
+const STICKER_CHOICES = ASSET_STICKERS
+  .filter((src) => !String(src).includes('pack_'))
+  .slice(0, 12)
+  .map((src, i) => ({ key: 'sticker-' + i, label: '贴纸 ' + (i + 1), src }))
 const EDGES = [
   { key: 'crayon', label: '蜡笔框' },
   { key: 'torn', label: '撕纸边' },
@@ -40,7 +44,7 @@ export default function NoteEditor({ note, onSave, onClose }) {
 
   const [light] = TINT_MAP[tint] || TINT_MAP.cream
   const tapeAsset = fastenerAsset.startsWith('washi-') ? fastenerAsset : 'none'
-  const clipAsset = fastenerAsset.startsWith('clip-') ? fastenerAsset : 'none'
+  const clipAsset = fastenerAsset.startsWith('clip-') || fastenerAsset.startsWith('paperclip-') ? fastenerAsset : 'none'
   const primarySticker = stickerAssets[0] || ''
 
   function toggleSticker(key) {
@@ -100,7 +104,7 @@ export default function NoteEditor({ note, onSave, onClose }) {
             value={itemsText}
             onChange={(e) => setItemsText(e.target.value)}
             placeholder={"6/2 8:30\n护照、id、通知书\n记得买花"}
-            rows={5}
+            rows={7}
           />
 
           <label className="ne-label">纸张颜色</label>
@@ -122,7 +126,7 @@ export default function NoteEditor({ note, onSave, onClose }) {
           <div className="ne-asset-grid fastener-asset-grid">
             {FASTENER_CHOICES.map((k) => (
               <button key={k.key} type="button"
-                className={"ne-asset-choice " + (k.kind === 'clip' ? 'clip-asset-choice' : 'tape-asset-choice') + (fastenerAsset === k.key ? " sel" : "")}
+                className={"ne-asset-choice " + (k.kind === 'tape' ? 'tape-asset-choice' : 'clip-asset-choice') + (fastenerAsset === k.key ? " sel" : "")}
                 onClick={() => setFastenerAsset(k.key)}
                 title={k.label}
               >{k.src ? <img src={k.src} alt="" /> : <span>无</span>}</button>

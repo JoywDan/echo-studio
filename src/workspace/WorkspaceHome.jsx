@@ -1,7 +1,7 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard, DecoLayer } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
-import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, stickerAt } from './assets.js'
+import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, PAPERCLIPS, stickerAt } from './assets.js'
 
 const WASHI_POS = [
   { top: '-29px', left: '48px', transform: 'rotate(4deg)' },
@@ -69,8 +69,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
   const noteCards = notes.map((n, i) => {
     const fastener = n.accessoryAsset ?? (n.clipAsset && n.clipAsset !== 'none' ? n.clipAsset : n.tapeAsset)
-    const chosenTape = fastener === 'none' ? null : (String(fastener || '').startsWith('clip-') ? null : pick(WASHIS, fastener || ('washi-' + (i % WASHIS.length)), i))
-    const chosenClip = String(fastener || '').startsWith('clip-') ? pick(CLIPS, fastener, i) : null
+    const fastenerKey = String(fastener || '')
+    const chosenTape = fastener === 'none' ? null : (fastenerKey.startsWith('clip-') || fastenerKey.startsWith('paperclip-') ? null : pick(WASHIS, fastener || ('washi-' + (i % WASHIS.length)), i))
+    const chosenClip = fastenerKey.startsWith('clip-') ? pick(CLIPS, fastener, i) : (fastenerKey.startsWith('paperclip-') ? pick(PAPERCLIPS, fastener, i) : null)
     const chosenStickerKeys = Array.isArray(n.stickerAssets) && n.stickerAssets.length
       ? n.stickerAssets.slice(0, 4)
       : (n.stickerAsset ? [n.stickerAsset] : null)

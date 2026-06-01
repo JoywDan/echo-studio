@@ -478,6 +478,9 @@ input, textarea { font-family: inherit; }
 .ne-input:focus { border-color: var(--vermillion-l); }
 
 .ne-textarea { width: 100%; border: 1.5px solid var(--border, #e8ddd3); border-radius: 8px; padding: 8px 11px; font-size: 14px; background: var(--paper, #faf4ee); color: var(--ink); outline: none; resize: vertical; font-family: inherit; line-height: 1.6; }
+.scrapbook-editor .ne-textarea {
+  min-height: 128px;
+}
 
 .ne-textarea:focus { border-color: var(--vermillion-l); }
 
@@ -1363,6 +1366,8 @@ input, textarea { font-family: inherit; }
 }
 .sticker-asset-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: grid !important;
+  min-height: 118px;
   max-height: 152px;
   overflow-y: auto;
   padding-right: 2px;
