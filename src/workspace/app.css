@@ -1446,7 +1446,7 @@ input, textarea { font-family: inherit; }
   inset: 4px !important;
   z-index: 0 !important;
   pointer-events: none !important;
-  border: 1.5px solid rgba(126,100,64,.22) !important;
+  border: 1.5px solid rgba(177,73,47,.34) !important;
   border-radius: 22px !important;
   filter: none !important;
 }
