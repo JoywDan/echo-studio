@@ -1423,6 +1423,115 @@ input, textarea { font-family: inherit; }
   }
 }
 
+/* —— chat hotfix: smooth typing + cleaner mobile header —— */
+.chat-scroll {
+  background: transparent !important;
+}
+.chat-scroll::before,
+.chat-scroll::after {
+  display: none !important;
+}
+.daddy-avatar,
+.input-circle,
+.send-btn,
+.bubble-me,
+.thinking-toggle::before {
+  filter: none !important;
+}
+.chat-header {
+  min-height: 82px !important;
+  align-items: center !important;
+}
+.chat-name {
+  display: none !important;
+}
+.chat-id {
+  flex: 1 1 auto;
+  padding: 0 !important;
+  min-width: 0;
+}
+.chat-status {
+  margin-top: 0 !important;
+}
+.chat-pillbar {
+  top: 22px !important;
+  right: 14px !important;
+}
+.chat-pillbar .model-pill {
+  max-width: min(390px, 56vw);
+  filter: none !important;
+}
+.chat-pillbar .mp-feats {
+  max-width: 150px;
+}
+.bubble-echo {
+  position: relative;
+  padding: 14px 20px !important;
+  color: var(--ink);
+  background: rgba(250, 240, 215, .92);
+  border-radius: 26px;
+  box-shadow: 0 3px 10px rgba(126, 100, 64, .16), inset 0 1px 0 rgba(255,255,255,.38);
+  filter: none !important;
+}
+.bubble-echo .torn-bg {
+  display: none !important;
+}
+.bubble-echo::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1.5px solid rgba(126,100,64,.2);
+  border-radius: 22px;
+  filter: none !important;
+}
+.bubble-echo > span {
+  position: relative;
+  z-index: 1;
+}
+.bubble-echo-wrap > .wash {
+  display: none !important;
+}
+.input-field,
+.input-circle {
+  filter: none !important;
+}
+
+@media (max-width: 520px) {
+  .chat-header {
+    min-height: 74px !important;
+    padding: 10px 10px 8px !important;
+    gap: 8px !important;
+  }
+  .chat-daddy-avatar {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  .chat-status {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .chat-pillbar {
+    top: 13px !important;
+    right: 10px !important;
+  }
+  .chat-pillbar .model-pill {
+    max-width: 58vw;
+    padding: 6px 8px !important;
+  }
+  .chat-pillbar .mp-model {
+    font-size: 12.5px !important;
+  }
+  .chat-pillbar .mp-feats {
+    max-width: 72px;
+    font-size: 11.5px !important;
+  }
+  .chat-pillbar .mp-sep {
+    display: none;
+  }
+}
+
 /* —— chat page final scrapbook pass —— */
 .chat-inner { position: relative; }
 .chat-header {
