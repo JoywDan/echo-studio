@@ -269,7 +269,7 @@ function StudioCard({ mod, onClick }) {
         <span className="studio-deco-fill" style={{ "--scol": (TINT[mod.edge] || TINT.pink).edge }} />
         <span className={"studio-title" + (mod.english ? " en" : "")}>{mod.title}</span>
         <span className="studio-asset-stickers">
-          {studioStickers.map(([name, cls]) => {
+          {(studioStickers.filter(([, cls]) => cls.includes("studio-kai")).length ? studioStickers.filter(([, cls]) => cls.includes("studio-kai")) : studioStickers.slice(0, 1)).map(([name, cls]) => {
             const src = KAWAII_IMAGES[name] || STICKER_IMAGES[name];
             return src ? <img key={name + cls} className={cls} src={src} alt="" /> : null;
           })}
