@@ -4,17 +4,29 @@ import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
 import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
 
 const WASHI_POS = [
-  { top: '-20px', left: '16px', transform: 'rotate(-6deg)' },
-  { top: '-18px', left: '30%', transform: 'rotate(5deg)' },
-  { top: '-22px', right: '16px', left: 'auto', transform: 'rotate(8deg)' },
-  { top: '-16px', left: '22px', transform: 'rotate(-10deg)' },
+  { top: '-29px', left: '48px', transform: 'rotate(4deg)' },
+  { top: '-30px', left: '36px', transform: 'rotate(-3deg)' },
+  { top: '-27px', right: '48px', left: 'auto', transform: 'rotate(7deg)' },
+  { top: '-26px', left: '54px', transform: 'rotate(-8deg)' },
 ]
-const STK_POS = [
-  { left: '9px', bottom: '9px', width: '56px', transform: 'rotate(-7deg)' },
-  { right: '12px', bottom: '12px', width: '46px', transform: 'rotate(9deg)' },
-  { right: '14px', top: '48px', width: '42px', transform: 'rotate(-4deg)' },
-  { left: '12px', bottom: '16px', width: '52px', transform: 'rotate(6deg)' },
-  { left: '10px', top: '44px', width: '44px', transform: 'rotate(-11deg)' },
+const NOTE_STICKERS = [
+  [
+    { idx: 3, style: { left: '18px', bottom: '22px', width: '86px', transform: 'rotate(-8deg)' } },
+    { idx: 1, style: { right: '22px', bottom: '18px', width: '88px', transform: 'rotate(5deg)' } },
+    { idx: 2, style: { right: '18px', top: '44px', width: '38px', transform: 'rotate(14deg)' } },
+  ],
+  [
+    { idx: 6, style: { right: '24px', bottom: '18px', width: '104px', transform: 'rotate(4deg)' } },
+    { idx: 5, style: { right: '10px', top: '28px', width: '50px', transform: 'rotate(-8deg)' } },
+  ],
+  [
+    { idx: 11, style: { right: '24px', bottom: '16px', width: '98px', transform: 'rotate(-4deg)' } },
+    { idx: 5, style: { left: '18px', bottom: '24px', width: '56px', transform: 'rotate(-9deg)' } },
+  ],
+  [
+    { idx: 2, style: { right: '22px', bottom: '18px', width: '78px', transform: 'rotate(8deg)' } },
+    { idx: 0, style: { left: '14px', bottom: '20px', width: '58px', transform: 'rotate(-5deg)' } },
+  ],
 ]
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
 import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
@@ -40,11 +52,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], washiStyle: WASHI_POS[i % WASHI_POS.length],
-    stickers: [
-      { src: stickerAt(i * 5 + 1), style: { right: '12px', bottom: '10px', width: '94px', transform: 'rotate(7deg)' } },
-      ...(i % 2 === 0 ? [{ src: stickerAt(i * 5 + 3), style: { left: '12px', bottom: '12px', width: '74px', transform: 'rotate(-8deg)' } }] : []),
-    ] }))
+  const noteCards = notes.map((n, i) => ({ ...n, layout: i % 4, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], washiStyle: WASHI_POS[i % WASHI_POS.length],
+    stickers: NOTE_STICKERS[i % NOTE_STICKERS.length].map(s => ({ src: stickerAt(s.idx + i), style: s.style }))
+  }))
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
@@ -75,7 +85,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           </div>
           <Squiggle w={120} color="#e0b15f" style={{ margin: "10px 0 0 6px", display: "block" }} />
 
-          <div className="section-head">
+          <div className="section-head note-section-head">
             <img className="pinned-img" src={PINNED_IMG} alt="Pinned notes" />
             <Star size={16} fill="same" style={{ marginLeft: 8 }} />
             <button className="head-action" onClick={() => setEditingNote('new')}><img className="newnote-img" src={NEWNOTE_IMG} alt="New note" /></button>
@@ -86,7 +96,14 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
               : noteCards.map(n => <StickyNote key={n.id} note={n} onClick={() => setEditingNote(n)} onEdit={() => setEditingNote(n)} onDelete={() => delNote(n.id)} />)}
           </div>
 
-          <div className="doodle-strip"><WormCrown size={42} /><img className="ds-sticker" src={stickerAt(3)} alt="" /><SpeechHeart size={24} /><Wave w={34} color="#cda98c" /><img className="ds-sticker" src={stickerAt(13)} alt="" /><Star size={20} fill="same" /></div>
+          <div className="doodle-strip notes-doodle-strip">
+            <WormCrown size={58} />
+            <img className="ds-sticker ds-heart" src={stickerAt(3)} alt="" />
+            <SpeechHeart size={30} />
+            <Wave w={46} color="#cda98c" />
+            <img className="ds-sticker ds-bug" src={stickerAt(5)} alt="" />
+            <Star size={22} fill="same" />
+          </div>
           <img className="ws-section-tape" src={TAPE_LONG[0]} alt="" />
 
           <div className="section-head">
