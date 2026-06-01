@@ -310,12 +310,12 @@ input, textarea { font-family: inherit; }
 .task-card { min-height: 132px; display: flex; flex-direction: column; }
 .task-card.punch::before { content: ""; position: absolute; left: 6px; top: 14px; bottom: 14px; width: 8px; z-index: 3;
   background: radial-gradient(circle at 50% 8px, transparent 3px, var(--paper) 3px) 0 0 / 8px 18px repeat-y; opacity: 0.6; }
-.task-inner { display: flex; gap: 10px; padding: 16px 14px 8px; }
+.task-inner { display: flex; gap: 10px; padding: 18px 14px 8px; }
 .task-check { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid rgba(80,66,52,0.55); border-radius: 6px;
   background: rgba(255,255,255,0.5); filter: url(#crayon-edge-2); display: grid; place-items: center; }
 .task-check.done { background: var(--brick); border-color: var(--brick); }
 .task-text { font-family: var(--font-cute); font-size: 19px; color: var(--ink); line-height: 1.25; }
-.task-foot { display: flex; align-items: center; justify-content: space-between; padding: 0 14px 14px; margin-top: auto; }
+.task-foot { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; margin-top: auto; }
 .task-due { font-family: var(--font-title); font-size: 19px; }
 .task-foot-icons { display: flex; align-items: center; gap: 6px; }
 .task-stamp { position: absolute; left: 16px; top: 44px; width: 26px; height: 22px; background: #9c3f2e; border-radius: 4px;
@@ -337,7 +337,7 @@ input, textarea { font-family: inherit; }
 .task-sticker-img {
   position: absolute;
   height: auto;
-  z-index: 3;
+  z-index: 2;
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(80,60,40,.08));
 }
@@ -1516,7 +1516,21 @@ input, textarea { font-family: inherit; }
   min-height: 150px;
 }
 .task-grid .task-foot {
-  padding-bottom: 18px;
+  padding-bottom: 0;
+  transform: translateY(50%);
+  position: relative;
+  z-index: 8;
+}
+.task-grid .task-foot-icons {
+  gap: 5px;
+}
+.task-grid .task-foot-icons > svg {
+  transform: translateY(-16px);
+}
+.task-grid .task-foot-icons .round-btn {
+  width: 30px;
+  height: 30px;
+  background: rgba(255,253,247,.86);
 }
 
 @media (max-width: 390px) {
