@@ -1114,8 +1114,59 @@ input, textarea { font-family: inherit; }
     bottom: -2px !important;
     transform: translateY(50%);
   }
-  .notes-grid .sticky-acts .round-btn {
+.notes-grid .sticky-acts .round-btn {
     width: 28px;
     height: 28px;
   }
+}
+
+/* —— 主题设置修复：让百宝箱的背景色/壁纸/字体颜色重新接管新皮肤 —— */
+.app {
+  color: var(--ink);
+  background-color: var(--paper);
+}
+.app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--paper) 72%, #fff 28%), transparent 56%),
+    radial-gradient(circle at 82% 84%, color-mix(in srgb, var(--paper) 84%, #cdb48f 16%), transparent 58%),
+    var(--paper);
+}
+.app.has-wallpaper::before {
+  background:
+    linear-gradient(rgba(244,236,219,.18), rgba(244,236,219,.30)),
+    var(--wallpaper) center / cover no-repeat,
+    var(--paper);
+}
+.app.has-wallpaper::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("./paper.png");
+  background-size: 320px 320px;
+  mix-blend-mode: soft-light;
+  opacity: .45;
+}
+.layout,
+.panel,
+.panel-scroll,
+.ws-inner {
+  position: relative;
+}
+.layout,
+.panel-scroll {
+  z-index: 1;
+}
+.set-backdrop,
+.set-panel,
+.note-editor,
+.task-editor,
+.studio-reader-shell {
+  z-index: 30;
 }

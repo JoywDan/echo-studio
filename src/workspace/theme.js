@@ -1,6 +1,6 @@
 import React from 'react'
 import { idbPut, idbGet, idbDel } from './idb.js'
-export const THEME_DEFAULTS = { accent: '#a7372a', paper: '#efe9dc', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe' }
+export const THEME_DEFAULTS = { accent: '#a7372a', paper: '#efe9dc', textColor: '#3a3027', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe' }
 export function shade(hex, pct) {
   const h = hex.replace('#', '')
   let r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
@@ -52,7 +52,10 @@ export function useTheme() {
 
   const cssVars = {
     '--vermillion': t.accent, '--vermillion-l': shade(t.accent, 18), '--vermillion-d': shade(t.accent, -16),
+    '--brick': t.accent, '--brick-l': shade(t.accent, 18), '--brick-d': shade(t.accent, -16),
     '--washi': t.paper, '--washi-deep': shade(t.paper, -8), '--card': shade(t.paper, 14),
+    '--paper': t.paper, '--paper-2': shade(t.paper, 8), '--paper-torn': shade(t.paper, 12),
+    '--ink': t.textColor, '--ink-soft': shade(t.textColor, 28), '--ink-faint': shade(t.textColor, 50),
     '--texture': (t.texture / 100).toFixed(2),
     '--radius': t.radius + 'px', '--radius-sm': (t.radius - 5) + 'px', '--radius-lg': (t.radius + 6) + 'px',
     '--font-title': `"${t.titleFont}", "ZCOOL KuaiLe", cursive`,
