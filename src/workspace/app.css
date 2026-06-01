@@ -462,6 +462,8 @@ input, textarea { font-family: inherit; }
 .studio-kai.girl { width: 70px; left: 12px; bottom: 4px; transform: rotate(-6deg); }
 .studio-kai.girl.side { width: 72px; left: 12px; bottom: 10px; transform: rotate(-6deg); }
 .studio-kai.gallery-paper { width: 62px; left: 16px; bottom: 14px; transform: rotate(-8deg); }
+.studio-kai.gallery-artist { width: 78px; left: 12px; bottom: 12px; transform: rotate(-6deg); }
+.studio-kai.diary-paper { width: 58px; left: 14px; bottom: 14px; transform: rotate(-7deg); }
 .studio-kai.writer { width: 72px; left: 8px; bottom: 2px; transform: rotate(-4deg); }
 .studio-kai.writer.side { width: 76px; left: 10px; bottom: 8px; transform: rotate(-4deg); }
 .studio-kai.envelope { width: 86px; right: 8px; bottom: 10px; transform: rotate(3deg); }

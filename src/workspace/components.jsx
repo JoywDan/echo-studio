@@ -205,7 +205,6 @@ function SmileIcon({ name }) {
 
 /* ——— studio card ——— */
 function StudioCard({ mod, onClick }) {
-  const Creature = CREATURE[mod.creature];
   const studioStickers = {
     s1: [
       ["kawaii_computer_monitor_with_checkmark_face", "studio-kai monitor"],
@@ -215,13 +214,13 @@ function StudioCard({ mod, onClick }) {
       ["09_lightning", "studio-st spark corner"],
     ],
     s2: [
-      ["kawaii_paper_sheet_with_smile", "studio-kai gallery-paper"],
+      ["cute_girl_drawing_in_notebook", "studio-kai gallery-artist"],
       ["05_flower", "studio-st flower top"],
       ["07_cloud", "studio-st cloud small"],
       ["03_star", "studio-st star mini"],
     ],
     s3: [
-      ["cute_girl_drawing_in_notebook", "studio-kai writer side"],
+      ["kawaii_paper_sheet_with_smile", "studio-kai diary-paper"],
       ["04_heart", "studio-st heart top"],
       ["05_flower", "studio-st flower mid"],
       ["03_star", "studio-st star gold"],
@@ -263,20 +262,11 @@ function StudioCard({ mod, onClick }) {
       <CrayonCard tint="pink" edge={mod.edge} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.5)" }}>
         <span className="studio-deco-fill" style={{ "--scol": (TINT[mod.edge] || TINT.pink).edge }} />
         <span className={"studio-title" + (mod.english ? " en" : "")}>{mod.title}</span>
-        {Creature && <Creature size={mod.creature === "BlobTrio" ? 56 : 40} style={{ position: "absolute", left: 12, bottom: 10 }} />}
         <span className="studio-asset-stickers">
           {studioStickers.map(([name, cls]) => {
             const src = KAWAII_IMAGES[name] || STICKER_IMAGES[name];
             return src ? <img key={name + cls} className={cls} src={src} alt="" /> : null;
           })}
-        </span>
-        <span className="studio-doodles">
-          {(mod.deco || []).includes("heart") && <Heart size={16} color="var(--brick)" fill="same" style={{ position: "absolute", right: 14, top: 12 }} />}
-          {(mod.deco || []).includes("star") && <Star size={15} fill="same" style={{ position: "absolute", right: 16, top: 30 }} />}
-          {(mod.deco || []).includes("flower") && <Flower size={16} color="#d98c84" style={{ position: "absolute", right: 18, top: 16 }} />}
-          {(mod.deco || []).includes("arrow") && <span className="studio-arrow">↗</span>}
-          {(mod.deco || []).includes("plane") && <span className="studio-plane">✈</span>}
-          {(mod.deco || []).includes("flowerface") && <FlowerFace size={26} style={{ position: "absolute", right: 12, bottom: 12 }} />}
         </span>
       </CrayonCard>
     </button>

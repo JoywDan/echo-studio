@@ -7,10 +7,10 @@ export const QUICK_ACTIONS = [
 ]
 export const STUDIO = [
   { id: "s1", title: "CC 操作台", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], url: "https://joywdan.github.io/echo-studio/cc/" },
-  { id: "s2", title: "画廊 · 教堂", edge: "blue", icon: "pic", creature: "PainterBlob", deco: ["flower","scribble"], url: "https://gallery.echowjoy.uk" },
+  { id: "s2", title: "画廊 · 教学", edge: "blue", icon: "pic", creature: "PainterBlob", deco: ["flower","scribble"], url: "https://gallery.echowjoy.uk" },
   { id: "s3", title: "Echo's Diary", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], english: true, module: "diary" },
   { id: "s4", title: "Letter for Echo", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], english: true, module: "letters" },
-  { id: "s5", title: "Echo 带回的见闻", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["flower"], module: "travel" },
+  { id: "s5", title: "Echo 每日播报", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["flower"], module: "travel" },
   { id: "s6", title: "路拾遗梦", edge: "sage", icon: "moon", creature: "SleepCloud", deco: ["star"], module: "wander" },
   { id: "s7", title: "moonline 群聊", edge: "pink", creature: "BlobTrio", clip: true, deco: ["star","heart"], module: "agentroom" },
   { id: "s8", title: "River of memory", edge: "sage", icon: "river", deco: ["flowerface","star"], english: true },
