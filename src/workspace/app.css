@@ -984,3 +984,67 @@ input, textarea { font-family: inherit; }
   .sticky-ol { font-size: 14.5px !important; }
   .washi-tape { width: 96px !important; }
 }
+
+/* —— 胶带 v2：PNG 有透明画布，必须用更大的图像尺寸才像贴住纸 —— */
+.notes-grid .sticky {
+  padding-top: 22px;
+}
+.notes-grid .sticky-card {
+  margin-top: 0;
+}
+.notes-grid .sticky-body {
+  padding-top: 32px !important;
+}
+.notes-grid .washi-tape {
+  width: 204px !important;
+  max-width: none !important;
+  top: -52px !important;
+  opacity: .96;
+  z-index: 13 !important;
+  transform-origin: 50% 55%;
+  filter: drop-shadow(0 3px 1px rgba(80,58,39,.12));
+}
+.notes-grid .washi-layout-0 {
+  width: 210px !important;
+  left: 28px !important;
+  right: auto !important;
+  top: -54px !important;
+  transform: rotate(2deg) !important;
+}
+.notes-grid .washi-layout-1 {
+  width: 206px !important;
+  left: 30px !important;
+  right: auto !important;
+  top: -55px !important;
+  transform: rotate(-3deg) !important;
+}
+.notes-grid .washi-layout-2 {
+  width: 218px !important;
+  left: 22px !important;
+  right: auto !important;
+  top: -53px !important;
+  transform: rotate(5deg) !important;
+}
+.notes-grid .washi-layout-3 {
+  width: 200px !important;
+  left: 34px !important;
+  right: auto !important;
+  top: -52px !important;
+  transform: rotate(-6deg) !important;
+}
+.notes-grid .sticky-acts {
+  top: 2px !important;
+  right: 12px !important;
+}
+
+@media (max-width: 390px) {
+  .notes-grid .sticky { padding-top: 18px; }
+  .notes-grid .washi-tape {
+    width: 176px !important;
+    top: -45px !important;
+  }
+  .notes-grid .washi-layout-0 { width: 182px !important; left: 20px !important; top: -47px !important; }
+  .notes-grid .washi-layout-1 { width: 178px !important; left: 22px !important; top: -47px !important; }
+  .notes-grid .washi-layout-2 { width: 186px !important; left: 18px !important; top: -46px !important; }
+  .notes-grid .washi-layout-3 { width: 174px !important; left: 24px !important; top: -45px !important; }
+}
