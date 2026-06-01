@@ -96,6 +96,7 @@ export default function StudioReader({ module, onClose }) {
   const [detail, setDetail] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
   const [detailLoading, setDetailLoading] = React.useState(false)
+  const [detailOpen, setDetailOpen] = React.useState(false)
   const [error, setError] = React.useState('')
 
   React.useEffect(() => {
@@ -105,6 +106,7 @@ export default function StudioReader({ module, onClose }) {
     setItems([])
     setSelected(null)
     setDetail(null)
+    setDetailOpen(false)
 
     const loader = {
       diary: () => api.diary.list(),
@@ -179,7 +181,7 @@ export default function StudioReader({ module, onClose }) {
 
         {error && <div className="studio-reader-error">{error}</div>}
 
-        <div className="studio-reader-body">
+        <div className={`studio-reader-body${detailOpen ? ' is-detail-open' : ''}`}>
           <aside className="studio-reader-list" aria-label="条目列表">
             {loading ? (
               <div className="studio-reader-empty">翻页中...</div>
@@ -189,7 +191,7 @@ export default function StudioReader({ module, onClose }) {
               const id = itemId(module, item)
               const active = id === selected
               return (
-                <button key={id} className={`studio-reader-item${active ? ' is-active' : ''}`} onClick={() => setSelected(id)}>
+                <button key={id} className={`studio-reader-item${active ? ' is-active' : ''}`} onClick={() => { setSelected(id); setDetailOpen(true) }}>
                   <span className="studio-reader-item-title">{itemTitle(module, item)}</span>
                   <span className="studio-reader-item-sub">{itemSub(module, item)}</span>
                 </button>
@@ -198,6 +200,10 @@ export default function StudioReader({ module, onClose }) {
           </aside>
 
           <main className="studio-reader-detail">
+            <button className="studio-reader-detail-back" onClick={() => setDetailOpen(false)} aria-label="返回列表">
+              <Icon name="back" size={16} color="var(--ink)" />
+              <span>返回列表</span>
+            </button>
             <TornCard className="studio-reader-paper">
               <Tape />
               {detailLoading ? (

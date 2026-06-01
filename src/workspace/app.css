@@ -803,6 +803,8 @@ input, textarea { font-family: inherit; }
 
 .studio-reader-detail { flex: 1; min-height: 0; overflow: hidden; }
 
+.studio-reader-detail-back { display: none; }
+
 .studio-reader-paper { height: 100%; min-height: 260px; padding: 26px 19px 22px; overflow-y: auto; }
 
 .studio-reader-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-bottom: 15px; color: var(--ink-soft); font-family: var(--font-hand); font-size: 15px; }
@@ -811,6 +813,54 @@ input, textarea { font-family: inherit; }
 
 .studio-reader-empty { padding: 22px 10px; color: var(--ink-faint); font-family: var(--font-hand); font-size: 16px; text-align: center; }
 
+@media (max-width: 759px) {
+  .studio-reader { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+
+  .studio-reader-shell { width: 100%; border-radius: 16px; }
+
+  .studio-reader-header { grid-template-columns: 38px 1fr auto; gap: 8px; padding: 10px 10px 9px; }
+
+  .studio-reader-mark { display: none; }
+
+  .studio-reader-title h2 { font-size: 19px; }
+
+  .studio-reader-title p { font-size: 12px; }
+
+  .studio-reader-body { padding: 10px; gap: 0; }
+
+  .studio-reader-list { display: grid; grid-template-columns: 1fr; gap: 10px; overflow: auto; padding: 2px 2px 14px; }
+
+  .studio-reader-item { width: 100%; min-width: 0; min-height: 86px; }
+
+  .studio-reader-detail { display: none; min-height: 0; overflow: hidden; }
+
+  .studio-reader-body.is-detail-open .studio-reader-list { display: none; }
+
+  .studio-reader-body.is-detail-open .studio-reader-detail { display: flex; flex-direction: column; }
+
+  .studio-reader-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    flex-shrink: 0;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,253,248,0.78);
+    border: 1.4px solid rgba(120,95,70,0.2);
+    color: var(--ink);
+    font-family: var(--font-cute);
+    font-size: 14px;
+    box-shadow: var(--paper-shadow-sm);
+  }
+
+  .studio-reader-paper { flex: 1; height: auto; min-height: 0; padding: 26px 18px 24px; }
+
+  .studio-reader-content { font-size: 16px; line-height: 1.86; }
+}
+
+@media (min-width: 760px) {
   .studio-reader { padding: 24px; }
 
   .studio-reader-shell { border-radius: 20px; }
@@ -824,6 +874,7 @@ input, textarea { font-family: inherit; }
   .studio-reader-paper { padding: 32px 30px; }
 
   .studio-reader-content { font-size: 16px; }
+}
 
 .thinking-toggle {
   background: rgba(248,241,226,0.82);
