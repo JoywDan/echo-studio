@@ -111,9 +111,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       tint: t.tint || TASK_TINTS[i % TASK_TINTS.length],
       icon: t.icon || "file",
       washiUrl: chosenTape,
-      washiStyle: chosenTape ? { left: '50%', top: '-48px', width: '168px', transform: `translateX(-50%) rotate(${i % 2 ? 4 : -5}deg)` } : null,
+      washiStyle: chosenTape ? { left: '50%', top: '-68px', width: '172px', transform: `translateX(-50%) rotate(${i % 2 ? 4 : -5}deg)` } : null,
       clipUrl: chosenClip,
-      clipStyle: chosenClip ? { left: '50%', top: '-42px', width: fastenerKey.startsWith('paperclip-') ? '58px' : '88px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
+      clipStyle: chosenClip ? { left: '50%', top: '-64px', width: fastenerKey.startsWith('paperclip-') ? '56px' : '76px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
       stickers: stickerKeys ? stickerKeys.map((key, si) => ({
         src: stickerAt(assetIndex(key, 2 + si)),
         style: TASK_STICKER_SLOTS[(i + si) % TASK_STICKER_SLOTS.length],

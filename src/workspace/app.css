@@ -310,7 +310,7 @@ input, textarea { font-family: inherit; }
 .task-card { min-height: 132px; display: flex; flex-direction: column; }
 .task-card.punch::before { content: ""; position: absolute; left: 6px; top: 14px; bottom: 14px; width: 8px; z-index: 3;
   background: radial-gradient(circle at 50% 8px, transparent 3px, var(--paper) 3px) 0 0 / 8px 18px repeat-y; opacity: 0.6; }
-.task-inner { display: flex; gap: 10px; padding: 18px 14px 8px; }
+.task-inner { display: flex; gap: 10px; padding: 26px 14px 8px; }
 .task-check { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid rgba(80,66,52,0.55); border-radius: 6px;
   background: rgba(255,255,255,0.5); filter: url(#crayon-edge-2); display: grid; place-items: center; }
 .task-check.done { background: var(--brick); border-color: var(--brick); }
@@ -1502,7 +1502,7 @@ input, textarea { font-family: inherit; }
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   margin: 4px -8px 0 !important;
-  padding: 26px 8px 34px !important;
+  padding: 42px 8px 34px !important;
 }
 .task-grid::-webkit-scrollbar {
   display: none;
@@ -1560,6 +1560,6 @@ input, textarea { font-family: inherit; }
     grid-auto-columns: calc((100% - 14px) / 2);
     gap: 16px 14px !important;
     margin: 2px -6px 0 !important;
-    padding: 24px 6px 32px !important;
+    padding: 40px 6px 32px !important;
   }
 }
