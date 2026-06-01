@@ -1,4 +1,5 @@
 import React from 'react'
+import { DECO_POOL } from './assets.js'
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, FlowerFace, StarFace, HeartLegs, Cloud, Rainbow, SpeechHeart, DashFly, Icon } from './doodles.jsx'
 import { Rabbit, PinkBlobCrown, FuzzGreen, CupcakeCyclops, RunCloudGreen, GreenAlien, BearWave, PainterBlob, WriterPink, CatCamera, BlobTrio, SleepCloud } from './creatures.jsx'
 /* components.jsx — crayon scrapbook UI primitives */
@@ -232,3 +233,19 @@ export const TINT_MAP = {
   cream:  ['var(--cream)', 'var(--cream-edge)'],
 }
 export function Sticker() { return null }
+
+export function DecoLayer() {
+  const N = 42
+  const items = Array.from({ length: N }, (_, i) => {
+    const r = (s) => { const x = Math.sin(i * 12.9898 + s * 7.233) * 43758.5453; return x - Math.floor(x) }
+    const onLeft = i % 2 === 0
+    const left = onLeft ? r(1) * 11 : 87 + r(2) * 11
+    const top = (i + 0.5) / N * 100 + (r(3) - 0.5) * 8
+    const size = 22 + r(4) * 32
+    const rot = (r(5) - 0.5) * 48
+    return { src: DECO_POOL[(i * 5 + 2) % DECO_POOL.length], left, top, size, rot }
+  })
+  return (<div className="deco-layer" aria-hidden="true">
+    {items.map((it, i) => <img key={i} src={it.src} alt="" style={{ position: "absolute", left: it.left + "%", top: it.top + "%", width: it.size, transform: "rotate(" + it.rot + "deg)" }} />)}
+  </div>)
+}

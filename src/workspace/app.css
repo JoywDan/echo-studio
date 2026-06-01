@@ -853,3 +853,9 @@ input, textarea { font-family: inherit; }
 .doodle-strip > *:nth-child(4) { transform: translateY(-5px); }
 .doodle-strip > *:nth-child(5) { transform: translateY(6px) rotate(-4deg); }
 .doodle-strip > *:nth-child(6) { transform: translateY(-3px) rotate(5deg); }
+
+/* —— 装饰层：壁纸之上、卡片之下，填满缝隙 —— */
+.ws-inner { position: relative; }
+.deco-layer { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
+.deco-layer img { filter: drop-shadow(0 1px 1px rgba(80,60,40,0.05)); }
+.ws-inner > *:not(.deco-layer) { position: relative; z-index: 1; }

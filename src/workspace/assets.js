@@ -15,4 +15,6 @@ export const PINNED_IMG = pinnedImg
 export const NEWNOTE_IMG = newnoteImg
 export const PANTHER_HEAD = pantherHead
 export const TAPE_LONG = [tapeLong1, tapeLong2]
+const deco = import.meta.glob('./assets/deco/*.png', { eager: true, import: 'default' })
+export const DECO_POOL = Object.keys(deco).sort().map(k => deco[k])
 export const stickerAt = (i) => STICKERS[((i % STICKERS.length) + STICKERS.length) % STICKERS.length]

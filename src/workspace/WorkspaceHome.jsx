@@ -1,5 +1,5 @@
 import React from 'react'
-import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard } from './components.jsx'
+import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard, DecoLayer } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
 import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
 
@@ -58,6 +58,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
     <div className="panel workspace-panel">
       <div className="panel-scroll">
         <div className="ws-inner">
+          <DecoLayer />
           <header className="ws-header">
             <img className="ws-title-img" src={TITLE} alt="Every version, yours" />
             <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" />
