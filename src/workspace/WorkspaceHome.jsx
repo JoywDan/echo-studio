@@ -1,7 +1,7 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard, DecoLayer } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
-import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, PAPERCLIPS, PANTHER_AVATARS, TITLE_IMAGES, stickerAt } from './assets.js'
+import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, CLIPS, PAPERCLIPS, PANTHER_AVATARS, TITLE_IMAGES, KAWAII_IMAGES, STICKER_IMAGES, stickerAt } from './assets.js'
 
 const WASHI_POS = [
   { top: '-29px', left: '48px', transform: 'rotate(4deg)' },
@@ -199,14 +199,17 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="doodle-strip center-strip task-doodle-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(3)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(7)} alt="" /><img className="ds-sticker" src={stickerAt(11)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
           <img className="ws-section-tape task-section-tape" src={TAPE_LONG[1] || TAPE_LONG[0]} alt="" />
 
-          <div className="section-head"><h2>Quick actions</h2><Star size={14} fill="same" /><Heart size={22} color="#e6a6ab" fill="same" style={{ marginLeft: "auto" }} /></div>
+          <div className="section-head quick-section-head"><h2>Quick actions</h2><Star size={14} fill="same" />
+            <img className="quick-heart-sticker" src={STICKER_IMAGES["04_heart"] || stickerAt(3)} alt="" />
+          </div>
           <div className="qa-grid">
             {QUICK_ACTIONS.map(qa => { const act = { qa1: onNewChat, qa2: () => setEditingNote('new'), qa3: () => setEditingTask('new'), qa4: onNewChat }[qa.id]; return <QuickAction key={qa.id} qa={qa} onClick={act || (() => {})} /> })}
           </div>
 
-          <div className="section-head">
+          <div className="section-head studio-section-head">
             <h2>Studio</h2><Heart size={16} color="#e6a6ab" fill="same" /><Squiggle w={120} color="#d99a92" style={{ marginLeft: 12, marginBottom: 4 }} />
-            <Rabbit size={40} style={{ position: "absolute", right: 70, top: -26 }} /><Star size={16} fill="same" style={{ position: "absolute", right: 18, top: -8 }} />
+            <img className="studio-peek-bunny" src={KAWAII_IMAGES.kawaii_bunny_peeking_over_a_ledge} alt="" />
+            <Star size={16} fill="same" style={{ position: "absolute", right: 18, top: -8 }} />
           </div>
           <div className="studio-grid">{STUDIO.map(m => <StudioCard key={m.id} mod={m} onClick={() => openStudio(m)} />)}</div>
 

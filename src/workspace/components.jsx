@@ -1,5 +1,5 @@
 import React from 'react'
-import { DECO_POOL } from './assets.js'
+import { DECO_POOL, KAWAII_IMAGES, STICKER_IMAGES } from './assets.js'
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, FlowerFace, StarFace, HeartLegs, Cloud, Rainbow, SpeechHeart, DashFly, Icon } from './doodles.jsx'
 import { Rabbit, PinkBlobCrown, FuzzGreen, CupcakeCyclops, RunCloudGreen, GreenAlien, BearWave, PainterBlob, WriterPink, CatCamera, BlobTrio, SleepCloud } from './creatures.jsx'
 /* components.jsx — crayon scrapbook UI primitives */
@@ -178,10 +178,14 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
 
 /* ——— quick action ——— */
 function QuickAction({ qa, onClick }) {
+  const mainSticker = KAWAII_IMAGES[qa.sticker];
+  const accent = STICKER_IMAGES[qa.accent];
   return (
     <button className="quick-action" onClick={onClick}>
       <CrayonCard tint="pink" edge={qa.edge} className="qa-card" dbl={false}
         style={{ "--tint": "rgba(255,253,247,0.55)" }}>
+        {mainSticker && <img className="qa-main-sticker" src={mainSticker} alt="" />}
+        {accent && <img className="qa-accent-sticker" src={accent} alt="" />}
         <span className="qa-icon"><SmileIcon name={qa.icon} /></span>
         <span className="qa-label">{qa.label}</span>
       </CrayonCard>
@@ -202,6 +206,49 @@ function SmileIcon({ name }) {
 /* ——— studio card ——— */
 function StudioCard({ mod, onClick }) {
   const Creature = CREATURE[mod.creature];
+  const studioStickers = {
+    s1: [
+      ["kawaii_computer_monitor_with_checkmark_face", "studio-kai monitor"],
+      ["kawaii_teddy_bear_waving_sticker", "studio-kai bear"],
+      ["03_star", "studio-st star"],
+      ["04_heart", "studio-st heart"],
+    ],
+    s2: [
+      ["cute_girl_drawing_in_notebook", "studio-kai girl"],
+      ["05_flower", "studio-st flower"],
+      ["03_star", "studio-st star small"],
+    ],
+    s3: [
+      ["cute_girl_drawing_in_notebook", "studio-kai writer"],
+      ["04_heart", "studio-st heart big"],
+      ["05_flower", "studio-st flower"],
+    ],
+    s4: [
+      ["smiling_kawaii_envelope_with_heart_seal", "studio-kai envelope"],
+      ["04_heart", "studio-st heart"],
+      ["09_lightning", "studio-st spark"],
+    ],
+    s5: [
+      ["kawaii_paper_sheet_with_smile", "studio-kai pic"],
+      ["05_flower", "studio-st flower"],
+      ["03_star", "studio-st star"],
+    ],
+    s6: [
+      ["sleepy_cloud_and_starry_night", "studio-kai cloud"],
+      ["08_moon", "studio-st moon"],
+      ["03_star", "studio-st star"],
+    ],
+    s7: [
+      ["01_bear", "studio-st blob a"],
+      ["02_bunny", "studio-st blob b"],
+      ["04_heart", "studio-st heart"],
+    ],
+    s8: [
+      ["05_flower", "studio-st flower river"],
+      ["07_cloud", "studio-st cloud"],
+      ["03_star", "studio-st star river"],
+    ],
+  }[mod.id] || [];
   return (
     <button className="studio-card" onClick={onClick}>
       {mod.clip && <Paperclip size={28} color="#b39a86" style={{ top: -14, right: 22, transform: "rotate(12deg)" }} />}
@@ -210,6 +257,12 @@ function StudioCard({ mod, onClick }) {
         {mod.icon && <span className="studio-icon"><MiniIcon name={mod.icon} size={34} /></span>}
         <span className={"studio-title" + (mod.english ? " en" : "")}>{mod.title}</span>
         {Creature && <Creature size={mod.creature === "BlobTrio" ? 56 : 40} style={{ position: "absolute", left: 12, bottom: 10 }} />}
+        <span className="studio-asset-stickers">
+          {studioStickers.map(([name, cls]) => {
+            const src = KAWAII_IMAGES[name] || STICKER_IMAGES[name];
+            return src ? <img key={name + cls} className={cls} src={src} alt="" /> : null;
+          })}
+        </span>
         <span className="studio-doodles">
           {(mod.deco || []).includes("heart") && <Heart size={16} color="var(--brick)" fill="same" style={{ position: "absolute", right: 14, top: 12 }} />}
           {(mod.deco || []).includes("star") && <Star size={15} fill="same" style={{ position: "absolute", right: 16, top: 30 }} />}

@@ -1,15 +1,15 @@
 /* data.jsx — 静态配置 + 装饰映射（真实数据走 api） */
 export const QUICK_ACTIONS = [
-  { id: "qa1", label: "New chat", icon: "chat-plus", edge: "pink", flower: true },
-  { id: "qa2", label: "New note", icon: "file", edge: "sage" },
-  { id: "qa3", label: "New task", icon: "clipboard", edge: "cream" },
-  { id: "qa4", label: "Upload", icon: "upload", edge: "pink" },
+  { id: "qa1", label: "New chat", icon: "chat-plus", edge: "pink", sticker: "cute_crayon_style_chat_icon_with_cross", accent: "05_flower" },
+  { id: "qa2", label: "New note", icon: "file", edge: "sage", sticker: "kawaii_paper_sheet_with_smile", accent: "04_heart" },
+  { id: "qa3", label: "New task", icon: "clipboard", edge: "cream", sticker: "kawaii_clipboard_with_check_mark", accent: "03_star" },
+  { id: "qa4", label: "Upload", icon: "upload", edge: "pink", sticker: "kawaii_upload_icon_with_smiling_face", accent: "03_star" },
 ]
 export const STUDIO = [
-  { id: "s1", title: "CC 控制台", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], url: "https://joywdan.github.io/echo-studio/cc/" },
+  { id: "s1", title: "CC 操作台", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], url: "https://joywdan.github.io/echo-studio/cc/" },
   { id: "s2", title: "画廊 · 教堂", edge: "blue", icon: "pic", creature: "PainterBlob", deco: ["flower","scribble"], url: "https://gallery.echowjoy.uk" },
-  { id: "s3", title: "Echo 写的日记", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], module: "diary" },
-  { id: "s4", title: "Echo 写给自己的信", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], module: "letters" },
+  { id: "s3", title: "Echo's Diary", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], english: true, module: "diary" },
+  { id: "s4", title: "Letter for Echo", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], english: true, module: "letters" },
   { id: "s5", title: "Echo 带回的见闻", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["flower"], module: "travel" },
   { id: "s6", title: "路拾遗梦", edge: "sage", icon: "moon", creature: "SleepCloud", deco: ["star"], module: "wander" },
   { id: "s7", title: "moonline 群聊", edge: "pink", creature: "BlobTrio", clip: true, deco: ["star","heart"], module: "agentroom" },
