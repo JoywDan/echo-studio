@@ -186,7 +186,7 @@ function QuickAction({ qa, onClick }) {
         style={{ "--tint": "rgba(255,253,247,0.55)" }}>
         {mainSticker && <img className="qa-main-sticker" src={mainSticker} alt="" />}
         {accent && <img className="qa-accent-sticker" src={accent} alt="" />}
-        <span className="qa-icon"><SmileIcon name={qa.icon} /></span>
+        <span className="qa-icon-spacer" aria-hidden="true" />
         <span className="qa-label">{qa.label}</span>
       </CrayonCard>
       {qa.flower && <Flower size={20} color="#e6a6ab" style={{ position: "absolute", left: -8, bottom: 18 }} />}

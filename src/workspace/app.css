@@ -2139,3 +2139,4 @@ input, textarea { font-family: inherit; }
 @media (max-width: 620px) {
   .studio-peek-bunny { width: 94px !important; right: 8px !important; bottom: -28px !important; }
 }
+.qa-icon-spacer { display: block; height: 60px; }
