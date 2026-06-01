@@ -109,7 +109,7 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
           ) : (
             <ul className="sticky-ul">{note.items.map((it, i) => <li key={i}><span className="bull" style={{ background: t.ink }} />{it}</li>)}</ul>
           )}
-          {note.stickerImg ? <img className="note-sticker" src={note.stickerImg} alt="" style={note.stickerStyle} /> : (Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />)}
+          {note.stickers ? note.stickers.map((s, si) => <img key={si} className="note-sticker" src={s.src} alt="" style={s.style} />) : (Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />)}
         </div>
       </CrayonCard>
     </div>

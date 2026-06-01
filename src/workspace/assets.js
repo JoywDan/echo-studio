@@ -4,11 +4,15 @@ const wsh = import.meta.glob('./assets/washi/*.png', { eager: true, import: 'def
 export const WASHIS = Object.keys(wsh).sort().map(k => wsh[k])
 import chest from './assets/chest.png'
 import title from './assets/title.png'
+import pinnedImg from './assets/pinned-notes.png'
+import newnoteImg from './assets/new-note.png'
 import pantherHead from './assets/panther-head.png'
 import tapeLong1 from './assets/tape-long-1.png'
 import tapeLong2 from './assets/tape-long-2.png'
 export const CHEST = chest
 export const TITLE = title
+export const PINNED_IMG = pinnedImg
+export const NEWNOTE_IMG = newnoteImg
 export const PANTHER_HEAD = pantherHead
 export const TAPE_LONG = [tapeLong1, tapeLong2]
 export const stickerAt = (i) => STICKERS[((i % STICKERS.length) + STICKERS.length) % STICKERS.length]
