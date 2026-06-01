@@ -1048,3 +1048,50 @@ input, textarea { font-family: inherit; }
   .notes-grid .washi-layout-2 { width: 186px !important; left: 18px !important; top: -46px !important; }
   .notes-grid .washi-layout-3 { width: 174px !important; left: 24px !important; top: -45px !important; }
 }
+
+/* —— 胶带 v3：居中贴纸上沿，操作按钮移到右下角 —— */
+.notes-grid .washi-tape {
+  left: 50% !important;
+  right: auto !important;
+}
+.notes-grid .washi-layout-0 {
+  left: 50% !important;
+  transform: translateX(-50%) rotate(2deg) !important;
+}
+.notes-grid .washi-layout-1 {
+  left: 50% !important;
+  transform: translateX(-50%) rotate(-3deg) !important;
+}
+.notes-grid .washi-layout-2 {
+  left: 50% !important;
+  transform: translateX(-50%) rotate(5deg) !important;
+}
+.notes-grid .washi-layout-3 {
+  left: 50% !important;
+  transform: translateX(-50%) rotate(-6deg) !important;
+}
+.notes-grid .sticky-acts {
+  top: auto !important;
+  right: 12px !important;
+  bottom: 18px !important;
+  z-index: 16 !important;
+}
+.notes-grid .sticky-acts .round-btn {
+  background: rgba(255,253,247,.76);
+  box-shadow: 0 1px 3px rgba(80,58,39,.13);
+}
+
+@media (max-width: 390px) {
+  .notes-grid .washi-tape {
+    left: 50% !important;
+    right: auto !important;
+  }
+  .notes-grid .washi-layout-0 { left: 50% !important; transform: translateX(-50%) rotate(2deg) !important; }
+  .notes-grid .washi-layout-1 { left: 50% !important; transform: translateX(-50%) rotate(-3deg) !important; }
+  .notes-grid .washi-layout-2 { left: 50% !important; transform: translateX(-50%) rotate(5deg) !important; }
+  .notes-grid .washi-layout-3 { left: 50% !important; transform: translateX(-50%) rotate(-6deg) !important; }
+  .notes-grid .sticky-acts {
+    right: 10px !important;
+    bottom: 14px !important;
+  }
+}
