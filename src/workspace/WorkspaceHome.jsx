@@ -28,11 +28,21 @@ const NOTE_STICKERS = [
     { idx: 0, style: { left: '14px', bottom: '20px', width: '58px', transform: 'rotate(-5deg)' } },
   ],
 ]
+const STICKER_SLOTS = [
+  { right: '20px', bottom: '18px', width: '92px', transform: 'rotate(5deg)' },
+  { left: '20px', bottom: '22px', width: '78px', transform: 'rotate(-8deg)' },
+  { right: '24px', bottom: '84px', width: '54px', transform: 'rotate(10deg)' },
+  { left: '18px', bottom: '88px', width: '50px', transform: 'rotate(-6deg)' },
+]
 const assetIndex = (key, fallback = 0) => {
   const m = String(key || '').match(/-(\d+)$/)
   return m ? Number(m[1]) : fallback
 }
 const pick = (items, key, fallback = 0) => items.length ? items[((assetIndex(key, fallback) % items.length) + items.length) % items.length] : null
+const stableShift = (value, fallback = 0) => {
+  const s = String(value || fallback)
+  return Array.from(s).reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
+}
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
 import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
 import { api } from '../api.js'
@@ -58,14 +68,24 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
   const noteCards = notes.map((n, i) => {
-    const chosenTape = n.tapeAsset ? pick(WASHIS, n.tapeAsset, i) : WASHIS[i % WASHIS.length]
-    const chosenClip = n.clipAsset && n.clipAsset !== 'none' ? pick(CLIPS, n.clipAsset, i) : null
-    const chosenSticker = n.stickerAsset ? stickerAt(assetIndex(n.stickerAsset, 3)) : null
-    return { ...n, layout: i % 4, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: chosenTape, washiStyle: WASHI_POS[i % WASHI_POS.length],
+    const fastener = n.accessoryAsset ?? (n.clipAsset && n.clipAsset !== 'none' ? n.clipAsset : n.tapeAsset)
+    const chosenTape = fastener === 'none' ? null : (String(fastener || '').startsWith('clip-') ? null : pick(WASHIS, fastener || ('washi-' + (i % WASHIS.length)), i))
+    const chosenClip = String(fastener || '').startsWith('clip-') ? pick(CLIPS, fastener, i) : null
+    const chosenStickerKeys = Array.isArray(n.stickerAssets) && n.stickerAssets.length
+      ? n.stickerAssets.slice(0, 4)
+      : (n.stickerAsset ? [n.stickerAsset] : null)
+    const slotShift = stableShift(n.id || n.title, i) % STICKER_SLOTS.length
+    const chosenStickers = chosenStickerKeys
+      ? chosenStickerKeys.map((key, si) => ({
+          src: stickerAt(assetIndex(key, 3 + si)),
+          style: STICKER_SLOTS[(slotShift + si) % STICKER_SLOTS.length],
+        }))
+      : null
+    return { ...n, layout: i % 4, tint: n.tint || NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: chosenTape, washiStyle: WASHI_POS[i % WASHI_POS.length],
       clipUrl: chosenClip,
-      clipStyle: chosenClip ? { left: i % 2 ? 'auto' : '14px', right: i % 2 ? '18px' : 'auto', top: '-28px', width: i % 2 ? '92px' : '82px', transform: i % 2 ? 'rotate(8deg)' : 'rotate(-9deg)' } : null,
-      stickers: chosenSticker
-        ? [{ src: chosenSticker, style: { right: '22px', bottom: '18px', width: i % 2 ? '104px' : '92px', transform: i % 2 ? 'rotate(5deg)' : 'rotate(-7deg)' } }]
+      clipStyle: chosenClip ? { left: '50%', right: 'auto', top: '-42px', width: i % 2 ? '96px' : '88px', transform: `translateX(-50%) rotate(${i % 2 ? 7 : -6}deg)` } : null,
+      stickers: chosenStickers
+        ? chosenStickers
         : NOTE_STICKERS[i % NOTE_STICKERS.length].map(s => ({ src: stickerAt(s.idx + i), style: s.style }))
     }
   })

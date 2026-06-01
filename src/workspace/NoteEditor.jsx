@@ -11,8 +11,11 @@ const TINTS = [
   { key: 'yellow', label: '奶油黄' },
   { key: 'kraft', label: '牛皮纸' },
 ]
-const TAPE_CHOICES = WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src }))
-const CLIP_CHOICES = [{ key: 'none', label: '不加夹子', src: null }, ...CLIPS.map((src, i) => ({ key: 'clip-' + i, label: '夹子 ' + (i + 1), src }))]
+const FASTENER_CHOICES = [
+  ...WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src, kind: 'tape' })),
+  ...CLIPS.map((src, i) => ({ key: 'clip-' + i, label: '夹子 ' + (i + 1), src, kind: 'clip' })),
+  { key: 'none', label: '不加固定物', src: null, kind: 'none' },
+]
 const STICKER_CHOICES = ASSET_STICKERS.slice(0, 12).map((src, i) => ({ key: 'sticker-' + i, label: '贴纸 ' + (i + 1), src }))
 const EDGES = [
   { key: 'crayon', label: '蜡笔框' },
@@ -25,14 +28,27 @@ export default function NoteEditor({ note, onSave, onClose }) {
   const [title, setTitle] = React.useState(note?.title ?? '')
   const [itemsText, setItemsText] = React.useState(note?.items?.join('\n') ?? '')
   const [tint, setTint] = React.useState(note?.tint ?? 'cream')
-  const [tapeAsset, setTapeAsset] = React.useState(note?.tapeAsset ?? 'washi-0')
-  const [clipAsset, setClipAsset] = React.useState(note?.clipAsset ?? 'none')
-  const [stickerAsset, setStickerAsset] = React.useState(note?.stickerAsset ?? 'sticker-3')
+  const initialFastener = note?.accessoryAsset ?? (note?.clipAsset && note.clipAsset !== 'none' ? note.clipAsset : note?.tapeAsset) ?? 'washi-0'
+  const initialStickers = Array.isArray(note?.stickerAssets)
+    ? note.stickerAssets
+    : (note?.stickerAsset ? [note.stickerAsset] : ['sticker-3'])
+  const [fastenerAsset, setFastenerAsset] = React.useState(initialFastener)
+  const [stickerAssets, setStickerAssets] = React.useState(initialStickers)
   const [edge, setEdge] = React.useState(note?.edge ?? 'crayon')
   const [rotate, setRotate] = React.useState(note?.rotate ?? -2)
   const [saving, setSaving] = React.useState(false)
 
   const [light] = TINT_MAP[tint] || TINT_MAP.cream
+  const tapeAsset = fastenerAsset.startsWith('washi-') ? fastenerAsset : 'none'
+  const clipAsset = fastenerAsset.startsWith('clip-') ? fastenerAsset : 'none'
+  const primarySticker = stickerAssets[0] || ''
+
+  function toggleSticker(key) {
+    setStickerAssets((cur) => {
+      if (cur.includes(key)) return cur.filter((v) => v !== key)
+      return [...cur, key].slice(0, 4)
+    })
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -40,7 +56,21 @@ export default function NoteEditor({ note, onSave, onClose }) {
     setSaving(true)
     try {
       const items = itemsText.split('\n').map((s) => s.trim()).filter(Boolean)
-      await onSave({ title: title.trim(), items, tint, tapeAsset, clipAsset, stickerAsset, tape: tapeAsset, doodle: stickerAsset, sticker: stickerAsset, edge, rotate })
+      await onSave({
+        title: title.trim(),
+        items,
+        tint,
+        accessoryAsset: fastenerAsset,
+        tapeAsset,
+        clipAsset,
+        stickerAssets,
+        stickerAsset: primarySticker,
+        tape: tapeAsset,
+        doodle: primarySticker,
+        sticker: primarySticker,
+        edge,
+        rotate,
+      })
     } finally {
       setSaving(false)
     }
@@ -88,34 +118,23 @@ export default function NoteEditor({ note, onSave, onClose }) {
             })}
           </div>
 
-          <label className="ne-label">胶带花样</label>
-          <div className="ne-asset-grid tape-asset-grid">
-            {TAPE_CHOICES.map((k) => (
+          <label className="ne-label">顶部固定物 <span className="ne-hint">胶带 / 夹子只能选一个</span></label>
+          <div className="ne-asset-grid fastener-asset-grid">
+            {FASTENER_CHOICES.map((k) => (
               <button key={k.key} type="button"
-                className={"ne-asset-choice tape-asset-choice" + (tapeAsset === k.key ? " sel" : "")}
-                onClick={() => setTapeAsset(k.key)}
-                title={k.label}
-              ><img src={k.src} alt="" /></button>
-            ))}
-          </div>
-
-          <label className="ne-label">夹子 / 回形针</label>
-          <div className="ne-asset-grid clip-asset-grid">
-            {CLIP_CHOICES.map((k) => (
-              <button key={k.key} type="button"
-                className={"ne-asset-choice clip-asset-choice" + (clipAsset === k.key ? " sel" : "")}
-                onClick={() => setClipAsset(k.key)}
+                className={"ne-asset-choice " + (k.kind === 'clip' ? 'clip-asset-choice' : 'tape-asset-choice') + (fastenerAsset === k.key ? " sel" : "")}
+                onClick={() => setFastenerAsset(k.key)}
                 title={k.label}
               >{k.src ? <img src={k.src} alt="" /> : <span>无</span>}</button>
             ))}
           </div>
 
-          <label className="ne-label">贴纸小生物</label>
+          <label className="ne-label">贴纸小生物 <span className="ne-hint">可多选，最多 4 个</span></label>
           <div className="ne-asset-grid sticker-asset-grid">
             {STICKER_CHOICES.map((d) => (
               <button key={d.key} type="button"
-                className={"ne-asset-choice sticker-asset-choice" + (stickerAsset === d.key ? " sel" : "")}
-                onClick={() => setStickerAsset(d.key)}
+                className={"ne-asset-choice sticker-asset-choice" + (stickerAssets.includes(d.key) ? " sel" : "")}
+                onClick={() => toggleSticker(d.key)}
                 title={d.label}
               ><img src={d.src} alt="" /></button>
             ))}
