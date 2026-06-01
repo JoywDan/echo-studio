@@ -189,8 +189,6 @@ function QuickAction({ qa, onClick }) {
         <span className="qa-icon-spacer" aria-hidden="true" />
         <span className="qa-label">{qa.label}</span>
       </CrayonCard>
-      {qa.flower && <Flower size={20} color="#e6a6ab" style={{ position: "absolute", left: -8, bottom: 18 }} />}
-      <Heart size={12} color="var(--brick)" style={{ position: "absolute", right: 8, top: 6 }} />
     </button>
   );
 }
