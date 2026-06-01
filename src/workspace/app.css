@@ -1423,6 +1423,41 @@ input, textarea { font-family: inherit; }
   }
 }
 
+/* —— final echo bubble parity with Joy bubble —— */
+.bubble-echo {
+  position: relative !important;
+  padding: 14px 20px !important;
+  font-size: 15.5px !important;
+  line-height: 1.6 !important;
+  color: #4f4033 !important;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: rgba(250, 238, 211, .96) !important;
+  border-radius: 26px !important;
+  filter: none !important;
+  box-shadow: 0 3px 10px rgba(126,100,64,.18), inset 0 1px 0 rgba(255,255,255,.34) !important;
+}
+.bubble-echo .torn-bg {
+  display: none !important;
+}
+.bubble-echo::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 4px !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  border: 1.5px solid rgba(126,100,64,.22) !important;
+  border-radius: 22px !important;
+  filter: none !important;
+}
+.bubble-echo > span {
+  position: relative !important;
+  z-index: 1 !important;
+}
+.bubble-echo-wrap > .wash {
+  display: none !important;
+}
+
 /* —— chat hotfix: smooth typing + cleaner mobile header —— */
 .chat-scroll {
   background: transparent !important;
