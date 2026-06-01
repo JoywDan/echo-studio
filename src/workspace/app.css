@@ -1095,3 +1095,27 @@ input, textarea { font-family: inherit; }
     bottom: 14px !important;
   }
 }
+
+/* —— note 操作按钮 v4：半卡在右下边框上，减少占用内容区 —— */
+.notes-grid .sticky-acts {
+  right: 8px !important;
+  bottom: -2px !important;
+  transform: translateY(50%);
+}
+.notes-grid .sticky-acts .round-btn {
+  width: 30px;
+  height: 30px;
+  background: rgba(255,253,247,.86);
+}
+
+@media (max-width: 390px) {
+  .notes-grid .sticky-acts {
+    right: 6px !important;
+    bottom: -2px !important;
+    transform: translateY(50%);
+  }
+  .notes-grid .sticky-acts .round-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
