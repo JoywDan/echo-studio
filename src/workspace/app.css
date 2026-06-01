@@ -1513,19 +1513,29 @@ input, textarea { font-family: inherit; }
   scroll-snap-align: start;
 }
 .task-grid .task-card {
-  min-height: 150px;
+  min-height: 156px;
 }
 .task-grid .task-foot {
-  padding-bottom: 0;
-  transform: translateY(50%);
-  position: relative;
+  position: absolute;
+  left: 14px;
+  right: 8px;
+  bottom: -14px;
   z-index: 8;
+  padding: 0;
+  transform: none;
+}
+.task-grid .task-due {
+  transform: translateY(-16px);
+  position: relative;
+  z-index: 9;
+  text-shadow: 0 0 6px rgba(255,253,247,.85);
 }
 .task-grid .task-foot-icons {
   gap: 5px;
+  margin-left: auto;
 }
 .task-grid .task-foot-icons > svg {
-  transform: translateY(-16px);
+  transform: translateY(-22px);
 }
 .task-grid .task-foot-icons .round-btn {
   width: 30px;

@@ -35,9 +35,9 @@ const STICKER_SLOTS = [
   { left: '18px', bottom: '88px', width: '50px', transform: 'rotate(-6deg)' },
 ]
 const TASK_STICKER_SLOTS = [
-  { left: '14px', bottom: '12px', width: '36px', transform: 'rotate(-7deg)' },
-  { left: '58px', bottom: '10px', width: '34px', transform: 'rotate(5deg)' },
-  { right: '76px', bottom: '12px', width: '30px', transform: 'rotate(8deg)' },
+  { right: '74px', bottom: '22px', width: '34px', transform: 'rotate(7deg)' },
+  { right: '112px', bottom: '18px', width: '32px', transform: 'rotate(-6deg)' },
+  { right: '84px', bottom: '58px', width: '28px', transform: 'rotate(9deg)' },
 ]
 const assetIndex = (key, fallback = 0) => {
   const m = String(key || '').match(/-(\d+)$/)
@@ -111,9 +111,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       tint: t.tint || TASK_TINTS[i % TASK_TINTS.length],
       icon: t.icon || "file",
       washiUrl: chosenTape,
-      washiStyle: chosenTape ? { left: '50%', top: '-40px', width: '146px', transform: `translateX(-50%) rotate(${i % 2 ? 4 : -5}deg)` } : null,
+      washiStyle: chosenTape ? { left: '50%', top: '-48px', width: '168px', transform: `translateX(-50%) rotate(${i % 2 ? 4 : -5}deg)` } : null,
       clipUrl: chosenClip,
-      clipStyle: chosenClip ? { left: '50%', top: '-38px', width: fastenerKey.startsWith('paperclip-') ? '58px' : '92px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
+      clipStyle: chosenClip ? { left: '50%', top: '-42px', width: fastenerKey.startsWith('paperclip-') ? '58px' : '88px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
       stickers: stickerKeys ? stickerKeys.map((key, si) => ({
         src: stickerAt(assetIndex(key, 2 + si)),
         style: TASK_STICKER_SLOTS[(i + si) % TASK_STICKER_SLOTS.length],
