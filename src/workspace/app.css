@@ -1423,6 +1423,187 @@ input, textarea { font-family: inherit; }
   }
 }
 
+/* —— chat page final scrapbook pass —— */
+.chat-inner { position: relative; }
+.chat-header {
+  min-height: 104px;
+  padding: 14px 14px 10px;
+  gap: 10px;
+  align-items: flex-start;
+}
+.chat-header .icon-btn { display: none !important; }
+.chat-header-bg .torn-bg {
+  inset: -5px -4px 0;
+  background-color: rgba(246, 237, 218, .74);
+  box-shadow: 0 4px 0 rgba(190,166,132,.2);
+}
+.chat-avatar-wrap,
+.msg-av {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.daddy-avatar {
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+  background: rgba(232,210,196,.44);
+  filter: drop-shadow(0 2px 1px rgba(69,58,51,.14)) url(#crayon-edge-2);
+}
+.chat-daddy-avatar { width: 58px; height: 58px; }
+.msg-daddy-avatar { width: 42px; height: 42px; }
+.avatar-online {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #58a469;
+  border: 2px solid rgba(248,241,226,.96);
+}
+.chat-id { padding-top: 2px; padding-right: min(48vw, 330px); }
+.chat-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.chat-title-row .model-pill-wrap {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.chat-title-row .model-pill {
+  padding: 6px 10px 6px 11px;
+  gap: 6px;
+  border-width: 1.5px;
+  background: rgba(255,250,240,.78);
+  box-shadow: 0 2px 0 rgba(69,58,51,.08);
+}
+.chat-title-row .mp-model { font-size: 13px; }
+.chat-title-row .mp-feats,
+.chat-title-row .mp-sep { font-size: 12px; }
+.chat-title-row .mp-chev { width: 20px; height: 20px; }
+.chat-pillbar {
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  padding: 0;
+  height: auto;
+  overflow: visible;
+  z-index: 30;
+}
+.chat-pillbar .model-pill {
+  padding: 6px 10px 6px 11px;
+  gap: 6px;
+  border-width: 1.5px;
+  background: rgba(255,250,240,.78);
+  box-shadow: 0 2px 0 rgba(69,58,51,.08);
+}
+.chat-pillbar .mp-model { font-size: 13px; }
+.chat-pillbar .mp-feats,
+.chat-pillbar .mp-sep { font-size: 12px; }
+.chat-pillbar .mp-chev { width: 20px; height: 20px; }
+.chat-scroll {
+  padding-top: 12px;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(209,143,131,.12), transparent 18%),
+    radial-gradient(circle at 12% 58%, rgba(226,185,154,.12), transparent 20%);
+}
+.chat-scroll::before,
+.chat-scroll::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: .9;
+  filter: drop-shadow(0 1px 0 rgba(255,250,240,.7));
+}
+.chat-scroll::before {
+  width: 54px;
+  height: 54px;
+  right: 16px;
+  top: 96px;
+  background-image: url("./assets/stickers/04_heart.png");
+  transform: rotate(9deg);
+}
+.chat-scroll::after {
+  width: 44px;
+  height: 44px;
+  left: 18px;
+  top: 245px;
+  background-image: url("./assets/stickers/05_flower.png");
+  transform: rotate(-8deg);
+}
+.bubble-echo .torn-bg {
+  inset: -7px -8px;
+  border-radius: 8px 5px 9px 6px;
+  filter: url(#torn-edge) url(#crayon-edge-2);
+  clip-path: polygon(1% 7%, 4% 2%, 12% 4%, 20% 1%, 31% 5%, 43% 2%, 56% 4%, 69% 1%, 82% 5%, 96% 2%, 99% 12%, 97% 24%, 99% 38%, 96% 51%, 99% 67%, 95% 82%, 98% 96%, 84% 98%, 71% 95%, 58% 99%, 44% 96%, 30% 99%, 18% 95%, 5% 98%, 1% 87%, 4% 72%, 1% 58%, 3% 43%, 1% 29%);
+}
+.bubble-echo::after {
+  content: "";
+  position: absolute;
+  inset: -4px -5px;
+  z-index: 0;
+  pointer-events: none;
+  border: 2px dotted rgba(130,108,82,.18);
+  border-radius: 12px 8px 10px 9px;
+  filter: url(#crayon-edge-2);
+}
+.thinking-toggle {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  gap: 4px;
+  font-size: 0 !important;
+}
+.thinking-toggle::before {
+  content: "";
+  display: inline-block;
+  width: 118px;
+  height: 38px;
+  background: url("./assets/chat/thinking-label.png") center / contain no-repeat;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 0 rgba(255,250,240,.75));
+}
+.thinking-toggle svg { width: 15px; height: 15px; }
+.chat-input {
+  padding: 12px 14px max(14px, env(safe-area-inset-bottom));
+  background: transparent;
+}
+.input-strip-bg { display: none !important; }
+.chat-input > * { position: relative; z-index: 1; }
+.input-circle {
+  width: 44px;
+  height: 44px;
+  background: rgba(250,242,224,.9) !important;
+  border-color: rgba(120,95,70,.34) !important;
+  box-shadow: 0 2px 0 rgba(69,58,51,.12);
+}
+.input-field {
+  background: rgba(255,251,241,.7) !important;
+  border-color: rgba(120,95,70,.28) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.46), 0 1px 0 rgba(69,58,51,.08);
+}
+
+@media (max-width: 520px) {
+  .chat-header { min-height: 108px; padding-right: 10px; }
+  .chat-daddy-avatar { width: 52px; height: 52px; }
+  .chat-title-row { gap: 6px; align-items: flex-start; }
+  .chat-name { font-size: 20px; max-width: 42vw; }
+  .chat-id { padding-right: 46vw; }
+  .chat-title-row .model-pill { max-width: 42vw; padding: 5px 8px; }
+  .chat-title-row .mp-feats { max-width: 72px; }
+  .chat-scroll { padding-left: 14px; padding-right: 14px; }
+  .chat-input { gap: 8px; padding-left: 12px; padding-right: 12px; }
+  .input-circle { width: 40px; height: 40px; }
+  .send-btn { width: 48px; height: 48px; }
+}
+
 /* —— note 操作按钮 v4：半卡在右下边框上，减少占用内容区 —— */
 .notes-grid .sticky-acts {
   right: 8px !important;

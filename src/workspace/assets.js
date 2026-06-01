@@ -22,12 +22,16 @@ import newnoteImg from './assets/new-note.png'
 import pantherHead from './assets/panther-head.png'
 import tapeLong1 from './assets/tape-long-1.png'
 import tapeLong2 from './assets/tape-long-2.png'
+import chatDaddy from './assets/chat/daddy-panther.png'
+import thinkingLabel from './assets/chat/thinking-label.png'
 export const CHEST = chest
 export const TITLE = title
 export const PINNED_IMG = pinnedImg
 export const NEWNOTE_IMG = newnoteImg
 export const PANTHER_HEAD = pantherHead
 export const TAPE_LONG = [tapeLong1, tapeLong2]
+export const CHAT_DADDY = chatDaddy
+export const THINKING_LABEL = thinkingLabel
 const deco = import.meta.glob('./assets/deco/*.png', { eager: true, import: 'default' })
 export const DECO_POOL = Object.keys(deco).sort().map(k => deco[k])
 export const stickerAt = (i) => STICKERS[((i % STICKERS.length) + STICKERS.length) % STICKERS.length]

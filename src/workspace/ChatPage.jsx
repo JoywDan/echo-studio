@@ -3,6 +3,7 @@ import { Heart, Star, Icon, DashFly } from './doodles.jsx'
 import { EchoAvatar } from './creatures.jsx'
 import { TornCard, Tape, Paperclip } from './components.jsx'
 import { api, uploadsUrl } from './api.js'
+import { CHAT_DADDY } from './assets.js'
 
 function now() { const d = new Date(); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") }
 const DEFAULT_TOGGLES = { think: false, memory: true, web: false, code: false }
@@ -61,7 +62,7 @@ function Message({ msg, onImage, onDecide, deco }) {
       {meta}</div></div>)
   }
   return (<div className="msg-row echo">
-    <span className="msg-av"><EchoAvatar size={40} online /></span>
+    <span className="msg-av"><img className="daddy-avatar msg-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
@@ -179,7 +180,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched }
         <header className="chat-header">
           <TornCard className="chat-header-bg" />
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={24} color="var(--brick)" /></button>
-          <EchoAvatar size={48} online />
+          <span className="chat-avatar-wrap"><img className="daddy-avatar chat-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
           <div className="chat-id"><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线</div></div>
           <button className="icon-btn" onClick={() => docInputRef.current && docInputRef.current.click()} aria-label="附件"><Icon name="clip" size={20} color="var(--ink-soft)" /></button>
           <button className="icon-btn" aria-label="菜单"><Icon name="menu" size={22} color="var(--ink)" /></button>
