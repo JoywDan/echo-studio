@@ -374,7 +374,7 @@ input, textarea { font-family: inherit; }
 .qa-label { font-family: var(--font-title); font-size: 17px; color: var(--ink); }
 
 /* studio */
-.studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; margin-top: 22px; }
+.studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 16px; }
 .studio-card { position: relative; display: block; text-align: left; }
 .studio-card::before,
 .studio-card::after {
@@ -457,18 +457,18 @@ input, textarea { font-family: inherit; }
 }
 .studio-kai.monitor { width: 48px; left: 14px; top: 8px; transform: rotate(-5deg); }
 .studio-kai.bear { width: 50px; left: 10px; bottom: 8px; transform: rotate(5deg); }
-.studio-kai.bear.side { width: 56px; left: 12px; bottom: 12px; transform: rotate(5deg); }
+.studio-kai.bear.side { width: 66px; left: 10px; bottom: 10px; transform: rotate(5deg); }
 .studio-kai.bear.small { width: 42px; left: 12px; bottom: 12px; transform: rotate(5deg); }
 .studio-kai.girl { width: 70px; left: 12px; bottom: 4px; transform: rotate(-6deg); }
 .studio-kai.girl.side { width: 72px; left: 12px; bottom: 10px; transform: rotate(-6deg); }
 .studio-kai.gallery-paper { width: 62px; left: 16px; bottom: 14px; transform: rotate(-8deg); }
-.studio-kai.gallery-artist { width: 78px; left: 12px; bottom: 12px; transform: rotate(-6deg); }
-.studio-kai.diary-paper { width: 58px; left: 14px; bottom: 14px; transform: rotate(-7deg); }
+.studio-kai.gallery-artist { width: 88px; left: 10px; bottom: 8px; transform: rotate(-6deg); }
+.studio-kai.diary-paper { width: 72px; left: 12px; bottom: 10px; transform: rotate(-7deg); }
 .studio-kai.writer { width: 72px; left: 8px; bottom: 2px; transform: rotate(-4deg); }
 .studio-kai.writer.side { width: 76px; left: 10px; bottom: 8px; transform: rotate(-4deg); }
-.studio-kai.envelope { width: 86px; right: 8px; bottom: 10px; transform: rotate(3deg); }
+.studio-kai.envelope { width: 98px; right: 4px; bottom: 8px; transform: rotate(3deg); }
 .studio-kai.pic { width: 48px; left: 12px; top: 8px; transform: rotate(-5deg); }
-.studio-kai.cloud { width: 92px; right: 4px; bottom: 8px; transform: rotate(5deg); }
+.studio-kai.cloud { width: 102px; right: 2px; bottom: 6px; transform: rotate(5deg); }
 .studio-st { width: 24px; }
 .studio-st.star { right: 18px; top: 12px; width: 28px; transform: rotate(10deg); }
 .studio-st.star.top { right: 18px; top: 14px; width: 30px; transform: rotate(10deg); }
@@ -492,6 +492,8 @@ input, textarea { font-family: inherit; }
 .studio-st.music { left: 16px; top: 12px; width: 30px; transform: rotate(-8deg); }
 .studio-st.music.top { left: 20px; top: 14px; width: 30px; transform: rotate(-8deg); }
 .studio-st.cup { right: 18px; bottom: 14px; width: 32px; transform: rotate(8deg); }
+.studio-st.cup.diary { right: 18px; bottom: 12px; width: 34px; transform: rotate(8deg); }
+.studio-st.cup.news { right: 18px; bottom: 12px; width: 34px; transform: rotate(7deg); }
 .studio-st.moon { left: 14px; top: 12px; width: 34px; }
 .studio-st.cloud { right: 18px; bottom: 12px; width: 38px; }
 .studio-st.cloud.small { right: 42px; top: 18px; width: 24px; transform: rotate(8deg); }
@@ -499,6 +501,16 @@ input, textarea { font-family: inherit; }
 .studio-st.cactus { right: 18px; top: 16px; width: 30px; transform: rotate(6deg); }
 .studio-st.blob.a { left: 10px; bottom: 12px; width: 36px; }
 .studio-st.blob.b { left: 42px; bottom: 10px; width: 36px; }
+.studio-st.bubble { left: 76px; bottom: 15px; width: 32px; transform: rotate(-8deg); }
+.studio-st.sun { right: 64px; top: 16px; width: 26px; transform: rotate(-10deg); }
+.studio-st.candy { left: 12px; bottom: 18px; width: 34px; transform: rotate(8deg); }
+.studio-st.ghost-news { left: 12px; bottom: 12px; width: 48px; transform: rotate(-7deg); }
+.studio-st.music-news { left: 18px; top: 14px; width: 34px; transform: rotate(-8deg); }
+.studio-st.star.news { right: 18px; top: 14px; width: 30px; transform: rotate(12deg); }
+.studio-st.worm { right: 84px; bottom: 18px; width: 34px; transform: rotate(-8deg); }
+.studio-st.moon-small { left: 58px; top: 14px; width: 30px; transform: rotate(-8deg); }
+.studio-st.flower-chat { right: 14px; bottom: 16px; width: 34px; transform: rotate(6deg); }
+.studio-st.bug { left: 16px; bottom: 12px; width: 32px; transform: rotate(-10deg); }
 .studio-s1 .studio-title { left: 76px; top: 62px; max-width: calc(100% - 108px); }
 .studio-s2 .studio-title { left: 86px; top: 62px; max-width: calc(100% - 108px); }
 .studio-s3 .studio-title { left: 82px; top: 62px; max-width: calc(100% - 104px); }
