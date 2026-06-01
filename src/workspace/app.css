@@ -1383,11 +1383,41 @@ input, textarea { font-family: inherit; }
   filter: drop-shadow(0 3px 2px rgba(80,58,39,.12));
 }
 
+/* —— pinned notes 横向手滑轨道：超过 2 张向右延伸，不再把页面拉很长 —— */
+.notes-grid {
+  grid-template-columns: none !important;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 28px) / 2);
+  gap: 32px 28px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  margin: -34px -8px 0 !important;
+  padding: 56px 8px 34px !important;
+}
+.notes-grid::-webkit-scrollbar {
+  display: none;
+}
+.notes-grid .sticky {
+  width: 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
 @media (max-width: 390px) {
   .ne-asset-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .sticker-asset-grid {
     max-height: 138px;
+  }
+  .notes-grid {
+    grid-auto-columns: calc((100% - 18px) / 2);
+    gap: 26px 18px !important;
+    margin: -30px -6px 0 !important;
+    padding: 50px 6px 30px !important;
   }
 }
