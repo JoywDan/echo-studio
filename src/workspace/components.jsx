@@ -211,12 +211,12 @@ function StudioCard({ mod, onClick }) {
       ["kawaii_computer_monitor_with_checkmark_face", "studio-kai monitor"],
       ["kawaii_teddy_bear_waving_sticker", "studio-kai bear"],
       ["03_star", "studio-st star"],
-      ["04_heart", "studio-st heart"],
+      ["09_lightning", "studio-st spark"],
     ],
     s2: [
       ["cute_girl_drawing_in_notebook", "studio-kai girl"],
       ["05_flower", "studio-st flower"],
-      ["03_star", "studio-st star small"],
+      ["07_cloud", "studio-st cloud small"],
     ],
     s3: [
       ["cute_girl_drawing_in_notebook", "studio-kai writer"],
@@ -225,13 +225,13 @@ function StudioCard({ mod, onClick }) {
     ],
     s4: [
       ["smiling_kawaii_envelope_with_heart_seal", "studio-kai envelope"],
-      ["04_heart", "studio-st heart"],
       ["09_lightning", "studio-st spark"],
+      ["10_music_notes", "studio-st music"],
     ],
     s5: [
       ["kawaii_paper_sheet_with_smile", "studio-kai pic"],
       ["05_flower", "studio-st flower"],
-      ["03_star", "studio-st star"],
+      ["11_latte_cup", "studio-st cup"],
     ],
     s6: [
       ["sleepy_cloud_and_starry_night", "studio-kai cloud"],
@@ -241,12 +241,12 @@ function StudioCard({ mod, onClick }) {
     s7: [
       ["01_bear", "studio-st blob a"],
       ["02_bunny", "studio-st blob b"],
-      ["04_heart", "studio-st heart"],
+      ["06_cactus", "studio-st cactus"],
     ],
     s8: [
       ["05_flower", "studio-st flower river"],
       ["07_cloud", "studio-st cloud"],
-      ["03_star", "studio-st star river"],
+      ["04_heart", "studio-st heart river"],
     ],
   }[mod.id] || [];
   return (

@@ -2,8 +2,8 @@
 export const QUICK_ACTIONS = [
   { id: "qa1", label: "New chat", icon: "chat-plus", edge: "pink", sticker: "cute_crayon_style_chat_icon_with_cross", accent: "05_flower" },
   { id: "qa2", label: "New note", icon: "file", edge: "sage", sticker: "kawaii_paper_sheet_with_smile", accent: "04_heart" },
-  { id: "qa3", label: "New task", icon: "clipboard", edge: "cream", sticker: "kawaii_clipboard_with_check_mark", accent: "03_star" },
-  { id: "qa4", label: "Upload", icon: "upload", edge: "pink", sticker: "kawaii_upload_icon_with_smiling_face", accent: "03_star" },
+  { id: "qa3", label: "New task", icon: "clipboard", edge: "cream", sticker: "kawaii_clipboard_with_check_mark", accent: "09_lightning" },
+  { id: "qa4", label: "Upload", icon: "upload", edge: "pink", sticker: "kawaii_upload_icon_with_smiling_face", accent: "08_moon" },
 ]
 export const STUDIO = [
   { id: "s1", title: "CC 操作台", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], url: "https://joywdan.github.io/echo-studio/cc/" },
