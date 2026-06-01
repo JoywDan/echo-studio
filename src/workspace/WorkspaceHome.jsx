@@ -36,8 +36,8 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
   const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length],
     stickers: [
-      { src: stickerAt(i * 5 + 1), style: { right: '12px', bottom: '10px', width: '66px', transform: 'rotate(7deg)' } },
-      ...(i % 2 === 0 ? [{ src: stickerAt(i * 5 + 3), style: { left: '12px', bottom: '12px', width: '52px', transform: 'rotate(-8deg)' } }] : []),
+      { src: stickerAt(i * 5 + 1), style: { right: '12px', bottom: '10px', width: '82px', transform: 'rotate(7deg)' } },
+      ...(i % 2 === 0 ? [{ src: stickerAt(i * 5 + 3), style: { left: '12px', bottom: '12px', width: '64px', transform: 'rotate(-8deg)' } }] : []),
     ] }))
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 

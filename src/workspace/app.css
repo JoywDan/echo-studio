@@ -829,3 +829,15 @@ input, textarea { font-family: inherit; }
 .newnote-img { height: 27px; width: auto; vertical-align: middle; }
 .notes-grid { margin-top: 16px; }
 .ws-section-tape { display: block; width: 92%; max-width: 480px; margin: 18px auto 8px; height: auto; }
+
+/* —— v4：减挤 + 放大对齐 P3 —— */
+.ws-header { min-height: 152px !important; }
+.ws-title-img { width: 67% !important; max-width: 316px !important; }
+.ws-mascot-l { left: -14px !important; bottom: -2px !important; width: 152px !important; }
+.ws-mascot-r { right: -10px !important; bottom: -6px !important; width: 112px !important; }
+.washi-tape { width: 108px !important; top: -18px !important; left: 16px !important; }
+.pinned-img { height: 46px !important; }
+.newnote-img { height: 40px !important; }
+.ds-sticker { width: 48px !important; }
+.doodle-strip { justify-content: space-around !important; padding: 0 6px; gap: 6px !important; }
+.ws-section-tape { width: 96% !important; max-width: 520px !important; margin: 16px auto 10px !important; }
