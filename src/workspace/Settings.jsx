@@ -1,7 +1,7 @@
 import React from 'react'
 import { Icon } from './doodles.jsx'
+import { PAPER_PRESETS } from './theme.js'
 const ACCENTS = ['#a7372a', '#b65a3c', '#9c6b4e', '#7d8a5c', '#7a6aa0', '#c06b8a']
-const PAPERS = ['#efe9dc', '#f0e7d4', '#ece6da', '#eee4d2', '#e9e4d8', '#f2ece1']
 const TEXT_COLORS = ['#3a3027', '#4f4034', '#5d463b', '#5d5f48', '#4d5663', '#6b4c68']
 const CN_FONTS = [['ZCOOL KuaiLe', '站酷快乐体 · 圆乎乎'], ['ZCOOL XiaoWei', '站酷小薇 · 清秀'], ['Ma Shan Zheng', '马善政 · 毛笔'], ['Long Cang', '龙藏 · 纤细手写'], ['Noto Sans SC', '思源黑体 · 干净']]
 const TITLE_FONTS = ['Caveat', 'Gloria Hallelujah']
@@ -11,6 +11,14 @@ function Swatch({ colors, value, onChange }) {
 }
 function Row({ label, children }) {
   return (<div style={{ marginBottom: 20 }}><div style={{ fontFamily: 'var(--font-cute)', fontSize: 14, color: 'var(--ink-soft)', marginBottom: 9 }}>{label}</div>{children}</div>)
+}
+function PaperPresets({ value, onChange }) {
+  return (<div className="paper-choice-grid">{PAPER_PRESETS.map((p) => (
+    <button key={p.id} className={'paper-choice paper-' + p.id + (value === p.id ? ' sel' : '')} onClick={() => onChange(p)}>
+      <span className="paper-choice-sample" />
+      <span className="paper-choice-name">{p.name}</span>
+    </button>
+  ))}</div>)
 }
 export default function Settings({ t, set, reset, open, onClose, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont }) {
   const wpRef = React.useRef(null), fontRef = React.useRef(null)
@@ -24,7 +32,7 @@ export default function Settings({ t, set, reset, open, onClose, wallpaper, uplo
         <button className="icon-btn" onClick={onClose}><Icon name="back" size={20} color="var(--ink-soft)" style={{ transform: 'scaleX(-1)' }} /></button></div>
       <div className="set-body">
         <Row label="强调色"><Swatch colors={ACCENTS} value={t.accent} onChange={(v) => set('accent', v)} /></Row>
-        <Row label="纸张底色"><Swatch colors={PAPERS} value={t.paper} onChange={(v) => set('paper', v)} /></Row>
+        <Row label="纸张材质"><PaperPresets value={t.paperPreset} onChange={(p) => { set('paperPreset', p.id); set('paper', p.paper) }} /></Row>
         <Row label="字体颜色"><Swatch colors={TEXT_COLORS} value={t.textColor} onChange={(v) => set('textColor', v)} /></Row>
         <Row label={'纹理/涂鸦浓度 · ' + t.texture + '%'}><input type="range" min={0} max={100} step={10} value={t.texture} onChange={(e) => set('texture', +e.target.value)} className="set-range" /></Row>
         <Row label={'圆角 · ' + t.radius + 'px'}><input type="range" min={6} max={26} step={1} value={t.radius} onChange={(e) => set('radius', +e.target.value)} className="set-range" /></Row>

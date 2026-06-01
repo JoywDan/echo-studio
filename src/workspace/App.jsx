@@ -111,7 +111,7 @@ export default function App() {
 
   const convs = sessionsToConvs(sessions, activeConv && activeConv.id)
   return (
-    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide') + (wallpaper ? ' has-wallpaper' : '')} ref={appRef} style={cssVars}>
+    <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide') + ' paper-' + (t.paperPreset || 'sandpaper') + (wallpaper ? ' has-wallpaper' : '')} ref={appRef} style={cssVars}>
       <div className="layout" data-view={view}>
         <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onRenameConv={promptRenameConv} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
         <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} onRenameConv={renameConv} />

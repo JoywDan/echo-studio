@@ -1,6 +1,16 @@
 import React from 'react'
 import { idbPut, idbGet, idbDel } from './idb.js'
-export const THEME_DEFAULTS = { accent: '#a7372a', paper: '#efe9dc', textColor: '#3a3027', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe' }
+export const PAPER_PRESETS = [
+  { id: 'sandpaper', name: '米黄砂纸', paper: '#eadfc6' },
+  { id: 'camel-washi', name: '淡驼和纸', paper: '#ded0bb' },
+  { id: 'sky-grid', name: '天空蓝小格', paper: '#dfeef3' },
+  { id: 'pink-xuan', name: '浅粉宣纸', paper: '#f3dde0' },
+  { id: 'kraft', name: '牛皮纸', paper: '#d2b98f' },
+  { id: 'linen', name: '亚麻布', paper: '#ddd2bf' },
+  { id: 'cotton', name: '象牙棉纸', paper: '#f4eddf' },
+  { id: 'mist-handmade', name: '雾灰手工纸', paper: '#e5e1d6' },
+]
+export const THEME_DEFAULTS = { accent: '#a7372a', paper: PAPER_PRESETS[0].paper, paperPreset: 'sandpaper', textColor: '#3a3027', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe' }
 export function shade(hex, pct) {
   const h = hex.replace('#', '')
   let r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
@@ -50,11 +60,13 @@ export function useTheme() {
   }
   const clearFont = async () => { await idbDel('font'); localStorage.removeItem('ws_fontname'); setCustomFont(null); if (t.cnFont === 'UserCN') set('cnFont', 'ZCOOL KuaiLe') }
 
+  const preset = PAPER_PRESETS.find((p) => p.id === t.paperPreset) || PAPER_PRESETS.find((p) => p.paper === t.paper) || PAPER_PRESETS[0]
   const cssVars = {
     '--vermillion': t.accent, '--vermillion-l': shade(t.accent, 18), '--vermillion-d': shade(t.accent, -16),
     '--brick': t.accent, '--brick-l': shade(t.accent, 18), '--brick-d': shade(t.accent, -16),
     '--washi': t.paper, '--washi-deep': shade(t.paper, -8), '--card': shade(t.paper, 14),
     '--paper': t.paper, '--paper-2': shade(t.paper, 8), '--paper-torn': shade(t.paper, 12),
+    '--paper-preset': preset.id,
     '--ink': t.textColor, '--ink-soft': shade(t.textColor, 28), '--ink-faint': shade(t.textColor, 50),
     '--texture': (t.texture / 100).toFixed(2),
     '--radius': t.radius + 'px', '--radius-sm': (t.radius - 5) + 'px', '--radius-lg': (t.radius + 6) + 'px',

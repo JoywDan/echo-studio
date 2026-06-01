@@ -1170,3 +1170,148 @@ input, textarea { font-family: inherit; }
 .studio-reader-shell {
   z-index: 30;
 }
+
+/* —— 百宝箱纸张材质预设 —— */
+.paper-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.paper-choice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  border: 1.6px solid rgba(120,95,70,.22);
+  background: rgba(255,253,248,.48);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(80,60,40,.06);
+}
+.paper-choice.sel {
+  border-color: var(--brick);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brick) 18%, transparent), 0 2px 6px rgba(80,60,40,.10);
+}
+.paper-choice-sample {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  border-radius: 8px 7px 9px 6px;
+  border: 1px solid rgba(80,60,40,.18);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.20);
+}
+.paper-choice-name {
+  font-size: 13px;
+  line-height: 1.15;
+}
+.paper-sandpaper .paper-choice-sample,
+.paper-choice.paper-sandpaper .paper-choice-sample {
+  background:
+    radial-gradient(circle, rgba(102,83,55,.18) .55px, transparent .9px) 0 0 / 5px 5px,
+    radial-gradient(circle, rgba(255,255,255,.34) .6px, transparent 1px) 2px 3px / 7px 7px,
+    #eadfc6;
+}
+.paper-camel-washi .paper-choice-sample,
+.paper-choice.paper-camel-washi .paper-choice-sample {
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.22), transparent 42%),
+    repeating-linear-gradient(7deg, rgba(128,97,66,.08) 0 1px, transparent 1px 9px),
+    #ded0bb;
+}
+.paper-sky-grid .paper-choice-sample,
+.paper-choice.paper-sky-grid .paper-choice-sample {
+  background:
+    linear-gradient(rgba(96,139,154,.17) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96,139,154,.15) 1px, transparent 1px),
+    #dfeef3;
+  background-size: 9px 9px;
+}
+.paper-pink-xuan .paper-choice-sample,
+.paper-choice.paper-pink-xuan .paper-choice-sample {
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(255,255,255,.42), transparent 42%),
+    repeating-linear-gradient(82deg, rgba(171,111,111,.07) 0 1px, transparent 1px 12px),
+    #f3dde0;
+}
+.paper-kraft .paper-choice-sample,
+.paper-choice.paper-kraft .paper-choice-sample {
+  background:
+    url("./kraft.png") center / 90px 90px,
+    #d2b98f;
+}
+.paper-linen .paper-choice-sample,
+.paper-choice.paper-linen .paper-choice-sample {
+  background:
+    repeating-linear-gradient(0deg, rgba(100,82,59,.10) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.18) 0 1px, transparent 1px 6px),
+    #ddd2bf;
+}
+.paper-cotton .paper-choice-sample,
+.paper-choice.paper-cotton .paper-choice-sample {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,255,255,.45), transparent 38%),
+    radial-gradient(circle, rgba(117,96,68,.10) .45px, transparent .8px) 0 0 / 8px 8px,
+    #f4eddf;
+}
+.paper-mist-handmade .paper-choice-sample,
+.paper-choice.paper-mist-handmade .paper-choice-sample {
+  background:
+    repeating-linear-gradient(112deg, rgba(84,86,78,.07) 0 1px, transparent 1px 11px),
+    radial-gradient(circle, rgba(255,255,255,.34) .55px, transparent .95px) 2px 1px / 9px 9px,
+    #e5e1d6;
+}
+
+.app:not(.has-wallpaper).paper-sandpaper::before {
+  background:
+    radial-gradient(circle, rgba(104,84,54,.18) .45px, transparent .95px) 0 0 / 5px 5px,
+    radial-gradient(circle at 20% 16%, color-mix(in srgb, var(--paper) 76%, #fff 24%), transparent 58%),
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-camel-washi::before {
+  background:
+    linear-gradient(105deg, rgba(255,255,255,.20), transparent 42%),
+    repeating-linear-gradient(8deg, rgba(118,92,65,.07) 0 1px, transparent 1px 10px),
+    radial-gradient(circle at 82% 86%, rgba(154,119,86,.10), transparent 55%),
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-sky-grid::before {
+  background:
+    linear-gradient(rgba(89,130,146,.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(89,130,146,.12) 1px, transparent 1px),
+    radial-gradient(circle at 22% 16%, rgba(255,255,255,.38), transparent 56%),
+    var(--paper);
+  background-size: 12px 12px, 12px 12px, auto, auto;
+}
+.app:not(.has-wallpaper).paper-pink-xuan::before {
+  background:
+    radial-gradient(ellipse at 18% 12%, rgba(255,255,255,.42), transparent 52%),
+    repeating-linear-gradient(84deg, rgba(155,91,98,.055) 0 1px, transparent 1px 13px),
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-kraft::before {
+  background:
+    linear-gradient(rgba(255,248,230,.16), rgba(255,248,230,.10)),
+    url("./kraft.png") center / 320px 320px,
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-linen::before {
+  background:
+    repeating-linear-gradient(0deg, rgba(92,76,56,.075) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 1px, transparent 1px 6px),
+    radial-gradient(circle at 82% 80%, rgba(120,100,75,.10), transparent 58%),
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-cotton::before {
+  background:
+    radial-gradient(circle at 24% 14%, rgba(255,255,255,.45), transparent 52%),
+    radial-gradient(circle, rgba(116,96,70,.075) .55px, transparent 1px) 0 0 / 9px 9px,
+    var(--paper);
+}
+.app:not(.has-wallpaper).paper-mist-handmade::before {
+  background:
+    repeating-linear-gradient(112deg, rgba(82,84,78,.055) 0 1px, transparent 1px 12px),
+    radial-gradient(circle, rgba(255,255,255,.28) .45px, transparent .95px) 2px 2px / 10px 10px,
+    var(--paper);
+}
