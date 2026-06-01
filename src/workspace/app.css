@@ -461,6 +461,7 @@ input, textarea { font-family: inherit; }
 .studio-kai.bear.small { width: 42px; left: 12px; bottom: 12px; transform: rotate(5deg); }
 .studio-kai.girl { width: 70px; left: 12px; bottom: 4px; transform: rotate(-6deg); }
 .studio-kai.girl.side { width: 72px; left: 12px; bottom: 10px; transform: rotate(-6deg); }
+.studio-kai.gallery-paper { width: 62px; left: 16px; bottom: 14px; transform: rotate(-8deg); }
 .studio-kai.writer { width: 72px; left: 8px; bottom: 2px; transform: rotate(-4deg); }
 .studio-kai.writer.side { width: 76px; left: 10px; bottom: 8px; transform: rotate(-4deg); }
 .studio-kai.envelope { width: 86px; right: 8px; bottom: 10px; transform: rotate(3deg); }
@@ -497,7 +498,7 @@ input, textarea { font-family: inherit; }
 .studio-st.blob.a { left: 10px; bottom: 12px; width: 36px; }
 .studio-st.blob.b { left: 42px; bottom: 10px; width: 36px; }
 .studio-s1 .studio-title { left: 76px; top: 62px; max-width: calc(100% - 108px); }
-.studio-s2 .studio-title { left: 82px; top: 62px; max-width: calc(100% - 104px); }
+.studio-s2 .studio-title { left: 86px; top: 62px; max-width: calc(100% - 108px); }
 .studio-s3 .studio-title { left: 82px; top: 62px; max-width: calc(100% - 104px); }
 .studio-s4 .studio-title { left: 18px; top: 66px; max-width: calc(100% - 96px); }
 .studio-s5 .studio-title { left: 70px; top: 62px; max-width: calc(100% - 96px); }

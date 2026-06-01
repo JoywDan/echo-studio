@@ -215,7 +215,7 @@ function StudioCard({ mod, onClick }) {
       ["09_lightning", "studio-st spark corner"],
     ],
     s2: [
-      ["cute_girl_drawing_in_notebook", "studio-kai girl side"],
+      ["kawaii_paper_sheet_with_smile", "studio-kai gallery-paper"],
       ["05_flower", "studio-st flower top"],
       ["07_cloud", "studio-st cloud small"],
       ["03_star", "studio-st star mini"],
@@ -262,7 +262,6 @@ function StudioCard({ mod, onClick }) {
       {mod.clip && <Paperclip size={28} color="#b39a86" style={{ top: -14, right: 22, transform: "rotate(12deg)" }} />}
       <CrayonCard tint="pink" edge={mod.edge} dbl={false} className="studio-inner" style={{ "--tint": "rgba(255,253,247,0.5)" }}>
         <span className="studio-deco-fill" style={{ "--scol": (TINT[mod.edge] || TINT.pink).edge }} />
-        {mod.icon && <span className="studio-icon"><MiniIcon name={mod.icon} size={34} /></span>}
         <span className={"studio-title" + (mod.english ? " en" : "")}>{mod.title}</span>
         {Creature && <Creature size={mod.creature === "BlobTrio" ? 56 : 40} style={{ position: "absolute", left: 12, bottom: 10 }} />}
         <span className="studio-asset-stickers">
