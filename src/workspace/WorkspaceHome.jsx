@@ -1,7 +1,15 @@
 import React from 'react'
 import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard } from './components.jsx'
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
-import { CHEST, PANTHER_HEAD, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
+import { CHEST, PANTHER_HEAD, TITLE, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
+
+const STK_POS = [
+  { left: '9px', bottom: '9px', width: '56px', transform: 'rotate(-7deg)' },
+  { right: '12px', bottom: '12px', width: '46px', transform: 'rotate(9deg)' },
+  { right: '14px', top: '48px', width: '42px', transform: 'rotate(-4deg)' },
+  { left: '12px', bottom: '16px', width: '52px', transform: 'rotate(6deg)' },
+  { left: '10px', top: '44px', width: '44px', transform: 'rotate(-11deg)' },
+]
 import { Star, Heart, Sparkle, Squiggle, Wave, Flower, HeartLegs, SpeechHeart, Icon } from './doodles.jsx'
 import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from './data.jsx'
 import { api } from '../api.js'
@@ -26,7 +34,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], stickerImg: stickerAt(i * 3 + 1) }))
+  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], stickerImg: stickerAt(i * 5 + 1), stickerStyle: STK_POS[(i * 2) % STK_POS.length] }))
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 
   async function saveNote(d) { if (editingNote === 'new') { const r = await api.notes.create(d); setNotes(n => [...n, r]) } else { const r = await api.notes.update(editingNote.id, d); setNotes(n => n.map(x => x.id === r.id ? r : x)) } setEditingNote(null) }
@@ -43,10 +51,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <header className="ws-header">
             <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" />
             <img className="ws-mascot-r" src={CHEST} alt="" />
-            <h1 className="ws-title" onClick={onOpenSettings} style={{ cursor: "pointer" }} title="点标题调主题">
-              <span className="t-every">Every</span><span className="t-version">version,</span><span className="t-yours">yours</span>
-            </h1>
-            <div className="ws-subtitle">ECHO w JOY</div>
+            <img className="ws-title-img" src={TITLE} alt="Every version, yours" onClick={onOpenSettings} style={{ cursor: "pointer" }} />
             <Heart size={16} color="var(--brick)" style={{ position: "absolute", right: 96, top: 0 }} />
             <Star size={14} fill="same" style={{ position: "absolute", left: 92, top: 8 }} />
             <Sparkle size={16} style={{ position: "absolute", right: 8, top: 78 }} />
@@ -61,8 +66,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
           <div className="section-head">
             <span className="pin-tape"><span className="pin-stub" />Pinned notes</span>
-            <img className="ws-deco" src={stickerAt(2)} alt="" style={{ width: 28, marginLeft: 6 }} />
-            <img className="ws-deco" src={stickerAt(8)} alt="" style={{ position: "absolute", right: 122, top: -6, width: 30 }} />
+            <Star size={16} fill="same" style={{ marginLeft: 8 }} />
             <button className="head-action" onClick={() => setEditingNote('new')}><Icon name="plus" size={17} color="var(--brick)" /> New note</button>
           </div>
           <div className="notes-grid">
@@ -71,7 +75,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
               : noteCards.map(n => <StickyNote key={n.id} note={n} onClick={() => setEditingNote(n)} onEdit={() => setEditingNote(n)} onDelete={() => delNote(n.id)} />)}
           </div>
 
-          <div className="doodle-strip"><WormCrown size={42} /><SpeechHeart size={24} /><Wave w={34} color="#cda98c" /><Star size={20} fill="same" /><Rabbit size={40} /></div>
+          <div className="doodle-strip"><WormCrown size={42} /><img className="ds-sticker" src={stickerAt(3)} alt="" /><SpeechHeart size={24} /><Wave w={34} color="#cda98c" /><img className="ds-sticker" src={stickerAt(13)} alt="" /><Star size={20} fill="same" /></div>
 
           <div className="section-head">
             <h2>Conversations</h2><Star size={14} fill="same" style={{ marginLeft: 2 }} />
@@ -93,7 +97,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
               : taskCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有任务，点 + New task</span>
               : taskCards.map(t => <TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => delTask(t.id)} />)}
           </div>
-          <div className="doodle-strip center-strip"><Squiggle w={50} color="#e0b15f" /><HeartLegs size={36} /><Squiggle w={50} color="#cdd6b8" /></div>
+          <div className="doodle-strip center-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(17)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(9)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
 
           <div className="section-head"><h2>Quick actions</h2><Star size={14} fill="same" /><Heart size={22} color="#e6a6ab" fill="same" style={{ marginLeft: "auto" }} /></div>
           <div className="qa-grid">
