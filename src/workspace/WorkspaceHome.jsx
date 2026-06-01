@@ -3,6 +3,12 @@ import { StickyNote, ConversationRow, TaskCard, QuickAction, StudioCard } from '
 import { Crab, TreasureChest, WormCrown, Rabbit } from './creatures.jsx'
 import { CHEST, PANTHER_HEAD, TITLE, PINNED_IMG, NEWNOTE_IMG, TAPE_LONG, WASHIS, stickerAt } from './assets.js'
 
+const WASHI_POS = [
+  { top: '-20px', left: '16px', transform: 'rotate(-6deg)' },
+  { top: '-18px', left: '30%', transform: 'rotate(5deg)' },
+  { top: '-22px', right: '16px', left: 'auto', transform: 'rotate(8deg)' },
+  { top: '-16px', left: '22px', transform: 'rotate(-10deg)' },
+]
 const STK_POS = [
   { left: '9px', bottom: '9px', width: '56px', transform: 'rotate(-7deg)' },
   { right: '12px', bottom: '12px', width: '46px', transform: 'rotate(9deg)' },
@@ -34,10 +40,10 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const q = query.trim().toLowerCase()
   const filtered = q ? conversations.filter(c => (c.title + " " + (c.preview || "")).toLowerCase().includes(q)) : conversations
   const convs = (showAll ? filtered : filtered.slice(0, 3)).map((c, i) => ({ ...c, creature: c.creature || CONV_CREATURES[i % CONV_CREATURES.length] }))
-  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length],
+  const noteCards = notes.map((n, i) => ({ ...n, tint: NOTE_TINTS[i % NOTE_TINTS.length], items: n.items || [], washiUrl: WASHIS[i % WASHIS.length], washiStyle: WASHI_POS[i % WASHI_POS.length],
     stickers: [
-      { src: stickerAt(i * 5 + 1), style: { right: '12px', bottom: '10px', width: '82px', transform: 'rotate(7deg)' } },
-      ...(i % 2 === 0 ? [{ src: stickerAt(i * 5 + 3), style: { left: '12px', bottom: '12px', width: '64px', transform: 'rotate(-8deg)' } }] : []),
+      { src: stickerAt(i * 5 + 1), style: { right: '12px', bottom: '10px', width: '94px', transform: 'rotate(7deg)' } },
+      ...(i % 2 === 0 ? [{ src: stickerAt(i * 5 + 3), style: { left: '12px', bottom: '12px', width: '74px', transform: 'rotate(-8deg)' } }] : []),
     ] }))
   const taskCards = tasks.map((t, i) => ({ ...t, tint: TASK_TINTS[i % TASK_TINTS.length], icon: t.icon || "file" }))
 

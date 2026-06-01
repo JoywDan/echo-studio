@@ -841,3 +841,15 @@ input, textarea { font-family: inherit; }
 .ds-sticker { width: 48px !important; }
 .doodle-strip { justify-content: space-around !important; padding: 0 6px; gap: 6px !important; }
 .ws-section-tape { width: 96% !important; max-width: 520px !important; margin: 16px auto 10px !important; }
+
+/* —— v5：按比例放大 + 照 P3 + 打散 —— */
+.washi-tape { width: 52% !important; max-width: 130px; top: auto !important; left: auto !important; }
+.pinned-img { height: auto !important; width: 176px !important; }
+.newnote-img { height: auto !important; width: 140px !important; }
+.ds-sticker { width: 58px !important; }
+.doodle-strip { gap: 2px !important; align-items: center; }
+.doodle-strip > *:nth-child(2) { transform: translateY(-7px) rotate(-6deg); }
+.doodle-strip > *:nth-child(3) { transform: translateY(4px) rotate(4deg); }
+.doodle-strip > *:nth-child(4) { transform: translateY(-5px); }
+.doodle-strip > *:nth-child(5) { transform: translateY(6px) rotate(-4deg); }
+.doodle-strip > *:nth-child(6) { transform: translateY(-3px) rotate(5deg); }
