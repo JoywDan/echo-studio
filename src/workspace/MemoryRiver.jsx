@@ -142,6 +142,65 @@ function Necklace() {
   )
 }
 
+const MONTH_CN = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+function ymLabel(ym) { const [y, m] = String(ym).split('-'); return `${y}年${MONTH_CN[+m] || m}` }
+
+function Memoir() {
+  const [months, setMonths] = React.useState(null)
+  const [open, setOpen] = React.useState(null)
+  const [sub, setSub] = React.useState('chapter')
+  const [chapter, setChapter] = React.useState('')
+  const [days, setDays] = React.useState([])
+  const [busy, setBusy] = React.useState(false)
+  React.useEffect(() => { api.memoir.overview().then(d => setMonths((d.months || []).reverse())).catch(() => setMonths([])) }, [])
+  const openMonth = async (ym) => {
+    setOpen(ym); setSub('chapter'); setChapter(''); setDays([]); setBusy(true)
+    try {
+      const c = await api.memoir.chapter(ym).catch(() => null)
+      setChapter((c && c.content) || '')
+      const d = await api.memoir.days(ym)
+      setDays(d.days || [])
+    } catch {} finally { setBusy(false) }
+  }
+  if (months === null) return <div className="mem-empty">翻开书页…</div>
+  if (!months.length) return <div className="mem-empty">还没有写下的日子</div>
+  if (!open) return (
+    <div className="mmr-list">
+      <div className="nk-intro">把日子织成的书。每月一章，由那个月的每一天长成。<span> · 点开一个月份</span></div>
+      {months.map(m => (
+        <button className="mem-card mmr-month" key={m.ym} onClick={() => openMonth(m.ym)}>
+          <div className="mmr-month-h">
+            <span className="mmr-ym">{ymLabel(m.ym)}</span>
+            {m.has_chapter && <span className="mem-badge mmr-badge">📖 已成章</span>}
+            <span className="mmr-days">{m.days} 天</span>
+          </div>
+          {m.month_summary && <div className="mmr-sum">{String(m.month_summary).slice(0, 84)}…</div>}
+        </button>
+      ))}
+    </div>
+  )
+  return (
+    <div>
+      <div className="mmr-subbar">
+        <button className="mem-btn ghost mmr-backbtn" onClick={() => setOpen(null)}>‹ 月份</button>
+        <span className="mmr-title">{ymLabel(open)}</span>
+        <button className={'mem-tab mmr-minitab' + (sub === 'chapter' ? ' is-active' : '')} onClick={() => setSub('chapter')}>章节</button>
+        <button className={'mem-tab mmr-minitab' + (sub === 'days' ? ' is-active' : '')} onClick={() => setSub('days')}>逐日</button>
+      </div>
+      {busy && <div className="mem-empty">正在翻…</div>}
+      {!busy && sub === 'chapter' && (chapter
+        ? <article className="mmr-chapter">{chapter.split('\n').filter(p => p.trim() && !p.startsWith('#')).map((p, i) => <p key={i}>{p}</p>)}</article>
+        : <div className="mem-empty">这个月还没成章（月初自动写）</div>)}
+      {!busy && sub === 'days' && days.map(d => (
+        <div className="mem-card" key={d.date}>
+          <div className="mem-card-top"><span>{d.date}</span>{d.emotion_density != null && <span className="mem-badge">情绪密度 {Math.round((d.emotion_density || 0) * 100)}%</span>}</div>
+          <div className="mem-content">{d.text}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function MemoryRiver({ onClose }) {
   const [tab, setTab] = React.useState('timeline')
   const [items, setItems] = React.useState([])
@@ -251,6 +310,21 @@ export default function MemoryRiver({ onClose }) {
 .nk-card { margin: 4px 0 0 4px; padding: 14px 16px; background: #f1ebde; border: none !important; border-radius: 14px; box-shadow: 5px 5px 12px var(--nm-d), -5px -5px 12px var(--nm-l); }
 .nk-card-head { font-size: 11.5px; font-family: var(--font-cn); margin-bottom: 8px; letter-spacing: 0.5px; }
 .nk-card-body { font-family: 'Songti SC','Noto Serif SC',serif; font-size: 13.5px; line-height: 1.8; color: #4a4236; white-space: pre-wrap; }
+
+.mmr-list { padding-top: 4px; }
+.mmr-month { display: block; width: 100%; text-align: left; cursor: pointer; }
+.mmr-month:active { box-shadow: inset 3px 3px 7px var(--nm-d), inset -3px -3px 7px var(--nm-l); }
+.mmr-month-h { display: flex; align-items: center; gap: 10px; }
+.mmr-ym { font-family: 'Songti SC','Noto Serif SC',serif; font-weight: 700; font-size: 17px; color: #5a4d40; }
+.mmr-badge { color: #a8472f; }
+.mmr-days { margin-left: auto; font-size: 12px; color: #9d9081; font-family: var(--font-cn); }
+.mmr-sum { margin-top: 9px; font-size: 12.5px; line-height: 1.7; color: #8a7d6c; font-family: var(--font-cn); }
+.mmr-subbar { display: flex; align-items: center; gap: 10px; margin: 14px 0 12px; flex-wrap: wrap; }
+.mmr-backbtn { padding: 9px 16px; }
+.mmr-title { font-family: 'Songti SC','Noto Serif SC',serif; font-weight: 700; font-size: 17px; color: #5a4d40; margin-right: auto; }
+.mmr-minitab { padding: 8px 18px; font-size: 13.5px; }
+.mmr-chapter { background: #f1ebde; border-radius: 18px; padding: 22px 22px 16px; box-shadow: 5px 5px 12px var(--nm-d), -5px -5px 12px var(--nm-l); }
+.mmr-chapter p { font-family: 'Songti SC','Noto Serif SC','Source Han Serif SC',serif; font-size: 14.5px; line-height: 2.0; color: #4a4236; text-indent: 2em; margin: 0 0 14px; }
         `}</style>
 
         <header className="studio-reader-header">
@@ -264,16 +338,17 @@ export default function MemoryRiver({ onClose }) {
             <h2>汐语录</h2>
             <p>Echo 的记忆长河</p>
           </div>
-          <span className="studio-reader-count">{tab === 'timeline' ? total : '📿'}</span>
+          <span className="studio-reader-count">{tab === 'timeline' ? total : tab === 'memoir' ? '📖' : '📿'}</span>
         </header>
 
         <div className="mem-river-body">
           <div className="mem-tabs">
             <button className={'mem-tab' + (tab === 'timeline' ? ' is-active' : '')} onClick={() => setTab('timeline')}>时间轴</button>
             <button className={'mem-tab' + (tab === 'beads' ? ' is-active' : '')} onClick={() => setTab('beads')}>珠链</button>
+            <button className={'mem-tab' + (tab === 'memoir' ? ' is-active' : '')} onClick={() => setTab('memoir')}>回忆录</button>
           </div>
 
-          {tab === 'beads' ? <Necklace /> : (
+          {tab === 'memoir' ? <Memoir /> : tab === 'beads' ? <Necklace /> : (
             <>
               {mood && mood.trend && Object.keys(mood.trend).length > 0 && (
                 <div className="mem-mood">
