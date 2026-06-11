@@ -97,6 +97,25 @@ export default function DicePanel({ onClose }) {
           } catch {}
         }
       }
+      // 矛盾裁决: 撞规则的两个值, 随机裁掉一个(优先裁没锁的), 明牌公示
+      const verdicts = []
+      if (Array.isArray(tax.conflicts)) {
+        for (const rule of tax.conflicts) {
+          let rx, ry
+          try { rx = new RegExp(rule.x); ry = new RegExp(rule.y) } catch { continue }
+          const xs = order.filter(k => merged[k] && rx.test(merged[k]))
+          const ys = order.filter(k => merged[k] && ry.test(merged[k]) && !xs.includes(k))
+          if (!xs.length || !ys.length) continue
+          const pair = [xs[0], ys[0]]
+          const droppable = pair.filter(k => !locks.has(k))
+          if (!droppable.length) { verdicts.push(`⚖️ 「${merged[pair[0]]}」和「${merged[pair[1]]}」打架，但两边都被锁了——你们自己看着办。`); continue }
+          const dk = droppable[Math.floor(Math.random() * droppable.length)]
+          const kk = pair.find(k => k !== dk)
+          verdicts.push(`⚖️ 「${merged[dk]}」和「${merged[kk]}」打架——骰子裁掉了前者。`)
+          delete merged[dk]
+        }
+      }
+      merged._verdicts = verdicts
       const parts2 = Object.keys(tax.dimensions).filter(k => merged[k] && k !== 'preset').map(k => merged[k])
       merged.summary = '今晚抽到的是：' + parts2.join(' + ')
       // 仪式感: 骰子至少翻滚 0.9s
@@ -215,6 +234,9 @@ export default function DicePanel({ onClose }) {
                     {!allOpen && <button className="nd-flipall" onClick={() => setFlipped(new Set(keys))}>一次全翻开</button>}
                     {allOpen && (
                       <>
+                        {Array.isArray(result._verdicts) && result._verdicts.length > 0 && (
+                          <div className="nd-verdicts">{result._verdicts.map((v, i) => <div key={i}>{v}</div>)}</div>
+                        )}
                         <div className="nd-summary">{result.summary}</div>
                         <div className="nd-d20row">
                           {!d20
@@ -383,4 +405,9 @@ const ND_CSS = `
   text-shadow:0 1px 2px rgba(90,45,15,.5);transition:transform .14s;}
 .nd-dispatch:not([disabled]):active{transform:scale(.97);}
 .nd-dispatch[disabled]{opacity:.85;cursor:default;}
+
+.nd-verdicts{margin-top:14px;padding:11px 14px;border-radius:13px;font-size:12.5px;line-height:1.8;color:#e8c89a;
+  background:linear-gradient(155deg,rgba(200,150,80,.13),rgba(120,85,45,.08));
+  box-shadow:inset 0 0 0 1px rgba(232,190,130,.28);}
+.nd-verdicts div+div{margin-top:5px;}
 `
