@@ -86,6 +86,7 @@ export default function PhonePanel({ onClose }) {
     <div className="ph-overlay" onClick={onClose}>
       <div className="ph-phone" onClick={e => e.stopPropagation()}>
         <div className="ph-aurora"><i className="ph-au1" /><i className="ph-au2" /><i className="ph-au3" /></div>
+        <div className="ph-cosmos"><i className="ph-orbit1" /><i className="ph-orbit2" /><i className="ph-planet" /><i className="ph-stars" /></div>
         <div className="ph-tex" />
         <div className="ph-status"><span>{hh}:{mm}</span><span className="ph-status-r">▰▰▰ &nbsp;&nbsp;⌃ &nbsp;&nbsp;▭</span></div>
 
@@ -118,21 +119,29 @@ export default function PhonePanel({ onClose }) {
               <Icon k="scan" cls="ph-search-scan" />
             </div>
 
-            <div className="ph-panel">
-              <div className="ph-panel-h"><span className="ph-panel-bar" />快捷服务</div>
-              <div className="ph-grid">
-                {APPS.map(a => (
-                  <button className="ph-app" key={a.key} onClick={() => openApp(a.key)}>
-                    <span className={`ph-app-ic ph-tint-${a.key}`}><Icon k={a.key} /></span>
-                    <span className="ph-app-l">{a.label}</span>
-                    <span className="ph-app-en">{a.en}</span>
-                  </button>
-                ))}
-                <button className="ph-app" onClick={() => setView('home')}>
-                  <span className="ph-app-ic"><Icon k="all" /></span>
-                  <span className="ph-app-l">全部</span>
-                  <span className="ph-app-en">All</span>
+            <div className="ph-bento-wrap">
+              <div className="ph-bento">
+                <button className="ph-tile ph-tile-tall ph-bt-health" onClick={() => openApp('health')}>
+                  <svg className="ph-heart3d" viewBox="0 0 64 64">
+                    <defs>
+                      <linearGradient id="phh3d" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffd9a8" /><stop offset="55%" stopColor="#d98c4e" /><stop offset="100%" stopColor="#9c5226" /></linearGradient>
+                      <linearGradient id="phh3dl" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,.85)" /><stop offset="100%" stopColor="rgba(255,255,255,0)" /></linearGradient>
+                    </defs>
+                    <path d="M32 56C18 45 8 36 8 24c0-7 5-12 12-12 5 0 9 3 12 7 3-4 7-7 12-7 7 0 12 5 12 12 0 12-10 21-24 32z" fill="url(#phh3d)" stroke="rgba(255,230,190,.5)" strokeWidth="1" />
+                    <ellipse cx="26" cy="22" rx="12" ry="7" fill="url(#phh3dl)" opacity=".75" />
+                    <path d="M16 36h8l3-7 5 13 4-9 3 3h9" fill="none" stroke="rgba(255,245,225,.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <svg className="ph-ecgline" viewBox="0 0 100 22" preserveAspectRatio="none"><path d="M0 12h18l4-7 6 14 5-9 4 4h12l4-6 5 10 4-7h38" fill="none" stroke="rgba(255,220,170,.4)" strokeWidth="1.4" strokeLinecap="round" /></svg>
+                  <span className="ph-tile-lab"><b>健康</b><small>Health</small></span>
                 </button>
+                <button className="ph-tile ph-tile-sq ph-bt-shop" onClick={() => openApp('shop')}><span className="ph-tile-ic"><Icon k="shop" /></span><span className="ph-tile-lab"><b>购物</b><small>Shopping</small></span></button>
+                <button className="ph-tile ph-tile-sq ph-bt-browser" onClick={() => openApp('browser')}><span className="ph-tile-ic"><Icon k="browser" /></span><span className="ph-tile-lab"><b>浏览</b><small>Browser</small></span></button>
+                <button className="ph-tile ph-tile-wide ph-bt-notes" onClick={() => openApp('notes')}><span className="ph-tile-ic"><Icon k="notes" /></span><span className="ph-tile-lab"><b>备忘录</b><small>Notes</small></span><i className="ph-tile-badge">✦</i></button>
+                <button className="ph-tile ph-tile-pill ph-bt-music" onClick={() => openApp('music')}><span className="ph-tile-ic"><Icon k="music" /></span><span className="ph-tile-lab"><b>歌单</b><small>Music</small></span></button>
+                <button className="ph-tile ph-tile-pill ph-bt-photos" onClick={() => openApp('photos')}><span className="ph-tile-ic"><Icon k="photos" /></span><span className="ph-tile-lab"><b>相册</b><small>Photos</small></span></button>
+                <button className="ph-tile ph-tile-pill ph-bt-messages" onClick={() => openApp('messages')}><span className="ph-tile-ic"><Icon k="messages" /></span><span className="ph-tile-lab"><b>信息</b><small>Messages</small></span></button>
+                <button className="ph-tile ph-tile-sq ph-bt-calendar" onClick={() => openApp('calendar')}><span className="ph-tile-ic"><Icon k="calendar" /></span><span className="ph-tile-lab"><b>日历</b><small>Calendar</small></span></button>
+                <button className="ph-tile ph-tile-circle ph-bt-all"><span className="ph-tile-ic"><Icon k="all" /></span><span className="ph-tile-lab"><b>全部</b><small>All</small></span></button>
               </div>
             </div>
 
@@ -923,4 +932,90 @@ const PH_CSS = `
 .ph-mine-hr{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:13px;font-size:13px;padding:13px;border-radius:17px;
   background:linear-gradient(155deg,rgba(255,122,107,.12),rgba(140,47,43,.12));border:1px solid rgba(255,150,120,.18);}
 .ph-mine-hr b{color:#FF8C42;font-size:16px;}
+
+/* ═══ 便当盒主页 (v5, 照囡囡的GPT概念图) ═══ */
+.ph-cosmos{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+.ph-cosmos i{position:absolute;display:block;}
+.ph-orbit1{width:620px;height:620px;right:-260px;top:-80px;border-radius:50%;border:1px solid rgba(255,210,150,.12);}
+.ph-orbit2{width:900px;height:900px;left:-300px;bottom:-420px;border-radius:50%;border:1px solid rgba(255,210,150,.08);}
+.ph-planet{width:46px;height:46px;right:30px;top:208px;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,#8a6a4e,#3a261a 65%,#1c110a);
+  box-shadow:0 0 18px rgba(255,180,110,.25),inset -6px -6px 12px rgba(0,0,0,.6);}
+.ph-stars{inset:0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%,rgba(255,230,190,.9),transparent 60%),
+    radial-gradient(1px 1px at 78% 8%,rgba(255,230,190,.7),transparent 60%),
+    radial-gradient(1.4px 1.4px at 88% 32%,rgba(255,230,190,.8),transparent 60%),
+    radial-gradient(1px 1px at 32% 42%,rgba(255,230,190,.5),transparent 60%),
+    radial-gradient(1.6px 1.6px at 6% 64%,rgba(255,230,190,.7),transparent 60%),
+    radial-gradient(1px 1px at 56% 72%,rgba(255,230,190,.5),transparent 60%),
+    radial-gradient(1.3px 1.3px at 92% 82%,rgba(255,230,190,.7),transparent 60%),
+    radial-gradient(1px 1px at 24% 90%,rgba(255,230,190,.55),transparent 60%),
+    radial-gradient(1px 1px at 66% 26%,rgba(255,230,190,.45),transparent 60%),
+    radial-gradient(1.1px 1.1px at 44% 8%,rgba(255,230,190,.6),transparent 60%);}
+.ph-greet-name{position:relative;}
+.ph-greet-name::after{content:'Dadi.';position:absolute;left:78px;top:14px;font-family:'Caveat','Snell Roundhand',cursive;
+  font-size:46px;color:rgba(255,210,150,.13);-webkit-text-fill-color:rgba(255,210,150,.13);pointer-events:none;white-space:nowrap;}
+
+.ph-bento-wrap{margin-top:18px;border-radius:30px;padding:16px 13px;position:relative;
+  background:linear-gradient(180deg,rgba(255,240,218,.05),rgba(255,240,218,.015) 50%,rgba(255,240,218,.035));
+  border:1px solid rgba(255,210,150,.16);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.12),0 18px 40px rgba(0,0,0,.45);}
+.ph-bento{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:86px;gap:13px 11px;
+  grid-template-areas:
+    "h h s s b b"
+    "h h n n n n"
+    "m m m p p p"
+    "g g c c a a";}
+.ph-bt-health{grid-area:h;}.ph-bt-shop{grid-area:s;}.ph-bt-browser{grid-area:b;}
+.ph-bt-notes{grid-area:n;}.ph-bt-music{grid-area:m;}.ph-bt-photos{grid-area:p;}
+.ph-bt-messages{grid-area:g;}.ph-bt-calendar{grid-area:c;}.ph-bt-all{grid-area:a;}
+
+.ph-tile{position:relative;border:none;color:#f3e9da;cursor:pointer;overflow:hidden;padding:10px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:transform .16s;
+  background:
+    radial-gradient(150% 110% at 50% -30%,rgba(255,255,255,.30),rgba(255,255,255,.05) 50%,transparent 62%),
+    radial-gradient(1px 1px at 22% 64%,rgba(255,240,210,.7),transparent 60%),
+    radial-gradient(1.2px 1.2px at 74% 38%,rgba(255,240,210,.55),transparent 60%),
+    radial-gradient(1px 1px at 58% 80%,rgba(255,240,210,.4),transparent 60%),
+    var(--bg,linear-gradient(168deg,rgba(150,110,70,.5),rgba(60,38,22,.55)));
+  box-shadow:
+    0 0 0 1.3px rgba(255,215,160,.38),
+    inset 0 2px 3px rgba(255,255,255,.5),
+    inset 0 -12px 22px rgba(255,255,255,.10),
+    inset 0 -2px 5px rgba(40,18,8,.5),
+    0 14px 30px rgba(0,0,0,.5),
+    0 10px 28px var(--glow,rgba(217,140,78,.22));}
+.ph-tile:active{transform:scale(.95);}
+.ph-tile::before{content:'';position:absolute;left:7%;right:7%;top:4%;height:42%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.02));filter:blur(2.5px);}
+.ph-tile-sq{border-radius:26px;flex-direction:column;gap:7px;}
+.ph-tile-wide{border-radius:26px;}
+.ph-tile-pill{border-radius:999px;}
+.ph-tile-circle{border-radius:50%;flex-direction:column;gap:5px;aspect-ratio:1;align-self:center;justify-self:center;width:100%;max-width:118px;}
+.ph-tile-tall{border-radius:34px;flex-direction:column;justify-content:flex-end;gap:8px;padding-bottom:18px;}
+.ph-tile-ic{display:grid;place-items:center;}
+.ph-tile-ic .ph-svg{width:25px;height:25px;color:#ffe2c0;filter:drop-shadow(0 1px 3px rgba(40,15,5,.6));}
+.ph-tile-lab{display:flex;flex-direction:column;align-items:center;line-height:1.25;}
+.ph-tile-wide .ph-tile-lab,.ph-tile-pill .ph-tile-lab{align-items:flex-start;}
+.ph-tile-lab b{font-size:14px;font-weight:600;letter-spacing:1px;}
+.ph-tile-lab small{font-size:9.5px;opacity:.5;letter-spacing:.6px;}
+.ph-tile-badge{position:absolute;top:10px;right:12px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#ffe2c0;font-style:normal;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.4),rgba(180,120,60,.45));
+  box-shadow:0 0 0 1px rgba(255,220,170,.4),0 2px 8px rgba(0,0,0,.4);}
+.ph-heart3d{width:74px;height:74px;filter:drop-shadow(0 8px 18px rgba(180,100,40,.45));}
+.ph-ecgline{width:82%;height:18px;opacity:.9;}
+/* 便当配色(低饱和琥珀/酒红/烟灰) */
+.ph-bt-health{--bg:linear-gradient(170deg,rgba(196,140,84,.58),rgba(92,52,24,.6));--glow:rgba(217,150,80,.3);}
+.ph-bt-shop{--bg:linear-gradient(168deg,rgba(125,53,64,.6),rgba(58,22,30,.65));--glow:rgba(160,70,85,.28);}
+.ph-bt-browser{--bg:linear-gradient(168deg,rgba(108,98,84,.55),rgba(46,40,32,.6));--glow:rgba(150,130,100,.22);}
+.ph-bt-notes{--bg:linear-gradient(165deg,rgba(138,122,102,.5),rgba(62,52,40,.58));--glow:rgba(170,140,100,.22);}
+.ph-bt-music{--bg:linear-gradient(168deg,rgba(110,47,69,.6),rgba(50,18,30,.65));--glow:rgba(150,60,90,.26);}
+.ph-bt-photos{--bg:linear-gradient(168deg,rgba(170,120,66,.55),rgba(80,50,24,.6));--glow:rgba(200,140,80,.26);}
+.ph-bt-messages{--bg:linear-gradient(168deg,rgba(180,132,80,.5),rgba(86,56,28,.58));--glow:rgba(210,150,90,.24);}
+.ph-bt-calendar{--bg:linear-gradient(168deg,rgba(140,57,57,.58),rgba(64,24,24,.62));--glow:rgba(180,80,70,.26);}
+.ph-bt-all{--bg:linear-gradient(168deg,rgba(96,96,100,.5),rgba(40,40,44,.6));--glow:rgba(140,140,150,.2);}
 `
