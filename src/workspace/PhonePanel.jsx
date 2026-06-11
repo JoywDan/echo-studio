@@ -685,12 +685,32 @@ const PH_CSS = `
 .ph-ncard-dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#FFD9A0,#E66A32);box-shadow:0 0 11px rgba(255,140,66,.8);flex-shrink:0;animation:phBreath 2.6s infinite;}
 .ph-ncard-mid{flex:1;}.ph-ncard-h{font-size:12px;opacity:.52;}.ph-ncard-s{font-size:13.5px;margin-top:2px;}
 .ph-ncard-arrow{opacity:.4;font-size:18px;}
-.ph-tabs{margin-top:auto;padding-top:14px;display:flex;justify-content:space-around;}
-.ph-tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;opacity:.4;}
-.ph-tab small{display:block;font-size:8.5px;opacity:.7;text-align:center;}
-.ph-tab .ph-svg{width:21px;height:21px;}
-.ph-tab-on{opacity:1;}
-.ph-tab-on .ph-svg{color:#FF8C42;filter:drop-shadow(0 0 9px rgba(255,140,66,.7));}
+.ph-tabs{margin-top:auto;position:sticky;bottom:4px;z-index:5;display:flex;gap:4px;padding:7px 8px;border-radius:999px;
+  background:
+    radial-gradient(160% 120% at 50% -40%,rgba(255,255,255,.22),rgba(255,255,255,.03) 55%),
+    linear-gradient(180deg,rgba(60,45,32,.72),rgba(28,20,14,.8));
+  border:none;
+  backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+  box-shadow:
+    0 0 0 1.3px rgba(255,215,160,.34),
+    inset 0 2px 3px rgba(255,255,255,.32),
+    inset 0 -8px 16px rgba(255,255,255,.06),
+    0 14px 32px rgba(0,0,0,.55),0 10px 28px rgba(217,140,78,.18);}
+.ph-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;opacity:.55;padding:7px 0 6px;border-radius:999px;transition:opacity .15s;position:relative;}
+.ph-tab small{display:block;font-size:8px;opacity:.65;text-align:center;letter-spacing:.4px;}
+.ph-tab .ph-svg{width:20px;height:20px;}
+.ph-tab:active{transform:scale(.93);}
+.ph-tab-on{opacity:1;
+  background:
+    radial-gradient(140% 120% at 50% -35%,rgba(255,255,255,.5),rgba(255,255,255,.07) 52%),
+    linear-gradient(180deg,rgba(214,140,80,.85),rgba(160,84,40,.9));
+  box-shadow:
+    0 0 0 1.2px rgba(255,225,180,.5),
+    inset 0 2px 2px rgba(255,255,255,.6),
+    inset 0 -7px 12px rgba(255,255,255,.18),
+    0 8px 20px rgba(217,140,78,.45);}
+.ph-tab-on .ph-svg{color:#fff4e4;filter:drop-shadow(0 1px 3px rgba(80,30,10,.6));}
+.ph-tab-on small{opacity:.85;}
 
 /* app 页骨架 */
 .ph-app-view{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;z-index:2;}
