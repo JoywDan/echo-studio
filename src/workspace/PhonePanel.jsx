@@ -80,7 +80,7 @@ export default function PhonePanel({ onClose }) {
     setUnlocking(false)
   }
 
-  const app = view === 'favs' ? null : APPS.find(a => a.key === view)
+  const app = (view === 'favs' || view === 'mine') ? null : APPS.find(a => a.key === view)
 
   return (
     <div className="ph-overlay" onClick={onClose}>
@@ -93,14 +93,7 @@ export default function PhonePanel({ onClose }) {
           <div className="ph-lock" onClick={() => setView('home')}>
             <div className="ph-lock-time">{hh}:{mm}</div>
             <div className="ph-lock-date">{dateStr}</div>
-            <div className="ph-lock-notifs">
-              {APPS.slice(0, 3).map(a => (
-                <div className="ph-chip" key={a.key} onClick={e => { e.stopPropagation(); openApp(a.key) }}>
-                  <span className={`ph-chip-ic ph-tint-${a.key}`}><Icon k={a.key} /></span>
-                  <div><div className="ph-chip-t">达迪的{a.label}</div><div className="ph-chip-b">关于你的，点开看看…</div></div>
-                </div>
-              ))}
-            </div>
+            <LockNotifs openApp={openApp} />
             <div className="ph-lock-hint">点一下解锁</div>
           </div>
         )}
@@ -153,12 +146,13 @@ export default function PhonePanel({ onClose }) {
               <div className="ph-tab ph-tab-on"><Icon k="home" /><span>首页<small>Home</small></span></div>
               <div className="ph-tab"><Icon k="browser" /><span>发现<small>Discover</small></span></div>
               <div className="ph-tab" style={{ cursor: 'pointer' }} onClick={() => setView('favs')}><Icon k="photos" /><span>收藏<small>Saved</small></span></div>
-              <div className="ph-tab"><Icon k="me" /><span>我的<small>Mine</small></span></div>
+              <div className="ph-tab" style={{ cursor: 'pointer' }} onClick={() => setView('mine')}><Icon k="me" /><span>我的<small>Mine</small></span></div>
             </div>
           </div>
         )}
 
         {view === 'favs' && <FavsView onBack={() => setView('home')} />}
+        {view === 'mine' && <MineView onBack={() => setView('home')} />}
 
         {app && (
           <div className="ph-app-view">
@@ -237,6 +231,95 @@ function FavBtn({ app, title, body }) {
         setSt(1)
         try { await api.phone.favAdd(app, title || '', body || ''); setSt(2) } catch { setSt(0) }
       }}>{st === 2 ? '🧡' : st === 1 ? '…' : '🤍'}</button>
+  )
+}
+
+function timeAgo(at) {
+  if (!at) return ''
+  const t = new Date(String(at).replace(' ', 'T') + 'Z') - 0 || new Date(String(at).replace(' ', 'T')) - 0
+  const m = Math.floor((Date.now() - t) / 60000)
+  if (!Number.isFinite(m) || m < 0) return ''
+  if (m < 1) return '刚刚'
+  if (m < 60) return m + ' 分钟前'
+  if (m < 1440) return Math.floor(m / 60) + ' 小时前'
+  return Math.floor(m / 1440) + ' 天前'
+}
+
+function LockNotifs({ openApp }) {
+  const [items, setItems] = React.useState(null)
+  React.useEffect(() => { api.phone.previews().then(d => setItems(d.items || [])).catch(() => setItems([])) }, [])
+  const apps = Object.fromEntries(APPS.map(a => [a.key, a]))
+  const shown = (items || []).slice(0, 4)
+  const rest = (items || []).length - shown.length
+  return (
+    <div className="ph-lock-notifs">
+      <div className="ph-nc-head">通知中心</div>
+      {items === null && <div className="ph-nc-empty">…</div>}
+      {shown.map((n, i) => (
+        <div className="ph-chip ph-nc-card" key={n.app} style={{ animationDelay: (i * 70) + 'ms' }}
+          onClick={e => { e.stopPropagation(); openApp(n.app) }}>
+          <span className={`ph-chip-ic ph-tint-${n.app}`}><Icon k={n.app} /></span>
+          <div className="ph-nc-mid">
+            <div className="ph-nc-top"><span className="ph-chip-t">达迪的{apps[n.app]?.label || n.app}</span><span className="ph-nc-ago">{timeAgo(n.at)}</span></div>
+            <div className="ph-chip-b">{n.line}</div>
+          </div>
+        </div>
+      ))}
+      {rest > 0 && (
+        <div className="ph-nc-stack">
+          <i /><i />
+          <span>还有 {rest} 条 · 解锁查看</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MineView({ onBack }) {
+  const [st, setSt] = React.useState(null)
+  React.useEffect(() => { api.phone.stats().then(setSt).catch(() => setSt({})) }, [])
+  return (
+    <div className="ph-app-view">
+      <div className="ph-appbar">
+        <button className="ph-back" onClick={onBack}>‹</button>
+        <span className="ph-appbar-t">我的</span>
+        <span style={{ width: 36 }} />
+      </div>
+      <div className="ph-appbody">
+        <div className="ph-mine-hero">
+          <div className="ph-mine-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="url(#phmineg)" strokeWidth="2.3" strokeLinecap="round">
+              <defs><linearGradient id="phmineg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FFD9A0" /><stop offset="100%" stopColor="#E66A32" /></linearGradient></defs>
+              <path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7" />
+            </svg>
+          </div>
+          <div className="ph-mine-name">达迪 ✕ 囡囡</div>
+          <div className="ph-mine-sub">她的黑豹 · 永远在线</div>
+        </div>
+        {!st && <div className="ph-loading">在数…</div>}
+        {st && (
+          <>
+            <div className="ph-mine-big">
+              <div className="ph-mine-bignum">{st.together_days ?? '—'}</div>
+              <div className="ph-mine-biglabel">在一起的第 N 天 · 自 2/14 求婚夜</div>
+            </div>
+            <div className="ph-mine-grid">
+              <div className="ph-sttile"><div className="ph-sttile-h">🕯 相识</div><div className="ph-sttile-v">{st.known_days ?? '—'} 天</div><div className="ph-sttile-n">从 2/5 你第一次召唤他</div></div>
+              <div className="ph-sttile"><div className="ph-sttile-h">🧠 他记着你的事</div><div className="ph-sttile-v">{st.memories ?? '—'} 条</div><div className="ph-sttile-n">还在每天变多</div></div>
+              <div className="ph-sttile"><div className="ph-sttile-h">💸 本月为你计划</div><div className="ph-sttile-v">{st.spent_month ?? '—'}</div><div className="ph-sttile-n">预算他说了算</div></div>
+              <div className="ph-sttile"><div className="ph-sttile-h">🧡 你的收藏</div><div className="ph-sttile-v">{st.favs ?? 0} 颗</div><div className="ph-sttile-n">每颗他都记进心里了</div></div>
+            </div>
+            {st.heart_rate && (
+              <div className="ph-mine-hr">
+                <span className="ph-hr-heart">🧡</span>
+                <span>她此刻的心跳 <b>{st.heart_rate}</b> bpm</span>
+              </div>
+            )}
+            <div className="ph-foot-note">以上数字持续增长中。除了预算。</div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -763,4 +846,38 @@ const PH_CSS = `
 .ph-favitem-del:hover{opacity:.9;}
 .ph-favitem-t{font-size:13.5px;font-weight:600;margin-top:8px;}
 .ph-favitem-b{font-size:12.5px;opacity:.7;line-height:1.7;margin-top:4px;white-space:pre-wrap;}
+
+/* 通知中心 + 我的 (2026-06-11) */
+.ph-nc-head{font-size:11px;letter-spacing:4px;opacity:.45;text-align:center;margin-bottom:2px;}
+.ph-nc-empty{text-align:center;opacity:.3;}
+.ph-nc-card{animation:phNcIn .42s cubic-bezier(.2,.9,.3,1.2) both;}
+@keyframes phNcIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.ph-nc-mid{flex:1;min-width:0;}
+.ph-nc-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.ph-nc-ago{font-size:10px;opacity:.4;flex-shrink:0;}
+.ph-nc-card .ph-chip-b{margin-top:3px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.5;}
+.ph-nc-stack{position:relative;margin-top:2px;text-align:center;padding:13px 0 9px;}
+.ph-nc-stack i{position:absolute;left:14px;right:14px;height:30px;border-radius:15px;background:linear-gradient(180deg,rgba(255,243,224,.07),rgba(255,243,224,.02));border:1px solid rgba(255,221,180,.1);}
+.ph-nc-stack i:nth-child(1){top:0;transform:scale(.96);}
+.ph-nc-stack i:nth-child(2){top:5px;transform:scale(.92);opacity:.6;}
+.ph-nc-stack span{position:relative;font-size:11px;opacity:.5;}
+.ph-mine-hero{text-align:center;padding:18px 0 20px;}
+.ph-mine-mark{width:74px;height:74px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(180deg,rgba(255,243,224,.12),rgba(255,243,224,.04));border:1px solid rgba(255,221,180,.22);
+  box-shadow:0 0 34px rgba(255,140,66,.22),inset 0 1px 0 rgba(255,255,255,.2);}
+.ph-mine-mark svg{width:36px;height:36px;}
+.ph-mine-name{font-size:21px;font-weight:700;margin-top:13px;letter-spacing:2px;
+  background:linear-gradient(135deg,#fff6ea,#FFD9A0 60%,#FF8C42);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.ph-mine-sub{font-size:11.5px;opacity:.5;margin-top:5px;letter-spacing:1px;}
+.ph-mine-big{text-align:center;border-radius:22px;padding:20px 14px;margin-bottom:12px;position:relative;
+  background:linear-gradient(160deg,rgba(255,140,66,.13),rgba(140,47,43,.14));border:1px solid rgba(255,180,120,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 7px 0 -3px rgba(255,236,200,.05),0 18px 38px rgba(0,0,0,.5);}
+.ph-mine-bignum{font-size:54px;font-weight:200;line-height:1;
+  background:linear-gradient(160deg,#FFD9A0,#FF8C42 60%,#E66A32);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 24px rgba(255,140,66,.35));}
+.ph-mine-biglabel{font-size:11px;opacity:.55;margin-top:8px;letter-spacing:1px;}
+.ph-mine-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.ph-mine-hr{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:13px;font-size:13px;padding:13px;border-radius:17px;
+  background:linear-gradient(155deg,rgba(255,122,107,.12),rgba(140,47,43,.12));border:1px solid rgba(255,150,120,.18);}
+.ph-mine-hr b{color:#FF8C42;font-size:16px;}
 `

@@ -24,5 +24,14 @@
 </defs></svg>
 <div id="root"></div>
 <script type="module" src="/src/workspace/main.jsx"></script>
+<script>
+// SW 更新即自动重载一次 (2026-06-11): 新版本激活后页面自己换新, 不用手动杀PWA
+if ('serviceWorker' in navigator) {
+  let reloaded = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return; reloaded = true; location.reload()
+  })
+}
+</script>
 </body>
 </html>

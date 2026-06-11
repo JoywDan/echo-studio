@@ -46,6 +46,8 @@ export const api = {
     favs: () => call('GET', '/api/phone/favs'),
     favAdd: (app, title, body) => call('POST', '/api/phone/favs', { app, title, body }),
     favDel: (id) => call('DELETE', '/api/phone/favs/' + id),
+    previews: () => call('GET', '/api/phone/previews'),
+    stats: () => call('GET', '/api/phone/stats'),
   },
   ao3: {
     tags: () => call('GET', '/api/ao3-tags'),
