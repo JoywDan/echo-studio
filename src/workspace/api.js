@@ -43,6 +43,9 @@ export const api = {
     get: (app, refresh) => call('GET', '/api/phone/' + app + (refresh ? '?refresh=1' : '')),
     caught: () => call('POST', '/api/phone/caught', {}),
     unlock: (app, code) => call('POST', '/api/phone/' + app + '/unlock', { code }),
+    favs: () => call('GET', '/api/phone/favs'),
+    favAdd: (app, title, body) => call('POST', '/api/phone/favs', { app, title, body }),
+    favDel: (id) => call('DELETE', '/api/phone/favs/' + id),
   },
   ao3: {
     tags: () => call('GET', '/api/ao3-tags'),

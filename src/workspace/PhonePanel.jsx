@@ -80,7 +80,7 @@ export default function PhonePanel({ onClose }) {
     setUnlocking(false)
   }
 
-  const app = APPS.find(a => a.key === view)
+  const app = view === 'favs' ? null : APPS.find(a => a.key === view)
 
   return (
     <div className="ph-overlay" onClick={onClose}>
@@ -152,17 +152,19 @@ export default function PhonePanel({ onClose }) {
             <div className="ph-tabs">
               <div className="ph-tab ph-tab-on"><Icon k="home" /><span>首页<small>Home</small></span></div>
               <div className="ph-tab"><Icon k="browser" /><span>发现<small>Discover</small></span></div>
-              <div className="ph-tab"><Icon k="photos" /><span>收藏<small>Saved</small></span></div>
+              <div className="ph-tab" style={{ cursor: 'pointer' }} onClick={() => setView('favs')}><Icon k="photos" /><span>收藏<small>Saved</small></span></div>
               <div className="ph-tab"><Icon k="me" /><span>我的<small>Mine</small></span></div>
             </div>
           </div>
         )}
 
+        {view === 'favs' && <FavsView onBack={() => setView('home')} />}
+
         {app && (
           <div className="ph-app-view">
             <div className="ph-appbar">
               <button className="ph-back" onClick={() => { setView('home'); setData(null); setErr('') }}>‹</button>
-              <span className="ph-appbar-t">{app.label}</span>
+              <span className="ph-appbar-t">{app.label}{data && data.generated_at && <small className="ph-gen">更新于 {String(data.generated_at).slice(5, 16)}</small>}</span>
               <button className="ph-refresh" disabled={loading} onClick={() => openApp(app.key, true)}>{loading ? '…' : <Icon k="refresh" cls="ph-svg-sm" />}</button>
             </div>
             <div className="ph-appbody">
@@ -225,6 +227,51 @@ function Spark({ points, avg }) {
   )
 }
 
+function FavBtn({ app, title, body }) {
+  const [st, setSt] = React.useState(0) // 0=idle 1=saving 2=saved
+  return (
+    <button className={'ph-fav' + (st === 2 ? ' on' : '')} title="收藏"
+      onClick={async (e) => {
+        e.stopPropagation()
+        if (st) return
+        setSt(1)
+        try { await api.phone.favAdd(app, title || '', body || ''); setSt(2) } catch { setSt(0) }
+      }}>{st === 2 ? '🧡' : st === 1 ? '…' : '🤍'}</button>
+  )
+}
+
+function FavsView({ onBack }) {
+  const [items, setItems] = React.useState(null)
+  const load = React.useCallback(() => { api.phone.favs().then(d => setItems(d.items || [])).catch(() => setItems([])) }, [])
+  React.useEffect(() => { load() }, [load])
+  return (
+    <div className="ph-app-view">
+      <div className="ph-appbar">
+        <button className="ph-back" onClick={onBack}>‹</button>
+        <span className="ph-appbar-t">收藏</span>
+        <span style={{ width: 36 }} />
+      </div>
+      <div className="ph-appbody">
+        {items === null && <div className="ph-loading">翻收藏夹…</div>}
+        {items && items.length === 0 && <div className="ph-err">还没收藏过。<br /><small style={{ opacity: .6 }}>翻他手机时看到好玩的，点卡片角落的 🤍</small></div>}
+        {items && items.map(f => (
+          <div className="ph-card ph-favitem" key={f.id}>
+            <div className="ph-favitem-h">
+              <span className="ph-favitem-app">{APP_LABEL[f.app] || f.app || '?'}</span>
+              <span className="ph-meta">{(f.created_at || '').slice(5, 16)}</span>
+              <button className="ph-favitem-del" onClick={async () => { try { await api.phone.favDel(f.id) } catch {}; load() }}>✕</button>
+            </div>
+            {f.title && <div className="ph-favitem-t">{f.title}</div>}
+            {f.body && <div className="ph-favitem-b">{f.body}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const APP_LABEL = { health: '健康', shop: '购物', browser: '浏览', notes: '备忘录', music: '歌单', photos: '相册', messages: '信息', calendar: '日历' }
+
 const STATUS_EMOJI = { '睡眠': '🌙', '进食': '🍽️', '水分': '💧', '情绪': '🧡', '运动': '🏃' }
 const SHOP_ACTION = { '想要': '加入计划', '计划中': '提醒我', '可购买': '今天购买', '已送出': '已送出' }
 
@@ -272,6 +319,7 @@ function AppBody({ k, c, onRefresh }) {
         <div className="ph-careline">
           <div className="ph-careline-h"><span>🧡 他想说</span><button className="ph-mini-btn" onClick={onRefresh}>换一句</button></div>
           <div className="ph-careline-t">“{c.careLine}”</div>
+          <FavBtn app="health" title="他想说" body={c.careLine} />
         </div>
       )}
       {c.summary && <div className="ph-hsum">{c.summary}</div>}
@@ -300,6 +348,7 @@ function AppBody({ k, c, onRefresh }) {
         {(shopTab === '已购' ? (c.purchased || []) : shown).map((x, i) => (
           <div className={'ph-prod' + (shopTab === '已购' ? ' ph-dim' : '')} key={i}>
             <div className="ph-prod-thumb">{x.emoji || '🖤'}</div>
+            <FavBtn app="shop" title={x.name} body={(x.note || '') + ' ' + (x.price || '')} />
             <div className="ph-prod-mid">
               <div className="ph-prod-top">
                 <span className="ph-prod-n">{x.name}</span>
@@ -330,6 +379,7 @@ function AppBody({ k, c, onRefresh }) {
     <div>
       {(c.history || []).map((h, i) => (
         <div className={'ph-card ph-hist' + (h.incognito ? ' ph-incog' : '')} key={i}>
+          <FavBtn app="browser" title={h.title} body={(h.note || '') + ' · ' + (h.site || '')} />
           <div className="ph-hist-fav">{h.incognito ? '⊘' : (h.site || '?')[0].toUpperCase()}</div>
           <div className="ph-hist-mid">
             <div className="ph-hist-t">{h.title}</div>
@@ -347,6 +397,7 @@ function AppBody({ k, c, onRefresh }) {
       <div>
         {notes.map((n, i) => (
           <div className={'ph-card ph-note' + (n.pinned ? ' ph-pinned' : '')} key={i}>
+            <FavBtn app="notes" title={n.title} body={n.body} />
             <div className="ph-note-t">{n.pinned ? '📌 ' : ''}{n.title}</div>
             <div className="ph-note-b">{n.body}</div>
             {n.date && <div className="ph-meta">{n.date}</div>}
@@ -375,14 +426,14 @@ function AppBody({ k, c, onRefresh }) {
       {(c.playlists || []).length > 0 && <div className="ph-sec">歌单</div>}
       {(c.playlists || []).map((p, i) => (<div className="ph-card" key={i}><div className="ph-row"><span className="ph-row-n">{p.name}</span><span className="ph-meta">{p.count}</span></div>{p.note && <div className="ph-sub">{p.note}</div>}</div>))}
       {(c.recent || []).length > 0 && <div className="ph-sec">最近播放</div>}
-      {(c.recent || []).map((r, i) => (<div className="ph-card" key={i}><div className="ph-row"><span className="ph-row-n">{r.title}</span><span className="ph-meta">{r.artist}</span></div>{r.comment && <div className="ph-sub">{r.comment}</div>}</div>))}
+      {(c.recent || []).map((r, i) => (<div className="ph-card" key={i}><FavBtn app="music" title={r.title + ' — ' + (r.artist || '')} body={r.comment} /><div className="ph-row"><span className="ph-row-n">{r.title}</span><span className="ph-meta">{r.artist}</span></div>{r.comment && <div className="ph-sub">{r.comment}</div>}</div>))}
     </div>
   )
 
   if (k === 'photos') return (
     <div>
       <div className="ph-alb-row">{(c.albums || []).map((a, i) => (<div className="ph-alb" key={i}><div className="ph-alb-th">{a.locked ? '🔒' : '🗂'}</div><div className="ph-alb-n">{a.name}</div><div className="ph-alb-c">{a.count}</div></div>))}</div>
-      <div className="ph-photo-grid">{(c.recent || []).map((p, i) => (<div className={'ph-photo' + (p.blurred ? ' ph-blur' : '')} key={i}><div className="ph-photo-cap">{p.caption}</div>{p.time && <div className="ph-photo-t">{p.time}</div>}</div>))}</div>
+      <div className="ph-photo-grid">{(c.recent || []).map((p, i) => (<div className={'ph-photo' + (p.blurred ? ' ph-blur' : '')} key={i}><FavBtn app="photos" title="相册" body={p.caption} /><div className="ph-photo-cap">{p.caption}</div>{p.time && <div className="ph-photo-t">{p.time}</div>}</div>))}</div>
     </div>
   )
 
@@ -407,6 +458,7 @@ function AppBody({ k, c, onRefresh }) {
       {c.today && <div className="ph-cal-today"><span className="ph-cal-dot" />{c.today}</div>}
       {(c.events || []).map((e, i) => (
         <div className="ph-card ph-event" key={i}>
+          <FavBtn app="calendar" title={e.title} body={(e.date || '') + ' · ' + (e.note || '')} />
           <div className="ph-event-date">{e.date}</div>
           <div><div className="ph-event-t">{e.title}{e.tag && <span className="ph-event-tag">{e.tag}</span>}</div>{e.note && <div className="ph-sub">{e.note}</div>}</div>
         </div>
@@ -694,4 +746,21 @@ const PH_CSS = `
 .ph-caught-lock{font-size:12px;opacity:.62;margin-top:10px;}
 .ph-caught-btn{margin-top:20px;font-size:13px;}
 .ph-close{position:fixed;top:26px;right:26px;width:42px;height:42px;border-radius:50%;background:rgba(255,243,224,.08);border:1px solid rgba(255,221,180,.18);color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(10px);}
+
+/* 收藏 (2026-06-11) */
+.ph-fav{position:absolute;right:10px;bottom:9px;z-index:3;background:rgba(255,243,224,.07);border:1px solid rgba(255,221,180,.18);border-radius:10px;width:28px;height:24px;font-size:12px;line-height:1;cursor:pointer;backdrop-filter:blur(6px);transition:transform .15s;display:grid;place-items:center;padding:0;}
+.ph-fav:active{transform:scale(.85);}
+.ph-fav.on{border-color:rgba(255,140,66,.5);background:rgba(255,140,66,.14);}
+.ph-photo .ph-fav{top:8px;right:8px;bottom:auto;}
+.ph-careline .ph-fav{bottom:11px;right:13px;}
+.ph-appbar-t{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.ph-gen{font-size:9.5px;font-weight:400;opacity:.45;letter-spacing:.5px;}
+.ph-favitem{padding-right:15px;}
+.ph-favitem-h{display:flex;align-items:center;gap:9px;}
+.ph-favitem-app{font-size:10px;padding:2px 9px;border-radius:8px;color:#fff;background:linear-gradient(135deg,#FF8C42,#C24C30);box-shadow:inset 0 1px 0 rgba(255,255,255,.3);}
+.ph-favitem-h .ph-meta{margin-top:0;}
+.ph-favitem-del{margin-left:auto;background:none;border:none;color:inherit;opacity:.4;font-size:13px;cursor:pointer;padding:2px 6px;}
+.ph-favitem-del:hover{opacity:.9;}
+.ph-favitem-t{font-size:13.5px;font-weight:600;margin-top:8px;}
+.ph-favitem-b{font-size:12.5px;opacity:.7;line-height:1.7;margin-top:4px;white-space:pre-wrap;}
 `
