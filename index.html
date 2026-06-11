@@ -17,5 +17,14 @@
   <link rel="manifest" href="/echo-studio/manifest-pwa.json"><script id="vite-plugin-pwa:inline-sw">if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/echo-studio/sw.js', { scope: '/echo-studio/' })})}</script></head>
   <body>
     <div id="root"></div>
-  </body>
+  <script>
+// SW 更新即自动重载一次 (2026-06-11): 新版本激活后页面自己换新, 不用手动杀PWA
+if ('serviceWorker' in navigator) {
+  let reloaded = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return; reloaded = true; location.reload()
+  })
+}
+</script>
+</body>
 </html>
