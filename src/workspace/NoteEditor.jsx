@@ -8,8 +8,8 @@ const TINTS = [
   { key: 'pink', label: '灰粉' },
   { key: 'sage', label: '鼠尾草' },
   { key: 'blue', label: '蓝灰' },
-  { key: 'yellow', label: '奶油黄' },
-  { key: 'kraft', label: '牛皮纸' },
+  { key: 'orange', label: '橙色' },
+  { key: 'purple', label: '马卡龙紫' },
 ]
 const FASTENER_CHOICES = [
   ...WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src, kind: 'tape' })),
@@ -70,7 +70,7 @@ export default function NoteEditor({ note, onSave, onClose }) {
         stickerAssets,
         stickerAsset: primarySticker,
         tape: tapeAsset,
-        doodle: primarySticker,
+        doodle: JSON.stringify({ f: fastenerAsset, s: stickerAssets, e: edge }),
         sticker: primarySticker,
         edge,
         rotate,

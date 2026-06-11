@@ -35,9 +35,9 @@ const STICKER_SLOTS = [
   { left: '18px', bottom: '88px', width: '50px', transform: 'rotate(-6deg)' },
 ]
 const TASK_STICKER_SLOTS = [
-  { right: '74px', bottom: '22px', width: '34px', transform: 'rotate(7deg)' },
-  { right: '112px', bottom: '18px', width: '32px', transform: 'rotate(-6deg)' },
-  { right: '84px', bottom: '58px', width: '28px', transform: 'rotate(9deg)' },
+  { right: '8px', bottom: '44px', width: '40px', transform: 'rotate(9deg)' },
+  { right: '52px', bottom: '46px', width: '34px', transform: 'rotate(-7deg)' },
+  { right: '6px', bottom: '-12px', width: '38px', transform: 'rotate(6deg)' },
 ]
 const assetIndex = (key, fallback = 0) => {
   const m = String(key || '').match(/-(\d+)$/)
@@ -54,6 +54,11 @@ import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
 import StudioReader from './StudioReader.jsx'
+import MemoryRiver from './MemoryRiver.jsx'
+import DrawPrompt from './DrawPrompt.jsx'
+import DicePanel from './DicePanel.jsx'
+import PhonePanel from './PhonePanel.jsx'
+const BookReader = React.lazy(() => import('./BookReader.jsx'))
 
 export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
   const [showAll, setShowAll] = React.useState(false)
@@ -63,6 +68,11 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const [editingNote, setEditingNote] = React.useState(null)
   const [editingTask, setEditingTask] = React.useState(null)
   const [reader, setReader] = React.useState(null)
+  const [memOpen, setMemOpen] = React.useState(false)
+  const [drawOpen, setDrawOpen] = React.useState(false)
+  const [bookOpen, setBookOpen] = React.useState(false)
+  const [diceOpen, setDiceOpen] = React.useState(false)
+  const [phoneOpen, setPhoneOpen] = React.useState(false)
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
@@ -77,13 +87,16 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
     avatarUrl: PANTHER_AVATARS.length ? PANTHER_AVATARS[stableShift(c.id || c.title, i) % PANTHER_AVATARS.length] : null,
   }))
   const noteCards = notes.map((n, i) => {
-    const fastener = n.accessoryAsset ?? (n.clipAsset && n.clipAsset !== 'none' ? n.clipAsset : n.tapeAsset)
+    let deco = {}
+    try { if (n.doodle && String(n.doodle)[0] === '{') deco = JSON.parse(n.doodle) } catch {}
+    const fastener = n.accessoryAsset ?? deco.f ?? (n.clipAsset && n.clipAsset !== 'none' ? n.clipAsset : n.tapeAsset)
     const fastenerKey = String(fastener || '')
     const chosenTape = fastener === 'none' ? null : (fastenerKey.startsWith('clip-') || fastenerKey.startsWith('paperclip-') ? null : pick(WASHIS, fastener || ('washi-' + (i % WASHIS.length)), i))
     const chosenClip = fastenerKey.startsWith('clip-') ? pick(CLIPS, fastener, i) : (fastenerKey.startsWith('paperclip-') ? pick(PAPERCLIPS, fastener, i) : null)
-    const chosenStickerKeys = Array.isArray(n.stickerAssets) && n.stickerAssets.length
-      ? n.stickerAssets.slice(0, 4)
+    const _stk = (Array.isArray(n.stickerAssets) && n.stickerAssets.length) ? n.stickerAssets
+      : (Array.isArray(deco.s) && deco.s.length) ? deco.s
       : (n.stickerAsset ? [n.stickerAsset] : null)
+    const chosenStickerKeys = _stk ? _stk.slice(0, 4) : null
     const slotShift = stableShift(n.id || n.title, i) % STICKER_SLOTS.length
     const chosenStickers = chosenStickerKeys
       ? chosenStickerKeys.map((key, si) => ({
@@ -113,7 +126,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       washiUrl: chosenTape,
       washiStyle: chosenTape ? { left: '50%', top: '-68px', width: '172px', transform: `translateX(-50%) rotate(${i % 2 ? 4 : -5}deg)` } : null,
       clipUrl: chosenClip,
-      clipStyle: chosenClip ? { left: '50%', top: '-64px', width: fastenerKey.startsWith('paperclip-') ? '56px' : '76px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
+      clipStyle: chosenClip ? { left: '50%', top: '-48px', width: fastenerKey.startsWith('paperclip-') ? '56px' : '76px', transform: `translateX(-50%) rotate(${i % 2 ? 8 : -7}deg)` } : null,
       stickers: stickerKeys ? stickerKeys.map((key, si) => ({
         src: stickerAt(assetIndex(key, 2 + si)),
         style: TASK_STICKER_SLOTS[(i + si) % TASK_STICKER_SLOTS.length],
@@ -126,7 +139,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const toggleTask = (id) => { const cur = tasks.find(t => t.id === id); if (!cur) return; const nx = !cur.done; setTasks(ts => ts.map(t => t.id === id ? { ...t, done: nx } : t)); api.tasks.update(id, { done: nx }).catch(() => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: cur.done } : t))) }
   async function saveTask(d) { if (editingTask === 'new') { const r = await api.tasks.create(d); setTasks(t => [...t, r]) } else { const r = await api.tasks.update(editingTask.id, d); setTasks(t => t.map(x => x.id === r.id ? r : x)) } setEditingTask(null) }
   async function delTask(id) { await api.tasks.remove(id); setTasks(t => t.filter(x => x.id !== id)) }
-  function openStudio(m) { if (m.url) { window.open(m.url, '_blank') } else if (m.module && m.module !== 'agentroom') { setReader({ module: m.module, title: m.title }) } }
+  function openStudio(m) { if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
 
   return (
     <div className="panel workspace-panel">
@@ -137,9 +150,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
             <img className="ws-title-img" src={TITLE} alt="Every version, yours" />
             <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" />
             <img className="ws-mascot-r" src={CHEST} alt="美化面板" onClick={onOpenSettings} title="打开美化面板 ✨" />
-            <Heart size={16} color="var(--brick)" style={{ position: "absolute", right: 96, top: 0 }} />
-            <Star size={14} fill="same" style={{ position: "absolute", left: 92, top: 8 }} />
-            <Sparkle size={16} style={{ position: "absolute", right: 8, top: 78 }} />
+            <img className="hdr-sticker" src={stickerAt(2)} style={{ position: "absolute", right: 92, top: -6, width: 32 }} alt="" />
+            <img className="hdr-sticker" src={stickerAt(8)} style={{ position: "absolute", left: 86, top: 2, width: 28 }} alt="" />
+            <img className="hdr-sticker" src={stickerAt(14)} style={{ position: "absolute", right: 4, top: 72, width: 30 }} alt="" />
           </header>
 
           <div className="search-wrap">
@@ -151,7 +164,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
           <div className="section-head note-section-head">
             <img className="pinned-img" src={PINNED_IMG} alt="Pinned notes" />
-            <Star size={16} fill="same" style={{ marginLeft: 8 }} />
+            <img className="head-sticker" src={stickerAt(1)} style={{ width: 28, marginLeft: 8, verticalAlign: "middle" }} alt="" />
             <button className="head-action" onClick={() => setEditingNote('new')}><img className="newnote-img" src={NEWNOTE_IMG} alt="New note" /></button>
           </div>
           <div className="notes-grid">
@@ -166,13 +179,13 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
             <SpeechHeart size={30} />
             <Wave w={46} color="#cda98c" />
             <img className="ds-sticker ds-bug" src={stickerAt(5)} alt="" />
-            <Star size={22} fill="same" />
+            <img className="ds-sticker" src={stickerAt(9)} alt="" />
           </div>
           <img className="ws-section-tape" src={TAPE_LONG[0]} alt="" />
 
           <div className="section-head conv-section-head">
             <img className="title-img title-conversations-img" src={TITLE_IMAGES.conversations} alt="Conversations" />
-            <Star size={14} fill="same" style={{ marginLeft: 2 }} />
+            <img className="head-sticker" src={stickerAt(6)} style={{ width: 26, marginLeft: 6, verticalAlign: "middle" }} alt="" />
             <button className="head-action recent-pill title-recent-pill" onClick={() => setShowAll(s => !s)}>
               <img className="title-recent-img" src={TITLE_IMAGES.recent} alt="Recent" />
             </button>
@@ -199,7 +212,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           <div className="doodle-strip center-strip task-doodle-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(3)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(7)} alt="" /><img className="ds-sticker" src={stickerAt(11)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
           <img className="ws-section-tape task-section-tape" src={TAPE_LONG[1] || TAPE_LONG[0]} alt="" />
 
-          <div className="section-head quick-section-head"><h2>Quick actions</h2><Star size={14} fill="same" />
+          <div className="section-head quick-section-head"><h2>Quick actions</h2>
             <img className="quick-heart-sticker" src={STICKER_IMAGES["04_heart"] || stickerAt(3)} alt="" />
           </div>
           <div className="qa-grid">
@@ -207,18 +220,22 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
           </div>
 
           <div className="section-head studio-section-head">
-            <h2>Studio</h2><Heart size={16} color="#e6a6ab" fill="same" /><Squiggle w={120} color="#d99a92" style={{ marginLeft: 12, marginBottom: 4 }} />
+            <h2>Studio</h2><img className="head-sticker" src={stickerAt(4)} style={{ width: 28, marginLeft: 8, verticalAlign: "middle" }} alt="" /><Squiggle w={120} color="#d99a92" style={{ marginLeft: 12, marginBottom: 4 }} />
             <img className="studio-peek-bunny" src={KAWAII_IMAGES.kawaii_bunny_peeking_over_a_ledge} alt="" />
-            <Star size={16} fill="same" style={{ position: "absolute", right: 18, top: -8 }} />
           </div>
           <div className="studio-grid">{STUDIO.map(m => <StudioCard key={m.id} mod={m} onClick={() => openStudio(m)} />)}</div>
 
-          <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><Heart size={16} color="var(--brick)" /><Star size={16} fill="same" /><Flower size={18} color="#d98c84" /></div>
+          <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(10)} alt="" /><img className="ds-sticker" src={stickerAt(15)} alt="" /><img className="ds-sticker" src={stickerAt(18)} alt="" /></div>
         </div>
       </div>
       {editingNote !== null && <NoteEditor note={editingNote === 'new' ? null : editingNote} onSave={saveNote} onClose={() => setEditingNote(null)} />}
       {editingTask !== null && <TaskEditor task={editingTask === 'new' ? null : editingTask} onSave={saveTask} onClose={() => setEditingTask(null)} />}
-      {reader && <StudioReader module={reader.module} title={reader.title} onClose={() => setReader(null)} />}
+      {reader && <StudioReader module={reader.module} title={reader.title} tabs={reader.tabs} onClose={() => setReader(null)} />}
+      {memOpen && <MemoryRiver onClose={() => setMemOpen(false)} />}
+      {drawOpen && <DrawPrompt onClose={() => setDrawOpen(false)} />}
+      {diceOpen && <DicePanel onClose={() => setDiceOpen(false)} />}
+      {phoneOpen && <PhonePanel onClose={() => setPhoneOpen(false)} />}
+      {bookOpen && <React.Suspense fallback={<div className="book-loading">载入阅读器…</div>}><BookReader onClose={() => setBookOpen(false)} /></React.Suspense>}
     </div>
   )
 }

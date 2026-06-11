@@ -10,7 +10,15 @@ export const PAPER_PRESETS = [
   { id: 'cotton', name: '象牙棉纸', paper: '#f4eddf' },
   { id: 'mist-handmade', name: '雾灰手工纸', paper: '#e5e1d6' },
 ]
-export const THEME_DEFAULTS = { accent: '#a7372a', paper: PAPER_PRESETS[0].paper, paperPreset: 'sandpaper', textColor: '#3a3027', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe' }
+export const THEME_DEFAULTS = { accent: '#a7372a', paper: PAPER_PRESETS[0].paper, paperPreset: 'sandpaper', textColor: '#3a3027', texture: 60, radius: 16, titleFont: 'Caveat', cnFont: 'ZCOOL KuaiLe', decor: 'full' }
+export const THEME_PRESETS = [
+  { id: 'crayon',  name: '暖蜡笔',     t: { accent:'#a7372a', paper:'#eadfc6', paperPreset:'sandpaper',     textColor:'#3a3027', texture:60, radius:16, titleFont:'Caveat', cnFont:'ZCOOL KuaiLe',  decor:'full' } },
+  { id: 'morandi', name: '莫兰迪',     t: { accent:'#a98467', paper:'#e6e1d6', paperPreset:'mist-handmade', textColor:'#574f44', texture:35, radius:14, titleFont:'Caveat', cnFont:'ZCOOL KuaiLe',  decor:'soft' } },
+  { id: 'kraft',   name: '复古牛皮纸', t: { accent:'#8f4a2e', paper:'#d2b98f', paperPreset:'kraft',         textColor:'#473726', texture:70, radius:12, titleFont:'Caveat', cnFont:'Ma Shan Zheng', decor:'full' } },
+  { id: 'mint',    name: '薄荷',       t: { accent:'#3f9b80', paper:'#e3efe7', paperPreset:'cotton',        textColor:'#3c5148', texture:28, radius:18, titleFont:'Caveat', cnFont:'ZCOOL KuaiLe',  decor:'soft' } },
+  { id: 'seasalt', name: '海盐蓝',     t: { accent:'#3f7fa6', paper:'#dfeef3', paperPreset:'sky-grid',      textColor:'#39495a', texture:28, radius:18, titleFont:'Caveat', cnFont:'ZCOOL KuaiLe',  decor:'soft' } },
+  { id: 'muji',    name: '无印·性冷淡', t: { accent:'#8a8175', paper:'#f1ede3', paperPreset:'cotton',        textColor:'#4a463e', texture:0,  radius:6,  titleFont:'Caveat', cnFont:'Noto Sans SC', decor:'none' } },
+]
 export function shade(hex, pct) {
   const h = hex.replace('#', '')
   let r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
@@ -37,6 +45,18 @@ export function useTheme() {
   const [customFont, setCustomFont] = React.useState(null)
   const set = (key, val) => setT((p) => { const n = { ...p, [key]: val }; localStorage.setItem('ws_theme', JSON.stringify(n)); return n })
   const reset = () => { localStorage.removeItem('ws_theme'); setT({ ...THEME_DEFAULTS }) }
+  const applyTheme = (obj) => setT(() => { const n = { ...THEME_DEFAULTS, ...obj }; localStorage.setItem('ws_theme', JSON.stringify(n)); return n })
+  const exportTheme = () => {
+    const blob = new Blob([JSON.stringify(t, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'echo-theme.json'; a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1500)
+  }
+  const importTheme = async (file) => {
+    const obj = JSON.parse(await file.text())
+    if (!obj || typeof obj !== 'object') throw new Error('不是有效的主题文件')
+    applyTheme(obj)
+  }
 
   React.useEffect(() => {
     idbGet('wallpaper').then((blob) => { if (blob) setWallpaper(URL.createObjectURL(blob)) }).catch(() => {})
@@ -75,5 +95,5 @@ export function useTheme() {
     '--font-cn': `"${t.cnFont}", "ZCOOL KuaiLe", "Noto Sans SC", system-ui, sans-serif`,
     '--wallpaper': wallpaper ? `url(${wallpaper})` : 'none',
   }
-  return { t, set, reset, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont }
+  return { t, set, reset, applyTheme, exportTheme, importTheme, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont }
 }

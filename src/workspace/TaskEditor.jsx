@@ -14,7 +14,7 @@ const TINTS = [
   { key: 'pink', label: '灰粉' },
   { key: 'sage', label: '鼠尾草' },
   { key: 'blue', label: '蓝灰' },
-  { key: 'yellow', label: '奶油黄' },
+  { key: 'orange', label: '橙色' },
 ]
 const FASTENER_CHOICES = [
   ...WASHIS.map((src, i) => ({ key: 'washi-' + i, label: '胶带 ' + (i + 1), src, kind: 'tape' })),

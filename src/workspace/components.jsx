@@ -9,6 +9,8 @@ const TINT = {
   sage:  { fill: "var(--sage)",  ink: "var(--sage-ink)",  edge: "var(--sage-edge)" },
   cream: { fill: "var(--cream)", ink: "var(--cream-ink)", edge: "var(--cream-edge)" },
   blue:  { fill: "var(--blue)",  ink: "var(--blue-ink)",  edge: "var(--blue-edge)" },
+  orange:{ fill: "#f6d8b0", ink: "#c0813f", edge: "#e2a866" },
+  purple:{ fill: "#e4d6f3", ink: "#9a7bc0", edge: "#c2a3e0" },
 };
 const CREATURE = {
   PinkBlobCrown, FuzzGreen, CupcakeCyclops, RunCloudGreen, GreenAlien, Rabbit,
@@ -149,7 +151,7 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
   return (
     <div className="task-wrap" style={{ "--rot": (task.rot || 0) + "deg" }}>
       {task.washiUrl ? <img className={"task-washi-tape task-washi-layout-" + (task.layout || 0)} src={task.washiUrl} alt="" style={task.washiStyle} /> : (task.tape && <Tape kind={task.tape} style={{ top: -12, left: -6, transform: "rotate(-24deg)", width: 62, height: 26 }} />)}
-      {task.clipUrl ? <img className="task-clip-asset" src={task.clipUrl} alt="" style={task.clipStyle} /> : (task.clip && <BinderClip size={26} style={{ top: -16, left: "50%", marginLeft: -13 }} />)}
+      {task.clipUrl ? <img className="task-clip-asset" src={task.clipUrl} alt="" style={task.clipStyle} /> : (task.clip && <BinderClip size={26} style={{ top: -8, left: "50%", marginLeft: -13 }} />)}
       <CrayonCard tint={task.tint} className={"task-card" + (task.punch ? " punch" : "") + (task.receipt ? " receipt" : "")}>
         <div className="task-inner">
           <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="完成">
@@ -261,6 +263,14 @@ function StudioCard({ mod, onClick }) {
       ["03_star", "studio-st star river"],
       ["pack_03", "studio-st bug"],
     ],
+    s9: [
+      ["kawaii_paper_sheet_with_smile", "studio-kai diary-paper"],
+      ["03_star", "studio-st star top"],
+      ["04_heart", "studio-st heart tiny"],
+      ["10_music_notes", "studio-st music top"],
+      ["07_cloud", "studio-st cloud small"],
+      ["pack_05", "studio-st bubble"],
+    ],
   }[mod.id] || [];
   return (
     <button className={`studio-card studio-${mod.id}`} onClick={onClick}>
@@ -289,6 +299,8 @@ export const TINT_MAP = {
   green:  ['var(--sage)',  'var(--sage-edge)'],
   sage:   ['var(--sage)',  'var(--sage-edge)'],
   cream:  ['var(--cream)', 'var(--cream-edge)'],
+  orange: ['#f6d8b0', '#e2a866'],
+  purple: ['#e4d6f3', '#c2a3e0'],
 }
 export function Sticker() { return null }
 
