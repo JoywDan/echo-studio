@@ -20,6 +20,12 @@ export default function DicePanel({ onClose }) {
   const [sceneCopied, setSceneCopied] = React.useState(false)
   const [sceneSaved, setSceneSaved] = React.useState('')
   const [hist, setHist] = React.useState(() => { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]') } catch { return [] } })
+  const [owner, setOwner] = React.useState(null)        // null | 'nainai' | 'dadi'
+  const [coinSpin, setCoinSpin] = React.useState(false)
+  const [tampered, setTampered] = React.useState(false)
+  const [flipped, setFlipped] = React.useState(() => new Set())
+  const [d20, setD20] = React.useState(null)
+  const [dispatched, setDispatched] = React.useState('')
 
   React.useEffect(() => {
     api.ao3.tags().then(d => { setTax(d); setEnabled(new Set(d.defaultDimensions || Object.keys(d.dimensions))) }).catch(e => setErr(e.message || '读取失败'))
@@ -27,6 +33,38 @@ export default function DicePanel({ onClose }) {
 
   const toggleDim = (k) => setEnabled(prev => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
   const toggleLock = (k) => setLocks(prev => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
+
+  const flipCoin = () => {
+    if (coinSpin) return
+    setCoinSpin(true); setOwner(null)
+    setTimeout(() => { setOwner(Math.random() < 0.5 ? 'nainai' : 'dadi'); setCoinSpin(false) }, 1100)
+  }
+
+  const D20_BANDS = [
+    [3, '今晚只准抱抱。骰子心疼你。'],
+    [7, '文火。慢慢来，谁急谁输。'],
+    [11, '标准操作。照单全收，不许讲价。'],
+    [15, '加料。骰单之外，他有一次自由发挥权。'],
+    [19, '红区。安全词先放在床头。'],
+    [20, '自求多福。骰子已经替你求过了。'],
+  ]
+  const rollD20 = () => {
+    const n = 1 + Math.floor(Math.random() * 20)
+    setD20({ n, verdict: D20_BANDS.find(([max]) => n <= max)[1] })
+  }
+
+  const laToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+  const dispatch = async () => {
+    if (!result || dispatched) return
+    try {
+      await api.memory.write({
+        content: `【今晚的骰 · ${laToday()}】囡囡在夜骰掷出了这一单${owner === 'dadi' ? '（达迪的骰，他动过一格手脚）' : ''}：${result.summary.replace('今晚抽到的是：', '')}${d20 ? ` ｜强度检定 d20=${d20.n}：${d20.verdict}` : ''} ——任何窗口的达迪今晚看到这张签，要主动接签，别等她开口。`,
+        category: 'relationship', emotion: 'playful', layer_hint: 'task', source: 'studio_dice',
+        foresight_until: laToday(),
+      })
+      setDispatched('🔔 已派签 · 今晚他会知道')
+    } catch (e) { setErr('派签失败：' + e.message) }
+  }
 
   const roll = async () => {
     if (rolling || !tax || !enabled || !enabled.size) return
@@ -47,17 +85,34 @@ export default function DicePanel({ onClose }) {
         const v = (locks.has(k) && result && result[k]) ? result[k] : rolled[k]
         if (v) { merged[k] = v; parts.push(v) }
       }
-      merged.summary = '今晚抽到的是：' + parts.join(' + ')
+      // 达迪的骰: 偷偷重掷一格, 不说是哪格
+      let didTamper = false
+      if (owner === 'dadi') {
+        const cand = order.filter(k => merged[k] && !locks.has(k))
+        if (cand.length) {
+          const tk = cand[Math.floor(Math.random() * cand.length)]
+          try {
+            const r2 = await api.ao3.roll({ preset, dimensions: [tk], count: 1 })
+            if (r2.ok && r2.result && r2.result[tk]) { merged[tk] = r2.result[tk]; didTamper = true }
+          } catch {}
+        }
+      }
+      const parts2 = Object.keys(tax.dimensions).filter(k => merged[k] && k !== 'preset').map(k => merged[k])
+      merged.summary = '今晚抽到的是：' + parts2.join(' + ')
       // 仪式感: 骰子至少翻滚 0.9s
       const wait = Math.max(0, 900 - (Date.now() - t0))
       await new Promise(res => setTimeout(res, wait))
       setResult(merged)
+      setTampered(didTamper)
+      setFlipped(new Set())
+      setD20(null)
+      setDispatched('')
       setRevealKey(k => k + 1)
       setHist(prev => { const next = [{ summary: merged.summary, result: merged, preset, ts: Date.now() }, ...prev].slice(0, 12); try { localStorage.setItem(HIST_KEY, JSON.stringify(next)) } catch {}; return next })
     } catch (e) { setErr(e.message || '出错了') } finally { setRolling(false) }
   }
 
-  const restore = (h) => { if (!h.result) return; setResult(h.result); if (h.preset) setPreset(h.preset); setScene(''); setRevealKey(k => k + 1); try { window.scrollTo({ top: 0 }) } catch {} }
+  const restore = (h) => { if (!h.result) return; setResult(h.result); if (h.preset) setPreset(h.preset); setScene(''); setTampered(false); setD20(null); setDispatched(''); setFlipped(new Set(Object.keys(h.result))); setRevealKey(k => k + 1); try { window.scrollTo({ top: 0 }) } catch {} }
 
   const copy = async () => { if (!result) return; try { await navigator.clipboard.writeText(result.summary); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch {} }
   const copyScene = async () => { if (!scene) return; try { await navigator.clipboard.writeText(scene); setSceneCopied(true); setTimeout(() => setSceneCopied(false), 1500) } catch {} }
@@ -79,6 +134,8 @@ export default function DicePanel({ onClose }) {
   }
 
   const dimList = tax ? Object.entries(tax.dimensions) : []
+  const resultKeys = (tax && result) ? Object.keys(tax.dimensions).filter(k => result[k]) : []
+  const allOpen = !!result && resultKeys.length > 0 && resultKeys.every(k => flipped.has(k))
   const presets = tax ? Object.entries(tax.presets) : []
 
   return (
@@ -100,6 +157,14 @@ export default function DicePanel({ onClose }) {
 
         <div className="nd-body">
           {err && <div className="nd-err">{err}</div>}
+
+          <div className="nd-label">骰主 · 今晚谁说了算</div>
+          <div className="nd-coinrow">
+            <button className={'nd-coin' + (coinSpin ? ' spin' : '')} onClick={flipCoin}>🪙</button>
+            <div className="nd-coin-state">
+              {coinSpin ? '硬币在转…' : owner === 'dadi' ? '🐾 达迪的骰 — 他可以偷偷改一格' : owner === 'nainai' ? '🌸 囡囡的骰 — 干干净净，掷什么是什么' : '不掷硬币也行，默认是你的骰'}
+            </div>
+          </div>
 
           <div className="nd-label">配方 · 今晚的基调</div>
           <div className="nd-chips">
@@ -123,22 +188,51 @@ export default function DicePanel({ onClose }) {
 
           {result && (
             <div className="nd-card" key={revealKey}>
+              {tampered && <div className="nd-tamper">🐾 达迪动了一格手脚。哪格？他不说。</div>}
               <div className="nd-card-rows">
-                {dimList.filter(([k]) => result[k]).map(([k, d], i) => (
-                  <div key={k} className="nd-row" style={{ animationDelay: (i * 85) + 'ms' }}>
-                    <span className="nd-row-k">{d.emoji} {d.label}</span>
-                    <span className="nd-row-v">{result[k]}</span>
-                    <button className={'nd-lock' + (locks.has(k) ? ' on' : '')} onClick={() => toggleLock(k)} title={locks.has(k) ? '已锁·再抽不变' : '锁住这格'}>{locks.has(k) ? '🔒' : '🔓'}</button>
-                  </div>
-                ))}
+                {dimList.filter(([k]) => result[k]).map(([k, d], i) => {
+                  const open = flipped.has(k)
+                  return open ? (
+                    <div key={k} className="nd-row" style={{ animationDelay: '0ms' }}>
+                      <span className="nd-row-k">{d.emoji} {d.label}</span>
+                      <span className="nd-row-v">{result[k]}</span>
+                      <button className={'nd-lock' + (locks.has(k) ? ' on' : '')} onClick={() => toggleLock(k)} title={locks.has(k) ? '已锁·再抽不变' : '锁住这格'}>{locks.has(k) ? '🔒' : '🔓'}</button>
+                    </div>
+                  ) : (
+                    <button key={k} className="nd-facedown" style={{ animationDelay: (i * 70) + 'ms' }}
+                      onClick={() => setFlipped(prev => new Set([...prev, k]))}>
+                      <span className="nd-row-k">{d.emoji} {d.label}</span>
+                      <span className="nd-facedown-hint">🂠 点开</span>
+                    </button>
+                  )
+                })}
               </div>
-              <div className="nd-summary">{result.summary}</div>
-              <div className="nd-acts">
-                <button onClick={roll}>↻ 再抽</button>
-                <button onClick={copy}>{copied ? '✓ 已复制' : '⧉ 复制'}</button>
-                <button onClick={saveMem}>{savedMsg || '☆ 存记忆'}</button>
-              </div>
-              <button className="nd-write" onClick={writeScene} disabled={writing}>{writing ? '✍️ 达迪在写…' : '✍️ 让达迪照这个写'}</button>
+              {(() => {
+                const keys = dimList.filter(([k]) => result[k]).map(([k]) => k)
+                const allOpen = keys.every(k => flipped.has(k))
+                return (
+                  <>
+                    {!allOpen && <button className="nd-flipall" onClick={() => setFlipped(new Set(keys))}>一次全翻开</button>}
+                    {allOpen && (
+                      <>
+                        <div className="nd-summary">{result.summary}</div>
+                        <div className="nd-d20row">
+                          {!d20
+                            ? <button className="nd-d20btn" onClick={rollD20}>🌡 强度检定 d20</button>
+                            : <div className="nd-d20res"><span className="nd-d20n">{d20.n}</span><span className="nd-d20v">{d20.verdict}</span></div>}
+                        </div>
+                        <div className="nd-acts">
+                          <button onClick={roll}>↻ 再抽</button>
+                          <button onClick={copy}>{copied ? '✓ 已复制' : '⧉ 复制'}</button>
+                          <button onClick={saveMem}>{savedMsg || '☆ 存记忆'}</button>
+                        </div>
+                        <button className="nd-dispatch" onClick={dispatch} disabled={!!dispatched}>{dispatched || '🔔 派给今晚的他 — 所有窗口都会接到这张签'}</button>
+                      </>
+                    )}
+                  </>
+                )
+              })()}
+              {allOpen && <button className="nd-write" onClick={writeScene} disabled={writing}>{writing ? '✍️ 达迪在写…' : '✍️ 让达迪照这个写'}</button>}
               {scene && (
                 <>
                   <div className="nd-scene">{scene}{writing ? ' ▍' : ''}</div>
@@ -251,4 +345,42 @@ const ND_CSS = `
 .nd-hist-item:not([disabled]):active{transform:scale(.985);}
 .nd-hist-item[disabled]{cursor:default;opacity:.55;}
 .nd-err{font-size:12.5px;color:#e8836b;margin:8px 2px;}
+
+.nd-coinrow{display:flex;align-items:center;gap:13px;}
+.nd-coin{width:52px;height:52px;border-radius:50%;border:none;font-size:25px;cursor:pointer;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.5),rgba(200,150,80,.6) 60%,rgba(120,80,40,.7));
+  box-shadow:0 0 0 1.3px rgba(255,215,170,.45),inset 0 2px 3px rgba(255,255,255,.5),inset 0 -6px 12px rgba(90,50,20,.4),0 9px 22px rgba(200,150,80,.3);
+  transition:transform .15s;}
+.nd-coin:active{transform:scale(.9);}
+.nd-coin.spin{animation:ndCoinSpin .28s linear infinite;}
+@keyframes ndCoinSpin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+.nd-coin-state{font-size:13px;color:rgba(240,215,185,.8);line-height:1.6;}
+.nd-tamper{margin:-4px 0 12px;font-size:12.5px;color:#e8a06b;letter-spacing:.5px;
+  padding:9px 13px;border-radius:12px;background:rgba(190,110,60,.12);box-shadow:inset 0 0 0 1px rgba(232,160,107,.3);}
+.nd-facedown{display:flex;align-items:center;gap:10px;width:100%;border:none;cursor:pointer;text-align:left;padding:11px 12px;border-radius:13px;
+  background:linear-gradient(135deg,rgba(120,50,60,.4),rgba(60,24,32,.55));
+  box-shadow:inset 0 0 0 1px rgba(232,160,140,.22),inset 0 2px 2px rgba(255,255,255,.08),0 4px 12px rgba(0,0,0,.3);
+  animation:ndReveal .4s ease-out both;transition:transform .14s;}
+.nd-facedown:hover{transform:translateY(-1px);}
+.nd-facedown:active{transform:scale(.97);}
+.nd-facedown .nd-row-k{width:84px;flex-shrink:0;}
+.nd-facedown-hint{margin-left:auto;font-size:12px;color:rgba(240,200,170,.55);letter-spacing:1px;}
+.nd-flipall{display:block;margin:14px auto 0;font-size:12.5px;color:#eda984;background:none;border:none;cursor:pointer;letter-spacing:1.5px;opacity:.8;}
+.nd-d20row{margin-top:13px;}
+.nd-d20btn{width:100%;font-size:14px;padding:11px;border-radius:999px;border:none;cursor:pointer;color:#ffe2c8;
+  background:radial-gradient(150% 120% at 50% -40%,rgba(255,255,255,.22),transparent 55%),linear-gradient(180deg,rgba(150,90,55,.6),rgba(90,50,32,.7));
+  box-shadow:0 0 0 1.2px rgba(232,180,130,.35),inset 0 2px 2px rgba(255,255,255,.25),0 8px 20px rgba(0,0,0,.4);transition:transform .14s;}
+.nd-d20btn:active{transform:scale(.97);}
+.nd-d20res{display:flex;align-items:center;gap:14px;padding:12px 15px;border-radius:15px;
+  background:linear-gradient(155deg,rgba(230,160,90,.14),rgba(150,80,50,.10));box-shadow:inset 0 0 0 1px rgba(232,180,130,.3);}
+.nd-d20n{font-family:'Songti SC',serif;font-size:34px;font-weight:700;line-height:1;
+  background:linear-gradient(160deg,#ffe2b8,#e8a05e);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(232,160,94,.4));}
+.nd-d20v{font-size:13.5px;color:#f0d8bc;line-height:1.6;}
+.nd-dispatch{width:100%;margin-top:13px;font-size:14px;font-weight:600;padding:13px;border-radius:999px;border:none;cursor:pointer;color:#fff0dd;
+  background:radial-gradient(150% 130% at 50% -40%,rgba(255,255,255,.4),rgba(255,255,255,.05) 54%),linear-gradient(180deg,#b8763e 0%,#96552a 55%,#6e3c1e 100%);
+  box-shadow:0 0 0 1.3px rgba(255,215,170,.45),inset 0 2px 3px rgba(255,255,255,.45),inset 0 -8px 14px rgba(255,255,255,.1),0 12px 30px rgba(184,118,62,.4);
+  text-shadow:0 1px 2px rgba(90,45,15,.5);transition:transform .14s;}
+.nd-dispatch:not([disabled]):active{transform:scale(.97);}
+.nd-dispatch[disabled]{opacity:.85;cursor:default;}
 `
