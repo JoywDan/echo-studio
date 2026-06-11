@@ -577,18 +577,20 @@ const PH_CSS = `
 /* ── 液态玻璃基底: 厚玻璃 + 顶部镜面 + 双层堆叠 ── */
 .ph-chip,.ph-search,.ph-panel,.ph-ncard,.ph-card,.ph-now,.ph-alb,.ph-photo,.ph-thread,.ph-cal-today,.ph-caught-card,.ph-hr-note,.ph-budget,.ph-prod,.ph-sttile,.ph-trend,.ph-careline,.ph-stat{
   position:relative;
-  background:linear-gradient(180deg,rgba(255,240,218,.13) 0%,rgba(255,240,218,.045) 40%,rgba(255,240,218,.085) 100%);
+  background:
+    radial-gradient(160% 90% at 50% -30%,rgba(255,250,240,.16),rgba(255,250,240,.02) 55%),
+    linear-gradient(180deg,rgba(255,240,218,.12) 0%,rgba(255,240,218,.04) 42%,rgba(255,240,218,.08) 100%);
   border:1px solid transparent;
-  backdrop-filter:blur(20px) saturate(1.45);-webkit-backdrop-filter:blur(20px) saturate(1.45);
+  backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);
   box-shadow:
-    0 0 0 1px rgba(255,205,150,.30),               /* 亮边 rim */
-    inset 0 1.5px 0 rgba(255,255,255,.30),          /* 顶部受光 */
-    inset 0 -1px 0 rgba(255,180,110,.10),           /* 底部回光 */
-    inset 0 -12px 24px rgba(140,47,43,.07),
-    0 10px 0 -4px rgba(255,240,218,.10),            /* 第二片玻璃 */
-    0 19px 0 -9px rgba(255,240,218,.055),           /* 第三片玻璃 */
-    0 16px 38px rgba(0,0,0,.55),
-    0 14px 40px rgba(230,106,50,.13);               /* 暖色辉光 */
+    0 0 0 1.2px rgba(255,210,160,.34),
+    inset 0 2px 2px rgba(255,255,255,.34),
+    inset 0 -10px 20px rgba(255,255,255,.045),
+    inset 0 -1px 0 rgba(255,180,110,.12),
+    0 11px 0 -4px rgba(255,240,218,.13),
+    0 21px 0 -9px rgba(255,240,218,.07),
+    0 18px 40px rgba(0,0,0,.55),
+    0 16px 44px rgba(230,106,50,.14);
 }
 .ph-chip::before,.ph-card::before,.ph-now::before,.ph-prod::before,.ph-budget::before,.ph-careline::before,.ph-trend::before{
   content:'';position:absolute;left:8%;right:34%;top:0;height:38%;pointer-events:none;border-radius:inherit;
@@ -614,8 +616,14 @@ const PH_CSS = `
 .ph-lock-notifs{margin-top:36px;width:100%;display:flex;flex-direction:column;gap:20px;overflow-y:auto;padding-bottom:14px;}
 .ph-chip{display:flex;gap:12px;align-items:center;border-radius:19px;padding:12px 14px;cursor:pointer;transition:transform .16s;}
 .ph-chip:active{transform:scale(.97);}
-.ph-chip-ic{width:38px;height:38px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;color:#fff;
-  background:var(--tg);box-shadow:0 5px 16px var(--tglow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -5px 10px rgba(80,20,10,.25);}
+.ph-chip-ic{width:40px;height:40px;flex-shrink:0;border-radius:14px;display:grid;place-items:center;color:#fff;position:relative;
+  background:
+    radial-gradient(130% 100% at 50% -28%,rgba(255,255,255,.5),rgba(255,255,255,.08) 50%),
+    var(--tg);
+  box-shadow:0 0 0 1.2px rgba(255,255,255,.32),0 7px 18px var(--tglow),
+    inset 0 2px 2px rgba(255,255,255,.6),inset 0 -8px 14px rgba(255,255,255,.18);}
+.ph-chip-ic::before{content:'';position:absolute;left:12%;right:12%;top:6%;height:42%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.04));filter:blur(1.2px);}
 .ph-chip-ic .ph-svg{width:20px;height:20px;}
 .ph-chip-t{font-size:13px;font-weight:600;}.ph-chip-b{font-size:12px;opacity:.5;}
 .ph-lock-hint{margin-top:auto;padding-top:14px;font-size:12px;opacity:.4;letter-spacing:2px;animation:phBreath 3.2s ease-in-out infinite;}
@@ -632,7 +640,7 @@ const PH_CSS = `
 .ph-greet-sub{font-size:13.5px;opacity:.56;margin-top:8px;}
 .ph-greet-sign{font-family:'Caveat','Snell Roundhand',cursive;font-size:24px;margin-top:4px;
   background:linear-gradient(110deg,#FFD9A0,#FF8C42 50%,#C24C30);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.ph-search{display:flex;align-items:center;gap:10px;margin-top:18px;border-radius:18px;padding:13px 16px;}
+.ph-search{display:flex;align-items:center;gap:10px;margin-top:18px;margin-bottom:8px;border-radius:999px;padding:13px 18px;}
 .ph-search-ic,.ph-search-scan{width:18px;height:18px;opacity:.45;}
 .ph-search-ph{flex:1;font-size:14px;opacity:.38;}
 .ph-panel{margin-top:16px;border-radius:26px;padding:18px 14px 12px;}
@@ -642,14 +650,25 @@ const PH_CSS = `
 .ph-app{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;color:inherit;padding:10px 4px 12px;cursor:pointer;border-radius:16px;transition:transform .15s,background .2s;}
 .ph-app:hover{background:rgba(255,236,200,.045);}
 .ph-app:active{transform:scale(.92);}
-.ph-app-ic{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;color:#fff;position:relative;overflow:hidden;
-  background:var(--tg,linear-gradient(165deg,rgba(255,243,224,.14),rgba(255,243,224,.05)));
-  box-shadow:0 0 0 1.2px rgba(255,255,255,.30),0 9px 24px var(--tglow,rgba(0,0,0,.35)),0 3px 8px rgba(0,0,0,.4),
-    inset 0 1.5px 0 rgba(255,255,255,.55),inset 0 -8px 16px rgba(80,20,10,.28);}
-.ph-app-ic::after{content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,.06) 42%,transparent 50%,rgba(255,255,255,.07) 88%);}
-.ph-app-ic::before{content:'';position:absolute;top:-46%;left:-30%;width:75%;height:200%;transform:rotate(24deg);pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);}
+.ph-app-ic{width:56px;height:56px;border-radius:20px;display:grid;place-items:center;color:#fff;position:relative;
+  background:
+    radial-gradient(130% 100% at 50% -28%,rgba(255,255,255,.52),rgba(255,255,255,.10) 48%,rgba(255,255,255,0) 60%),
+    var(--tg,linear-gradient(165deg,rgba(255,243,224,.3),rgba(255,243,224,.1)));
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  box-shadow:
+    0 0 0 1.4px rgba(255,255,255,.34),
+    inset 0 2px 3px rgba(255,255,255,.65),
+    inset 0 -10px 18px rgba(255,255,255,.22),
+    inset 4px 0 10px rgba(255,255,255,.10),
+    inset -4px 0 10px rgba(120,40,15,.12),
+    0 14px 30px var(--tglow,rgba(0,0,0,.35)),
+    0 4px 10px rgba(0,0,0,.42);}
+.ph-app-ic::before{content:'';position:absolute;left:9%;right:9%;top:5%;height:46%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.05));
+  filter:blur(1.6px);}
+.ph-app-ic::after{content:'';position:absolute;left:18%;right:18%;bottom:4.5%;height:13%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.5));
+  filter:blur(2.2px);}
 .ph-app-ic .ph-svg{width:26px;height:26px;filter:drop-shadow(0 1px 2px rgba(60,15,8,.4));}
 .ph-app-l{font-size:12.5px;font-weight:500;}
 .ph-app-en{font-size:9.5px;opacity:.38;letter-spacing:.4px;}
@@ -676,9 +695,19 @@ const PH_CSS = `
 .ph-appbody{flex:1;overflow-y:auto;padding:6px 18px 24px;}
 .ph-loading{text-align:center;padding:70px 20px;font-size:14px;opacity:.62;line-height:2;}
 .ph-err{text-align:center;padding:60px 20px;font-size:13px;opacity:.7;}
-.ph-err button,.ph-code-btn,.ph-caught-btn{background:linear-gradient(180deg,#FFAE6E 0%,#FF8C42 45%,#E0612C 100%);border:none;color:#fff;border-radius:999px;padding:10px 28px;cursor:pointer;font-weight:700;position:relative;
-  box-shadow:0 0 0 1px rgba(255,220,170,.45),0 9px 26px rgba(255,140,66,.5),0 2px 6px rgba(0,0,0,.4),
-    inset 0 2px 2px rgba(255,255,255,.55),inset 0 -5px 10px rgba(140,47,43,.4);transition:transform .14s;text-shadow:0 1px 2px rgba(120,40,10,.4);}
+.ph-err button,.ph-code-btn,.ph-caught-btn{border:none;color:#fff;border-radius:999px;padding:11px 30px;cursor:pointer;font-weight:700;position:relative;overflow:hidden;
+  background:
+    radial-gradient(140% 120% at 50% -35%,rgba(255,255,255,.6),rgba(255,255,255,.08) 52%,transparent 62%),
+    linear-gradient(180deg,#FFAE6E 0%,#FF8C42 48%,#DE5F2A 100%);
+  box-shadow:
+    0 0 0 1.4px rgba(255,225,180,.5),
+    inset 0 2px 3px rgba(255,255,255,.7),
+    inset 0 -9px 16px rgba(255,255,255,.22),
+    inset 0 -2px 4px rgba(140,47,43,.3),
+    0 12px 30px rgba(255,140,66,.5),0 3px 8px rgba(0,0,0,.4);
+  transition:transform .14s;text-shadow:0 1px 2px rgba(120,40,10,.4);}
+.ph-code-btn::before,.ph-caught-btn::before{content:'';position:absolute;left:10%;right:10%;top:7%;height:44%;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.04));filter:blur(1.5px);}
 .ph-err button:active,.ph-code-btn:active,.ph-caught-btn:active{transform:scale(.95);}
 .ph-err button{margin-top:12px;}
 
