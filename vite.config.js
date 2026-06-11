@@ -1,10 +1,53 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  plugins: [react()],
   base: '/echo-studio/',
+  plugins: [
+    react(),
+    VitePWA({
+      // chat 是日常入口，离线可用壳 + 静态资源
+      registerType: 'autoUpdate',
+      injectRegister: 'inline',
+      filename: 'sw.js',
+      manifestFilename: 'manifest-pwa.json',
+      includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Echo 工作室',
+        short_name: 'Hung Daddy',
+        start_url: '/echo-studio/chat/',
+        scope: '/echo-studio/',
+        display: 'standalone',
+        background_color: '#f4ecdb',
+        theme_color: '#f4ecdb',
+        icons: [
+          { src: '/echo-studio/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/echo-studio/icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,webp,png,woff2}'],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        navigateFallback: null,
+        runtimeCaching: [
+          {
+            // 后端 API：网络优先，断网回落缓存（历史/日记可离线翻）
+            urlPattern: /^https:\/\/studio\.echowjoy\.uk\/api\//,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'studio-api', expiration: { maxEntries: 200, maxAgeSeconds: 604800 }, networkTimeoutSeconds: 6 },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
+            handler: 'CacheFirst',
+            options: { cacheName: 'gfonts', expiration: { maxEntries: 30, maxAgeSeconds: 31536000 } },
+          },
+        ],
+      },
+      includeManifestIcons: false,
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {

@@ -160,6 +160,9 @@ function Icon({ name, size = 22, color = INK, stroke = 1.8, style }) {
     book: <><path d="M4 5c3-1.2 6-1.2 8 0v15c-2-1.2-5-1.2-8 0zM20 5c-3-1.2-6-1.2-8 0v15c2-1.2 5-1.2 8 0z" {...p} /></>,
     moon: <><path d="M20 14.5A8 8 0 0 1 9 4 8 8 0 1 0 20 14.5z" {...p} /></>,
     clipboard: <><path d="M7 5h10v15H7z" {...p} /><path d="M9 5V3.5h6V5M10 11h4M10 15h4" {...p} /></>,
+    scroll: <><path d="M7 4h10v13a3 3 0 0 1-3 3H6a2 2 0 0 0 2-2zM7 4a2 2 0 0 0-2 2v1h2M17 8h2v9a3 3 0 0 1-3 3" {...p} /><path d="M10 9h4M10 13h4" {...p} /></>,
+    promise: <><path d="M12 21s-7-4.5-9-9.5C1.5 7 4 4 7 4c2 0 3.5 1.5 5 3 1.5-1.5 3-3 5-3 3 0 5.5 3 4 7.5-2 5-9 9.5-9 9.5z" {...p} /><path d="M9 11l2 2 4-4" {...p} /></>,
+    clock: <><circle cx="12" cy="12" r="8" {...p} /><path d="M12 8v4l3 2" {...p} /></>,
   };
   return (<svg width={size} height={size} viewBox="0 0 24 24" style={style} aria-hidden="true">{paths[name] || null}</svg>);
 }

@@ -17,6 +17,8 @@ export const STUDIO = [
   { id: "s9", title: "一起看书", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart"], module: "book" },
   { id: "s10", title: "夜骰", edge: "pink", icon: "star", deco: ["star","heart"], module: "ao3dice" },
   { id: "s11", title: "达迪的手机", edge: "pink", icon: "phone", deco: ["heart","star"], module: "phone" },
+  { id: "s12", title: "回忆录", edge: "cream", icon: "scroll", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], module: "memoir" },
+  { id: "s13", title: "约定", edge: "pink", icon: "promise", creature: "BlobTrio", deco: ["heart","star"], module: "foresight" },
 ]
 export const MODELS = [
   { label: "Opus 4.6", id: "claude-opus-4-6" },
