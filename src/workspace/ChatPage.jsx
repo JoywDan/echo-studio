@@ -234,6 +234,26 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   React.useEffect(() => { scrollToEnd(false) }, [])
 
+  // 流断了(典型:手机切后台,系统杀掉连接)时,服务器仍在生成并会写入 history——
+  // 轮询把已生成的回复捡回来,而不是直接报错丢消息
+  const recoverReply = async (echoId) => {
+    const deadline = Date.now() + 4 * 60 * 1000
+    while (Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, document.hidden ? 8000 : 4000))
+      try {
+        const d = await api.history(sessionId)
+        const msgs = d.messages || []
+        const last = msgs[msgs.length - 1]
+        if (last && last.role !== "user") {
+          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null } : x))
+          onSessionTouched && onSessionTouched()
+          return true
+        }
+      } catch {}
+    }
+    return false
+  }
+
   const send = async () => {
     const text = draft.trim()
     if ((!text && pendingFiles.length === 0) || sending) return
@@ -260,7 +280,8 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions } : x))
       onSessionTouched && onSessionTouched()
     } catch (e) {
-      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined } : x))
+      const recovered = e.server ? false : await recoverReply(echoId)
+      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined } : x))
     } finally { setSending(false); setTimeout(() => scrollToEnd(), 60) }
   }
   const onKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }

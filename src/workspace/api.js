@@ -174,7 +174,7 @@ export const api = {
         let obj; try { obj = JSON.parse(data) } catch { continue }
         if (ev === 'delta') onDelta && onDelta(obj.t)
         else if (ev === 'done') meta = obj
-        else if (ev === 'error') { if (onError) onError(obj.error); throw new Error(obj.error || 'stream error') }
+        else if (ev === 'error') { if (onError) onError(obj.error); const err = new Error(obj.error || 'stream error'); err.server = true; throw err }
       }
     }
     return meta || {}
