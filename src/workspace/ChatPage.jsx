@@ -181,6 +181,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [sending, setSending] = React.useState(false)
   const [pendingFiles, setPendingFiles] = React.useState([])
   const scrollRef = React.useRef(null)
+  const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
   const [atTop, setAtTop] = React.useState(true)
   const [atBottom, setAtBottom] = React.useState(true)
   const imgInputRef = React.useRef(null)
@@ -200,7 +201,14 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
   const scrollToTop = () => { const el = scrollRef.current; if (el) el.scrollTo({ top: 0, behavior: "smooth" }) }
-  const onScroll = () => { const el = scrollRef.current; if (!el) return; setAtTop(el.scrollTop < 40); setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 60) }
+  const loadEarlier = () => {
+    const el = scrollRef.current
+    const prevH = el ? el.scrollHeight : 0
+    setVisibleCount(c => Math.min(c + 60, messages.length))
+    // 下一帧: 把视口锚回原来看的位置(新内容撑在上面, 不跳)
+    requestAnimationFrame(() => { const e2 = scrollRef.current; if (e2) e2.scrollTop += (e2.scrollHeight - prevH) })
+  }
+  const onScroll = () => { const el = scrollRef.current; if (!el) return; const top = el.scrollTop < 40; setAtTop(top); setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 60); if (top && visibleCount < messages.length) loadEarlier() }
   const setToggle = (k) => setToggles(s => { const n = { ...s, [k]: !s[k] }; if (sessionId) writeSessionSettings(sessionId, { toggles: n }); return n })
   const pickModel = (id) => { setModel(id); if (sessionId) writeSessionSettings(sessionId, { model: id }); const m = models.find(x => x.id === id); if (m && !m.supportsThinking) setToggle && setToggles(s => ({ ...s, think: false })) }
 
@@ -226,6 +234,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         attachments: m.attachments_json ? (() => { try { return JSON.parse(m.attachments_json) } catch { return null } })() : null,
         read: m.role === "user",
       }))
+      setVisibleCount(60)
       setMessages(msgs.length ? msgs : [{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }])
       setTimeout(() => scrollToEnd(false), 60)
     }).catch(() => setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }]))
@@ -306,7 +315,13 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <Heart size={15} color="#e2b3aa" className="float" style={{ top: 40, right: 24 }} />
           <Star size={14} color="#d99a92" className="float" style={{ top: 260, left: 16 }} />
           <DashFly w={66} className="float" style={{ top: 150, right: 30 }} />
-          {messages.map((m, i) => <Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]} />)}
+          {visibleCount < messages.length && (
+            <button className="chat-load-earlier" onClick={loadEarlier}>↑ 还有 {messages.length - visibleCount} 条更早的 · 点这里或往上拉</button>
+          )}
+          {messages.slice(Math.max(0, messages.length - visibleCount)).map((m, gi) => {
+            const i = Math.max(0, messages.length - visibleCount) + gi
+            return <Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]} />
+          })}
         </div>
 
         <div className="chat-jump">
