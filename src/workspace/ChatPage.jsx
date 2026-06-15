@@ -284,7 +284,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       if (!recovered) setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined } : x))
     } finally { setSending(false); setTimeout(() => scrollToEnd(), 60) }
   }
-  const onKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }
+  const onKey = (e) => {}  // 回车=换行，只有发送键才发送（Joy 2026-06-15，照官方 app）
   const decide = async (id, decision) => api.codingAction(id, decision)
   const onPickFile = (kind) => (e) => { const fs = Array.from(e.target.files || []); if (fs.length) setPendingFiles(p => [...p, ...fs.map(f => ({ kind, file: f }))].slice(0, 4)); e.target.value = "" }
 
