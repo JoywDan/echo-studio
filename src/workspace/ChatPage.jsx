@@ -47,12 +47,27 @@ function ActionCard({ pa, onDecide }) {
 function renderRich(text) {
   if (!text) return text
   const t = String(text)
-  if (!t.includes('*')) return t
-  const parts = t.split(/(\*[^*\n]+?\*)/g)
-  if (parts.length <= 1) return t
-  return parts.map((p, i) => /^\*[^*\n]+\*$/.test(p)
-    ? <em key={i} className="msg-narration">{p.slice(1, -1)}</em>
-    : <React.Fragment key={i}>{p}</React.Fragment>)
+  const IMG = /!\[([^\]]*)\]\(([^)\s]+)\)/g
+  const renderNarr = (str, kb) => {
+    if (!str.includes('*')) return str
+    const parts = str.split(/(\*[^*\n]+?\*)/g)
+    return parts.map((p, i) => /^\*[^*\n]+\*$/.test(p)
+      ? <em key={kb + '-' + i} className="msg-narration">{p.slice(1, -1)}</em>
+      : <React.Fragment key={kb + '-' + i}>{p}</React.Fragment>)
+  }
+  if (!t.includes('*') && !t.includes('![')) return t
+  // 切出 markdown 图片 ![alt](url) -> <img>, 其余文字仍按 *动作* 处理
+  const segs = []; let last = 0, m
+  while ((m = IMG.exec(t)) !== null) {
+    if (m.index > last) segs.push({ type: 't', v: t.slice(last, m.index) })
+    segs.push({ type: 'img', alt: m[1], url: m[2] })
+    last = m.index + m[0].length
+  }
+  if (last < t.length) segs.push({ type: 't', v: t.slice(last) })
+  if (!segs.length) return renderNarr(t, 'x')
+  return segs.map((seg, i) => seg.type === 'img'
+    ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} loading="lazy" /></a>
+    : <React.Fragment key={'t' + i}>{renderNarr(seg.v, 't' + i)}</React.Fragment>)
 }
 
 function VoiceBubble({ text }) {
