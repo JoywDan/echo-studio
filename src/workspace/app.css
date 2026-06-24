@@ -2575,3 +2575,22 @@ input, textarea { font-family: inherit; }
 /* NovelAI 生成图 inline 显示 */
 .msg-gen-img-link { display: block; margin: 8px 0; }
 .msg-gen-image { display: block; max-width: 100%; width: auto; max-height: 420px; border-radius: 12px; border: 2px solid rgba(80,66,52,0.25); cursor: zoom-in; }
+
+/* —— 手机断点修复：Tasks → Quick actions 之间的视觉空白 —— */
+/* 起因：tape-long-2.png 2172×724,大片透明 padding 撑出 ~220px 缝隙 */
+@media (max-width: 620px) {
+  .task-grid {
+    padding-bottom: 18px !important;          /* 原 34px,卡片底部尾巴不再需要这么多 */
+  }
+  .task-doodle-strip {
+    min-height: 32px !important;              /* 原 58px */
+    padding-top: 4px !important;
+  }
+  .task-section-tape {
+    max-height: 36px !important;              /* 把那张大画布的透明 padding 剪掉 */
+    object-fit: cover !important;
+    object-position: center;
+    margin-top: -6px !important;              /* 原 -16,贴近 doodle 但不堆叠 */
+    margin-bottom: 8px !important;            /* 原 14 */
+  }
+}
