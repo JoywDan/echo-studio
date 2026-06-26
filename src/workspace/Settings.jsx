@@ -3,7 +3,7 @@ import { Icon } from './doodles.jsx'
 import { PAPER_PRESETS, THEME_PRESETS } from './theme.js'
 const ACCENTS = ['#a7372a', '#b65a3c', '#9c6b4e', '#7d8a5c', '#7a6aa0', '#c06b8a']
 const TEXT_COLORS = ['#3a3027', '#4f4034', '#5d463b', '#5d5f48', '#4d5663', '#6b4c68']
-const CN_FONTS = [['ZCOOL KuaiLe', '站酷快乐体 · 圆乎乎'], ['ZCOOL XiaoWei', '站酷小薇 · 清秀'], ['Ma Shan Zheng', '马善政 · 毛笔'], ['Long Cang', '龙藏 · 纤细手写'], ['Noto Sans SC', '思源黑体 · 干净']]
+const CN_FONTS = [['ZCOOL KuaiLe', '站酷快乐体 · 圆乎乎'], ['ZCOOL XiaoWei', '站酷小薇 · 清秀'], ['Ma Shan Zheng', '马善政 · 毛笔'], ['Long Cang', '龙藏 · 纤细手写'], ['Noto Sans SC', '思源黑体 · 干净'], ['LXGW WenKai Screen', '霞鹜文楷 · 清雅楷体']]
 const TITLE_FONTS = ['Caveat', 'Gloria Hallelujah']
 function Swatch({ colors, value, onChange }) {
   return (<div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{colors.map((c) => (
