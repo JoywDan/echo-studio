@@ -35,8 +35,8 @@ export default defineConfig({
           {
             // 后端 API：网络优先，断网回落缓存（历史/日记可离线翻）
             urlPattern: /^https:\/\/studio\.echowjoy\.uk\/api\//,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'studio-api', expiration: { maxEntries: 200, maxAgeSeconds: 604800 }, networkTimeoutSeconds: 6 },
+            handler: 'NetworkOnly',
+            // 2026-06-22: 动态数据(日记/信/成长/记忆)不能缓存,否则列表卡在旧缓存。网络断时直接报错,不显示陈旧。
           },
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
