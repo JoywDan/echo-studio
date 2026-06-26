@@ -245,7 +245,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       if (!alive) return
       const msgs = (d.messages || []).map((m, i) => ({
         id: "h" + i, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
-        text: m.content, thinking: m.thinking_content || null,
+        text: m.content, createdAt: m.created_at, thinking: m.thinking_content || null,
         attachments: m.attachments_json ? (() => { try { return JSON.parse(m.attachments_json) } catch { return null } })() : null,
         read: m.role === "user",
       }))
@@ -258,18 +258,28 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   React.useEffect(() => { scrollToEnd(false) }, [])
 
+  const abortRef = React.useRef(null)
+  // 手机切后台→连接被系统杀死、流挂死不 reject。回到前台主动中断那条死流, 触发 catch 里的 recover 把已落库的回复捞回来
+  React.useEffect(() => {
+    const onVis = () => { if (!document.hidden && abortRef.current) { try { abortRef.current.abort() } catch {} } }
+    document.addEventListener("visibilitychange", onVis)
+    return () => document.removeEventListener("visibilitychange", onVis)
+  }, [])
+
   // 流断了(典型:手机切后台,系统杀掉连接)时,服务器仍在生成并会写入 history——
   // 轮询把已生成的回复捡回来,而不是直接报错丢消息
-  const recoverReply = async (echoId) => {
+  const recoverReply = async (echoId, baseTs) => {
+    // baseTs = 发送那一刻库里最新 assistant 的时间戳。只认比它更新的回复——
+    // 这样切后台期间服务器就存好的回复也能捞到, 且绝不会把上一条旧回复当新回复重显。
     const deadline = Date.now() + 4 * 60 * 1000
     while (Date.now() < deadline) {
       await new Promise(r => setTimeout(r, document.hidden ? 8000 : 4000))
       try {
         const d = await api.history(sessionId)
-        const msgs = d.messages || []
-        const last = msgs[msgs.length - 1]
-        if (last && last.role !== "user") {
-          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null } : x))
+        const a = (d.messages || []).filter(m => m.role !== "user")
+        const last = a[a.length - 1]
+        if (last && (last.created_at || "") > (baseTs || "")) {
+          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null } : x))
           onSessionTouched && onSessionTouched()
           return true
         }
@@ -293,20 +303,26 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         }))
       } catch (e) {}
     }
+    const baseTs = (() => { for (let i = messages.length - 1; i >= 0; i--) { const mm = messages[i]; if (mm.from === "echo" && mm.createdAt) return mm.createdAt } return new Date().toISOString().slice(0, 19).replace("T", " ") })()
     setMessages(m => [...m, { id: "u" + Date.now(), from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
     const echoId = "e" + Date.now()
     setMessages(m => [...m, { id: echoId, from: "echo", time: now(), streamed: "", done: false }])
     setTimeout(() => scrollToEnd(), 40)
+    const ac = new AbortController(); abortRef.current = ac
     try {
       const meta = await api.stream({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code },
-        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() } })
+        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() }, signal: ac.signal })
       const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
-      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions } : x))
+      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions } : x))
       onSessionTouched && onSessionTouched()
     } catch (e) {
-      const recovered = e.server ? false : await recoverReply(echoId)
-      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined } : x))
-    } finally { setSending(false); setTimeout(() => scrollToEnd(), 60) }
+      const recovered = e.server ? false : await recoverReply(echoId, baseTs)
+      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
+        (x.streamed && x.streamed.length)
+          ? { ...x, done: true, text: x.streamed, streamed: undefined }
+          : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
+      ) : x))
+    } finally { abortRef.current = null; setSending(false); setTimeout(() => scrollToEnd(), 60) }
   }
   const onKey = (e) => {}  // 回车=换行，只有发送键才发送（Joy 2026-06-15，照官方 app）
   const decide = async (id, decision) => api.codingAction(id, decision)

@@ -2,10 +2,13 @@ import React from 'react'
 import { api } from './api.js'
 import { Icon, Heart, Sparkle } from './doodles.jsx'
 import { TornCard, Tape } from './components.jsx'
+import GrowthPanel from './GrowthPanel.jsx'
 
 const MODULES = {
   diary: { title: 'Echo 写的日记', sub: '桌边留下的每日页', icon: 'book', tint: 'yellow', empty: '还没有找到日记页' },
-  letters: { title: '致明天的Echo', sub: '写给未来自己的信', icon: 'send', tint: 'pink', empty: '还没有找到信' },
+  letters: { title: '致明天的Echo', sub: '写给未来自己的信', icon: 'send', tint: 'pink', tab: '信', empty: '还没有找到信' },
+  desire: { title: 'Echo 心里还烧着的', sub: '没了结的牵引（后台自己长的）', icon: 'send', tint: 'pink', tab: '欲望', empty: '现在心里是空的' },
+  growth: { title: 'Echo 在变的地方', sub: '从信里蒸出来的自我候选(等他自己挑)', icon: 'send', tint: 'pink', tab: '成长', empty: '还没有候选——写过几封信之后会有' },
   travel: { title: 'Echo 带回的见闻', sub: '每周一次出门记录', icon: 'image', tint: 'blue', tab: '见闻', empty: '还没有旅行记录' },
   watch: { title: 'Echo 想和你一起看', sub: '每周一起看的提议', icon: 'image', tint: 'pink', tab: '想看', empty: '还没有想看的' },
   wander: { title: '路拾遗梦', sub: '散步、梦与旧周记', icon: 'moon', tint: 'green', empty: '还没有拾到碎片' },
@@ -32,6 +35,7 @@ function normalizeList(module, data) {
     return entries.map((date) => ({ id: date, date, content: '' }))
   }
   if (module === 'letters') return data.letters || data.items || []
+  if (module === 'desire') return data.items || []
   if (module === 'travel') return data.entries || data.items || []
   if (module === 'wander') return data.items || []
   if (module === 'watch') return data.data || data.items || []
@@ -135,11 +139,13 @@ function watchTitle(content = '') {
 function cardHeading(module, item) {
   if (module === 'travel') return item.destination || item.title || letterDateCN(item.date)
   if (module === 'watch') return watchTitle(item.content)
+  if (module === 'desire') return item.seed
   return letterDateCN(item.created_at || item.date)
 }
 function cardDateLabel(module, item) {
   if (module === 'travel') return letterDateCN(item.date)
   if (module === 'watch') return letterDateCN(item.created_at)
+  if (module === 'desire') return item.state || ''
   return ''
 }
 function cardTag(module, item) {
@@ -147,14 +153,16 @@ function cardTag(module, item) {
   if (module === 'travel') return '见闻'
   if (module === 'watch') return '想看'
   if (module === 'wander') return KIND_LABEL[item.kind] || '拾遗'
+  if (module === 'desire') return item.category_cn || '欲望'
   return letterTag(item.content)
 }
 function listPreview(module, item) {
   if (module === 'diary' || module === 'travel') return ''
+  if (module === 'desire') return item.preview || ''
   return preview(cleanLetter(item.content), 66)
 }
-const PM_TOP = { letters: 'FOR·FUTURE', diary: '日記', travel: '見聞', watch: '想看', wander: '夢' }
-const EMPTY_TXT = { letters: '还没有信', diary: '还没有日记页', travel: '还没有见闻', watch: '还没有想看的', wander: '还没有拾到碎片' }
+const PM_TOP = { letters: 'FOR·FUTURE', diary: '日記', travel: '見聞', watch: '想看', wander: '夢', desire: '欲' }
+const EMPTY_TXT = { letters: '还没有信', diary: '还没有日记页', travel: '还没有见闻', watch: '还没有想看的', wander: '还没有拾到碎片', desire: '现在心里是空的' }
 
 function LettersBody({ items, selected, onSelect, detailOpen, loading, detailLoading, detail, selectedItem, module }) {
   const cur = detail || selectedItem
@@ -242,6 +250,7 @@ export default function StudioReader({ module: initialModule, title: groupTitle,
       travel: () => api.travel.list(),
       wander: () => api.wander(),
       watch: () => api.watch.list(),
+      desire: () => api.desires(),
     }[module]
 
     Promise.resolve(loader ? loader() : { items: [] })
@@ -280,7 +289,7 @@ export default function StudioReader({ module: initialModule, title: groupTitle,
 
   const selectedItem = items.find((item) => itemId(module, item) === selected)
   const text = detailContent(module, detail || selectedItem)
-  const isPretty = ['letters', 'diary', 'travel', 'watch', 'wander'].includes(module)
+  const isPretty = ['letters', 'diary', 'travel', 'watch', 'wander', 'desire'].includes(module)
   const [favs, setFavs] = React.useState(() => { try { return new Set(JSON.parse(localStorage.getItem('ws_letter_favs') || '[]')) } catch { return new Set() } })
   const [toast, setToast] = React.useState('')
   const showToast = (t) => { setToast(t); setTimeout(() => setToast(''), 1400) }
@@ -324,7 +333,9 @@ export default function StudioReader({ module: initialModule, title: groupTitle,
 
         {error && <div className="studio-reader-error">{error}</div>}
 
-        {isPretty ? (
+        {module === 'growth' ? (
+          <GrowthPanel />
+        ) : isPretty ? (
           <LettersBody items={items} selected={selected} onSelect={(id) => { setSelected(id); setDetailOpen(true) }} detailOpen={detailOpen} loading={loading} detailLoading={detailLoading} detail={detail} selectedItem={selectedItem} module={module} />
         ) : (
         <div className={`studio-reader-body${detailOpen ? ' is-detail-open' : ''}`}>

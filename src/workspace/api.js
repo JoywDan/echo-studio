@@ -26,6 +26,7 @@ export const api = {
   memory: {
     list: (params = {}) => call('GET', '/api/memory/list?' + new URLSearchParams(params).toString()),
     moodTrend: (days = 14) => call('GET', '/api/memory/mood-agg?days=' + days),
+    blurOrigin: (id) => call('GET', '/api/memory/blur-origin?id=' + encodeURIComponent(id)),
     write: (d) => call('POST', '/api/memory/write', d),
     update: (id, d) => call('PUT', '/api/memory/' + encodeURIComponent(id), d),
     remove: (id) => call('DELETE', '/api/memory/' + encodeURIComponent(id)),
@@ -127,6 +128,12 @@ export const api = {
     get: (id) => call('GET', '/api/travel/' + encodeURIComponent(id)),
   },
   wander: () => call('GET', '/api/wander'),
+  growth: {
+    list: (status) => call('GET', '/api/growth/candidates' + (status ? ('?status=' + encodeURIComponent(status)) : '')),
+    get: (id) => call('GET', '/api/growth/candidate/' + encodeURIComponent(id)),
+    transition: (id, transition, opts = {}) => call('POST', '/api/growth/transition', { id, transition, ...opts }),
+  },
+  desires: () => call('GET', '/api/desires'),
   memoir: {
     overview: () => call('GET', '/api/memoir/overview'),
     chapter: (ym) => call('GET', '/api/memoir/chapter/' + encodeURIComponent(ym)),
@@ -153,8 +160,8 @@ export const api = {
     return r.json()
   },
   // streaming chat: calls onDelta(text) per chunk, returns final meta {tool_calls, pending_actions, thinking_content, ...}
-  stream: async (body, { onDelta, onError } = {}) => {
-    const resp = await fetch(API + '/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }, body: JSON.stringify(body) })
+  stream: async (body, { onDelta, onError, signal } = {}) => {
+    const resp = await fetch(API + '/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }, body: JSON.stringify(body), signal })
     if (!resp.ok) { let e; try { e = (await resp.json()).error } catch { e = resp.statusText } throw new Error(e || ('http ' + resp.status)) }
     const reader = resp.body.getReader(); const dec = new TextDecoder()
     let buf = '', meta = null

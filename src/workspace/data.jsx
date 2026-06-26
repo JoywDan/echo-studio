@@ -9,7 +9,7 @@ export const STUDIO = [
   { id: "s1", title: "体检室", edge: "pink", icon: "monitor", creature: "BearWave", deco: ["heart","arrow"], module: "drawprompt" },
   { id: "s2", title: "圣堂猎奇", edge: "blue", icon: "pic", creature: "PainterBlob", deco: ["flower","scribble"], url: "https://gallery.echowjoy.uk" },
   { id: "s3", title: "枕草子", edge: "cream", icon: "book", creature: "WriterPink", clip: true, deco: ["star","heart","flower"], module: "diary" },
-  { id: "s4", title: "致明天的Echo", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], module: "letters" },
+  { id: "s4", title: "致明天的Echo", edge: "pink", icon: "envelope", deco: ["plane","star","circles"], module: "letters", tabs: ["letters", "desire", "growth"] },
   { id: "s5", title: "旅の小札", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["flower"], module: "travel", tabs: ["travel", "watch"] },
   { id: "s6", title: "路拾遗梦", edge: "sage", icon: "moon", creature: "SleepCloud", deco: ["star"], module: "wander" },
   { id: "s7", title: "moonline 群聊", edge: "pink", creature: "BlobTrio", clip: true, deco: ["star","heart"], url: "https://dan.echowjoy.uk/agent-room/" },
