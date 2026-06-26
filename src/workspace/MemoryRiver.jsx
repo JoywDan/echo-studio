@@ -214,6 +214,7 @@ export default function MemoryRiver({ onClose }) {
   const [source, setSource] = React.useState('')
   const [search, setSearch] = React.useState('')
   const [expanded, setExpanded] = React.useState({})
+  const [origins, setOrigins] = React.useState({})
   const [mood, setMood] = React.useState(null)
   const [editMem, setEditMem] = React.useState(null)
   const [delMem, setDelMem] = React.useState(null)
@@ -242,6 +243,14 @@ export default function MemoryRiver({ onClose }) {
   for (const m of items) { const k = laDateKey(m.created_at); if (!groups[k]) groups[k] = []; groups[k].push(m) }
   const orderedDays = Object.keys(groups).sort().reverse()
   const toggle = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggleOrigin = async (id) => {
+    if (origins[id]) { setOrigins(p => { const n = { ...p }; delete n[id]; return n }); return }
+    setOrigins(p => ({ ...p, [id]: { loading: true } }))
+    try {
+      const r = await api.memory.blurOrigin(id)
+      setOrigins(p => ({ ...p, [id]: r.original || { empty: true } }))
+    } catch (e) { setOrigins(p => ({ ...p, [id]: { error: e.message } })) }
+  }
 
   return (
     <div className="studio-reader mem-river" role="dialog" aria-modal="true" aria-label="River of memory">
@@ -283,6 +292,10 @@ export default function MemoryRiver({ onClose }) {
 .mem-badge { padding: 2px 10px; border-radius: 9px; color: #5a4d40; font-size: 11.5px; box-shadow: 2px 2px 5px var(--nm-d), -2px -2px 5px var(--nm-l); }
 .mem-content { font-family: 'Songti SC','Noto Serif SC','Source Han Serif SC',serif; font-size: 14px; line-height: 1.8; color: #4a4236; white-space: pre-wrap; word-break: break-word; }
 .mem-expand { font-size: 12.5px; color: var(--brick); background: none; border: none; cursor: pointer; padding: 7px 0 0; font-family: var(--font-cn); }
+.mem-expand + .mem-expand { margin-left: 16px; }
+.mem-badge.blur { background: #ded5c4; color: #8a7d6c; font-style: italic; }
+.mem-origin { margin-top: 9px; padding: 10px 13px; border-left: 3px solid #cdc2a3; background: #ece5d6; border-radius: 0 10px 10px 0; font-size: 12.5px; color: #7a6e5e; font-family: 'Songti SC','Noto Serif SC',serif; line-height: 1.75; white-space: pre-wrap; }
+.mem-origin-label { font-size: 11px; color: #9d9081; margin-bottom: 5px; font-family: var(--font-cn); }
 .mem-acts { position: absolute; top: 12px; right: 14px; display: flex; gap: 8px; opacity: 0; transition: opacity .15s; }
 .mem-card:hover .mem-acts, .mem-card:active .mem-acts { opacity: 1; }
 .mem-act { width: 32px; height: 32px; border-radius: 10px; border: none; background: #ece5d6; color: #8a7d6c; cursor: pointer; font-size: 13px; display: grid; place-items: center; box-shadow: 3px 3px 7px var(--nm-d), -3px -3px 7px var(--nm-l); }
@@ -386,7 +399,9 @@ export default function MemoryRiver({ onClose }) {
                 <div key={day} className="mem-daygroup">
                   <div className="mem-dayhead">{friendlyDay(day)} · {groups[day].length} 条</div>
                   {groups[day].map(m => {
-                    const isLong = (m.content || '').length > 120
+                    const isBlur = m.source === 'blur_v1' || (m.content || '').includes('[糊]')
+                    const dispContent = (m.content || '').replace(/\s*\[糊\]\s*/g, ' ').trim()
+                    const isLong = dispContent.length > 120
                     const showFull = expanded[m.id] || !isLong
                     return (
                       <div key={m.id} className="mem-card">
@@ -401,12 +416,24 @@ export default function MemoryRiver({ onClose }) {
                           {m.emotion && m.emotion !== 'neutral' && (
                             <span className="mem-badge" style={{ background: emotionColor(m.emotion) }}>{m.emotion}</span>
                           )}
+                          {isBlur && <span className="mem-badge blur" title="褪色记忆：原文已糊化成要点，点「看原文」翻出归档原文">淡忆</span>}
                           <span style={{ flex: 1 }} />
                           <span>{m.source}</span>
                           <span>#{m.id}</span>
                         </div>
-                        <div className="mem-content">{showFull ? m.content : (m.content || '').slice(0, 120) + '…'}</div>
+                        <div className="mem-content">{showFull ? dispContent : dispContent.slice(0, 120) + '…'}</div>
                         {isLong && <button className="mem-expand" onClick={() => toggle(m.id)}>{expanded[m.id] ? '收起' : '展开'}</button>}
+                        {isBlur && <button className="mem-expand" onClick={() => toggleOrigin(m.id)}>{origins[m.id] ? '收起原文' : '看原文'}</button>}
+                        {origins[m.id] && (
+                          <div className="mem-origin">
+                            {origins[m.id].loading ? '翻找原文…' : origins[m.id].error ? ('出错：' + origins[m.id].error) : origins[m.id].empty ? '原文已不可考' : (
+                              <>
+                                <div className="mem-origin-label">原文 #{origins[m.id].id} · {origins[m.id].status === 'archived' ? '已归档' : origins[m.id].status} · {laTime(origins[m.id].created_at)}</div>
+                                {origins[m.id].content}
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })}
