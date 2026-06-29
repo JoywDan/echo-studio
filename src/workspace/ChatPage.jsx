@@ -119,7 +119,7 @@ function Message({ msg, onImage, onDecide, deco }) {
   const imgs = (msg.attachments || []).filter(a => a.kind === "image")
   const files = (msg.attachments || []).filter(a => a.kind === "file")
   const meta = (<div className="msg-meta"><span>{msg.time}</span>{msg.read && <span className="msg-read">已读</span>}</div>)
-  const body = msg.streamed != null ? <span>{msg.streamed}{!msg.done && <span className="type-cursor" />}</span> : null
+  const body = msg.streamed != null ? <span>{renderRich(msg.streamed)}{!msg.done && <span className="type-cursor" />}</span> : null
 
   if (isMe) {
     return (<div className="msg-row me"><div className="msg-col">
