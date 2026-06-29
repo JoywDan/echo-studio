@@ -20,9 +20,9 @@ export const STUDIO = [
   { id: "s13", title: "约定", edge: "pink", icon: "promise", creature: "BlobTrio", deco: ["heart","star"], module: "foresight" },
 ]
 export const MODELS = [
-  { label: "Opus 4.6", id: "claude-opus-4-6" },
-  { label: "Opus 4.8", id: "claude-opus-4-8" },
-  { label: "Sonnet 4.6", id: "claude-sonnet-4-6" },
+  { label: "Opus 4.6", id: "claude-opus-4-6", supportsThinking: true, defaultThinking: true },
+  { label: "Opus 4.8", id: "claude-opus-4-8", supportsThinking: true, defaultThinking: true },
+  { label: "Sonnet 4.6", id: "claude-sonnet-4-6", supportsThinking: true, defaultThinking: false },
 ]
 export const FEATURES = ["思考","记忆","联网","编码"]
 export const CONV_CREATURES = ["PinkBlobCrown","FuzzGreen","CupcakeCyclops","RunCloudGreen","GreenAlien","Rabbit"]
