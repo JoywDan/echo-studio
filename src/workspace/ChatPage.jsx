@@ -232,7 +232,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const saved = readSessionSettings(sessionId)
     const nextModel = [saved && saved.model, models[0].id].find(id => id && models.some(m => m.id === id))
     const m = models.find(x => x.id === nextModel)
-    const nextToggles = { ...DEFAULT_TOGGLES, think: m ? !!m.defaultThinking : false, ...(saved && saved.toggles ? saved.toggles : {}) }
+    const savedTog = (saved && saved.toggles) ? { ...saved.toggles } : {}
+    delete savedTog.think  // think 永远跟 model defaultThinking 走, 别让旧 saved 把思考关掉(Joy 要默认看到思考链)
+    const nextToggles = { ...DEFAULT_TOGGLES, ...savedTog, think: m ? !!m.defaultThinking : false }
     if (m && !m.supportsThinking) nextToggles.think = false
     setModel(nextModel); setToggles(nextToggles)
   }, [models, sessionId])
