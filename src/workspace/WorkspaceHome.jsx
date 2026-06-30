@@ -58,6 +58,7 @@ import MemoryRiver from './MemoryRiver.jsx'
 import DrawPrompt from './DrawPrompt.jsx'
 import DicePanel from './DicePanel.jsx'
 import PhonePanel from './PhonePanel.jsx'
+import GameRoomPanel from './GameRoomPanel.jsx'
 const ForesightPanel = React.lazy(() => import('./ForesightPanel.jsx'))
 const BookReader = React.lazy(() => import('./BookReader.jsx'))
 
@@ -75,6 +76,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const [bookOpen, setBookOpen] = React.useState(false)
   const [diceOpen, setDiceOpen] = React.useState(false)
   const [phoneOpen, setPhoneOpen] = React.useState(false)
+  const [gameRoomOpen, setGameRoomOpen] = React.useState(false)
 
   React.useEffect(() => {
     api.notes.list().then(setNotes).catch(() => setNotes([])).finally(() => setNotesLoading(false))
@@ -141,7 +143,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const toggleTask = (id) => { const cur = tasks.find(t => t.id === id); if (!cur) return; const nx = !cur.done; setTasks(ts => ts.map(t => t.id === id ? { ...t, done: nx } : t)); api.tasks.update(id, { done: nx }).catch(() => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: cur.done } : t))) }
   async function saveTask(d) { if (editingTask === 'new') { const r = await api.tasks.create(d); setTasks(t => [...t, r]) } else { const r = await api.tasks.update(editingTask.id, d); setTasks(t => t.map(x => x.id === r.id ? r : x)) } setEditingTask(null) }
   async function delTask(id) { await api.tasks.remove(id); setTasks(t => t.filter(x => x.id !== id)) }
-  function openStudio(m) { if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.module === 'foresight') { setForesightOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
+  function openStudio(m) { if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.module === 'game-room') { setGameRoomOpen(true) } else if (m.module === 'foresight') { setForesightOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
 
   return (
     <div className="panel workspace-panel">
@@ -237,6 +239,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       {drawOpen && <DrawPrompt onClose={() => setDrawOpen(false)} />}
       {diceOpen && <DicePanel onClose={() => setDiceOpen(false)} />}
       {phoneOpen && <PhonePanel onClose={() => setPhoneOpen(false)} />}
+      {gameRoomOpen && <GameRoomPanel onClose={() => setGameRoomOpen(false)} />}
       {foresightOpen && <React.Suspense fallback={<div className="book-loading">翻找约定…</div>}><ForesightPanel onClose={() => setForesightOpen(false)} /></React.Suspense>}
       {bookOpen && <React.Suspense fallback={<div className="book-loading">载入阅读器…</div>}><BookReader onClose={() => setBookOpen(false)} /></React.Suspense>}
     </div>

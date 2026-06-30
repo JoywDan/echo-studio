@@ -1,4 +1,5 @@
 const API = 'https://studio.echowjoy.uk'
+const GAME_ROOM_API = 'https://dan.echowjoy.uk/game-room/api'
 export function getToken() { return localStorage.getItem('studio_token') || '' }
 export function setToken(t) { localStorage.setItem('studio_token', t) }
 export function clearToken() { localStorage.removeItem('studio_token') }
@@ -149,6 +150,36 @@ export const api = {
     providers: () => call('GET', '/api/providers'),
   },
   watch: { list: () => call('GET', '/api/watch/list') },
+  gameRoom: {
+    rooms: async () => {
+      const r = await fetch(GAME_ROOM_API + '/rooms')
+      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
+      return r.json()
+    },
+    newGame: async ({ gameId, player = 'joy', saveName = 'main', seed = 20260629 }) => {
+      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: 'web', player, saveName, seed }),
+      })
+      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
+      return r.json()
+    },
+    cmd: async ({ gameId, command, player = 'joy', saveName = 'main' }) => {
+      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/cmd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: 'web', player, saveName, command }),
+      })
+      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
+      return r.json()
+    },
+    scenePrompt: async ({ gameId, player = 'joy', saveName = 'main' }) => {
+      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/scene-prompt?channel=web&player=' + encodeURIComponent(player) + '&save_name=' + encodeURIComponent(saveName))
+      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
+      return r.json()
+    },
+  },
   uploadImage: async (file) => {
     const r = await fetch(API + '/api/chat/upload-image', { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': file.type }, body: file })
     if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'upload failed') }
