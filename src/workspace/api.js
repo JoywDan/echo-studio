@@ -37,6 +37,9 @@ export const api = {
   music: {
     search: (q) => call('GET', '/api/music/search?q=' + encodeURIComponent(q)),
     url: (hash, albumId) => call('GET', '/api/music/url?hash=' + encodeURIComponent(hash) + '&album_id=' + encodeURIComponent(albumId || '')),
+    playlists: () => call('GET', '/api/music/playlists'),
+    tracks: (id, page = 1) => call('GET', '/api/music/playlist_tracks?id=' + encodeURIComponent(id) + '&page=' + page),
+    played: (d) => call('POST', '/api/music/played', d),
   },
   vps: {
     health: () => call('GET', '/api/vps/health'),

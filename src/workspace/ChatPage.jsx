@@ -3,6 +3,7 @@ import { Heart, Star, Icon, DashFly } from './doodles.jsx'
 import { EchoAvatar } from './creatures.jsx'
 import { TornCard, Tape, Paperclip } from './components.jsx'
 import { api, uploadsUrl, API_BASE } from './api.js'
+import { MUSIC_MARK, MusicCard, MusicBar } from './music.jsx'
 import { CHAT_DADDY } from './assets.js'
 
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
@@ -42,17 +43,6 @@ function ActionCard({ pa, onDecide }) {
       <button disabled={busy} onClick={() => decide("cancel")} className="action-btn no">取消</button></div>)
       : (<div style={{ fontSize: 13, color: status === "executed" ? "#3a7d44" : status === "cancelled" ? "var(--ink-faint)" : "var(--brick)" }}>{status === "executed" ? "✓ 已执行" : status === "cancelled" ? "已取消" : "✕ " + status}</div>)}
   </div>)
-}
-
-const MUSIC_MARK = /\[\[music\|([0-9A-Fa-f]{8,})\|([^|\]]*)\|([^|\]]*)\|([^|\]]*)\]\]/g
-
-function MusicCard({ hash, albumId, name, singer }) {
-  const play = () => window.dispatchEvent(new CustomEvent("echo-play-music", { detail: { hash, albumId, name, singer } }))
-  return (<span className="music-card" onClick={play} role="button" title="点了就一起听">
-    <span className="music-card-disc">♪</span>
-    <span className="music-card-txt"><span className="music-card-name">{name || "未知曲目"}</span><span className="music-card-singer">{singer}</span></span>
-    <span className="music-card-play">▶ 播放</span>
-  </span>)
 }
 
 function renderRich(text) {
@@ -96,44 +86,6 @@ function renderRichInner(text) {
   return segs.map((seg, i) => seg.type === 'img'
     ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} loading="lazy" /></a>
     : <React.Fragment key={'t' + i}>{renderNarr(seg.v, 't' + i)}</React.Fragment>)
-}
-
-function MusicBar({ song, onClose }) {
-  const aRef = React.useRef(null)
-  const [playing, setPlaying] = React.useState(false)
-  const [prog, setProg] = React.useState(0)
-  const [dur, setDur] = React.useState(0)
-  const [err, setErr] = React.useState("")
-  const closeTimer = React.useRef(null)
-  const cancelAutoClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null } }
-  React.useEffect(() => () => cancelAutoClose(), [])
-  React.useEffect(() => {
-    cancelAutoClose()
-    if (!song) return
-    let alive = true
-    setErr(""); setProg(0); setDur(0)
-    api.music.url(song.hash, song.albumId).then(d => {
-      if (!alive || !aRef.current) return
-      aRef.current.src = d.url
-      aRef.current.play().catch(() => {})
-    }).catch(e => { if (alive) setErr(e.message || "拿不到播放链接") })
-    return () => { alive = false }
-  }, [song && song.hash])
-  if (!song) return null
-  const fmt = (x) => { const v = Math.floor(x || 0); return Math.floor(v / 60) + ":" + String(v % 60).padStart(2, "0") }
-  return (<div className="music-bar">
-    <audio ref={aRef} onPlay={() => { setPlaying(true); cancelAutoClose() }} onPause={() => setPlaying(false)}
-      onEnded={() => { setPlaying(false); closeTimer.current = setTimeout(() => onClose && onClose(), 1600) }}
-      onTimeUpdate={(e) => setProg(e.target.currentTime)} onDurationChange={(e) => setDur(e.target.duration || 0)} />
-    <button className="music-bar-btn" onClick={() => { const a = aRef.current; if (!a) return; if (a.paused) a.play().catch(() => {}); else a.pause() }} aria-label={playing ? "暂停" : "播放"}>{playing ? "❚❚" : "▶"}</button>
-    <div className="music-bar-mid">
-      <div className="music-bar-title">{song.name}<span className="music-bar-singer"> · {song.singer}</span>{err && <span className="music-bar-err">（{err}）</span>}</div>
-      <input className="music-bar-range" type="range" min={0} max={dur || 1} step={0.1} value={Math.min(prog, dur || 1)}
-        onChange={(e) => { if (aRef.current) aRef.current.currentTime = Number(e.target.value) }} aria-label="进度" />
-    </div>
-    <span className="music-bar-time">{fmt(prog)}/{fmt(dur)}</span>
-    <button className="music-bar-close" onClick={onClose} aria-label="收起播放条">✕</button>
-  </div>)
 }
 
 function VoiceBubble({ text }) {
@@ -446,7 +398,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           {!atBottom && <button className="chat-jump-btn" onClick={() => scrollToEnd(true)} aria-label="到最新"><Icon name="back" size={18} color="var(--ink-soft)" style={{ transform: "rotate(-90deg)" }} /></button>}
         </div>
 
-        <MusicBar song={nowPlaying} onClose={() => setNowPlaying(null)} />
+        <MusicBar song={nowPlaying} onClose={() => setNowPlaying(null)} source="chat" />
 
         <div className="chat-input">
           <TornCard className="input-strip-bg" />

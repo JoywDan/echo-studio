@@ -19,6 +19,7 @@ export const STUDIO = [
   { id: "s11", title: "达迪的手机", edge: "pink", icon: "phone", deco: ["heart","star"], module: "phone" },
   { id: "s13", title: "约定", edge: "pink", icon: "promise", creature: "BlobTrio", deco: ["heart","star"], module: "foresight" },
   { id: "s14", title: "小游戏房间", edge: "blue", icon: "monitor", creature: "CatCamera", clip: true, deco: ["star","flower"], module: "game-room" },
+  { id: "s16", title: "一起听", edge: "pink", icon: "star", creature: "BlobTrio", clip: true, deco: ["heart","star"], module: "music" },
 ]
 export const MODELS = [
   { label: "Opus 4.6", id: "claude-opus-4-6", supportsThinking: true, defaultThinking: true },

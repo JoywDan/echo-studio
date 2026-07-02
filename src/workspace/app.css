@@ -2626,3 +2626,30 @@ input, textarea { font-family: inherit; }
 .music-bar-time { font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-hand); flex: none; }
 .music-bar-close { border: none; background: none; color: var(--ink-faint); cursor: pointer; font-size: 13px; flex: none; padding: 4px; }
 .music-bar-close:hover { color: var(--brick); }
+
+/* ── 一起听 · 点唱机面板 ── */
+.music-pl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 18px 20px 28px; overflow-y: auto; }
+.music-pl-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; border: 1.6px dashed rgba(177,73,47,0.35);
+  border-radius: 14px; background: rgba(243,230,191,0.35); cursor: pointer; text-align: left; filter: url(#crayon-edge-2); }
+.music-pl-card:hover { background: rgba(243,230,191,0.7); }
+.music-pl-pic { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+.music-pl-pic-empty { display: flex; align-items: center; justify-content: center; font-size: 34px; color: var(--brick-l); background: var(--paper-2); }
+.music-pl-name { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.music-pl-count { font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-hand); }
+.music-track-list { display: flex; flex-direction: column; padding: 8px 16px 20px; overflow-y: auto; flex: 1; }
+.music-track-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px; border: none; background: none; cursor: pointer;
+  border-bottom: 1px dashed rgba(157,144,129,0.35); text-align: left; border-radius: 8px; }
+.music-track-row:hover { background: rgba(243,230,191,0.5); }
+.music-track-row.playing { background: rgba(177,73,47,0.08); }
+.music-track-row.playing .music-track-name { color: var(--brick); }
+.music-track-idx { width: 26px; flex: none; text-align: center; font-size: 12px; color: var(--ink-faint); font-family: var(--font-hand); }
+.music-track-row.playing .music-track-idx { color: var(--brick); }
+.music-track-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.music-track-name { font-size: 13.5px; color: var(--ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-track-singer { font-size: 11.5px; color: var(--ink-faint); }
+.music-track-dur { flex: none; font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-hand); }
+.music-load-more { margin: 12px auto 4px; padding: 8px 18px; border: 1.6px dashed rgba(177,73,47,0.4); border-radius: 999px;
+  background: rgba(243,230,191,0.5); color: var(--ink-soft); font-size: 13px; cursor: pointer; }
+.music-hint { text-align: center; padding: 18px; color: var(--ink-faint); font-size: 13px; }
+.music-panel-bar { position: sticky; bottom: 0; padding: 6px 4px 10px; background: linear-gradient(180deg, transparent, rgba(244,236,219,0.9) 40%); }
+.music-panel-bar .music-bar { margin: 0 12px; }
