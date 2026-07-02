@@ -20,7 +20,8 @@ function ensureAudio() {
 function emit() { try { window.dispatchEvent(new CustomEvent('echo-music-state')) } catch {} }
 function reportNow(state) {
   if (!player.song) return
-  api.music.now({ name: player.song.name, singer: player.song.singer, state }).catch(() => {})
+  // 护栏: 上报绝不能抛错拖累播放控制(曾漏 api.music.now 致 ✕ 停不了歌)
+  try { const r = api.music.now && api.music.now({ name: player.song.name, singer: player.song.singer, state }); if (r && r.catch) r.catch(() => {}) } catch {}
 }
 function startHb() { stopHb(); player.hb = setInterval(() => { if (player.audio && !player.audio.paused) reportNow('playing') }, 240000) }
 function stopHb() { if (player.hb) { clearInterval(player.hb); player.hb = null } }
@@ -40,9 +41,11 @@ export function playSong(song, source = 'chat') {
 }
 export function stopSong() {
   if (!player.audio || !player.song) return
-  reportNow('stopped')
+  // 先把歌停掉+条收起(不依赖上报成功)，上报放最后当尽力而为
   try { player.audio.pause(); player.audio.removeAttribute('src'); player.audio.load() } catch {}
+  const snapshot = player.song
   player.song = null; stopHb(); emit()
+  try { if (api.music.now) { const r = api.music.now({ name: snapshot.name, singer: snapshot.singer, state: 'stopped' }); if (r && r.catch) r.catch(() => {}) } } catch {}
 }
 export function currentSongHash() { return player.song ? player.song.hash : '' }
 

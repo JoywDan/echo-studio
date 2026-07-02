@@ -41,6 +41,7 @@ export const api = {
     playlists: () => call('GET', '/api/music/playlists'),
     tracks: (id, page = 1) => call('GET', '/api/music/playlist_tracks?id=' + encodeURIComponent(id) + '&page=' + page),
     played: (d) => call('POST', '/api/music/played', d),
+    now: (d) => call('POST', '/api/music/now', d),
   },
   streetWander: {
     config: () => call('GET', '/api/wander/config'),
