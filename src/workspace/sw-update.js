@@ -3,7 +3,18 @@ import { registerSW } from 'virtual:pwa-register'
 
 export function setupSWUpdatePrompt() {
   let bar = null
+  let swReg = null
   const updateSW = registerSW({
+    onRegisteredSW(swUrl, registration) {
+      swReg = registration
+      if (!registration) return
+      // 主动催更: 每 60s + 每次切回前台，都问一次有没有新版(治手机把检查掐到一天一次)
+      const check = () => { try { registration.update() } catch {} }
+      setInterval(check, 60 * 1000)
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) check() })
+      window.addEventListener('focus', check)
+      check()
+    },
     onNeedRefresh() {
       if (bar) return
       bar = document.createElement('div')
