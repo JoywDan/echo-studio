@@ -164,33 +164,29 @@ export const api = {
   },
   watch: { list: () => call('GET', '/api/watch/list') },
   gameRoom: {
-    rooms: async () => {
-      const r = await fetch(GAME_ROOM_API + '/rooms')
+    _token: '',
+    _getGameToken: async function () {
+      if (this._token) return this._token
+      const d = await call('GET', '/api/gameroom/token')
+      this._token = d.token || ''
+      return this._token
+    },
+    _call: async function (path, opts = {}) {
+      const tk = await this._getGameToken()
+      const headers = { ...(opts.headers || {}), 'X-Game-Token': tk }
+      const r = await fetch(GAME_ROOM_API + path, { ...opts, headers })
       if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
       return r.json()
     },
-    newGame: async ({ gameId, player = 'joy', saveName = 'main', seed = 20260629 }) => {
-      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/new', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: 'web', player, saveName, seed }),
-      })
-      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
-      return r.json()
+    rooms: function () { return this._call('/rooms') },
+    newGame: function ({ gameId, player = 'joy', saveName = 'main', seed = 20260629 }) {
+      return this._call('/rooms/' + encodeURIComponent(gameId) + '/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: 'web', player, saveName, seed }) })
     },
-    cmd: async ({ gameId, command, player = 'joy', saveName = 'main' }) => {
-      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/cmd', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: 'web', player, saveName, command }),
-      })
-      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
-      return r.json()
+    cmd: function ({ gameId, command, player = 'joy', saveName = 'main' }) {
+      return this._call('/rooms/' + encodeURIComponent(gameId) + '/cmd', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: 'web', player, saveName, command }) })
     },
-    scenePrompt: async ({ gameId, player = 'joy', saveName = 'main' }) => {
-      const r = await fetch(GAME_ROOM_API + '/rooms/' + encodeURIComponent(gameId) + '/scene-prompt?channel=web&player=' + encodeURIComponent(player) + '&save_name=' + encodeURIComponent(saveName))
-      if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error || r.statusText) }
-      return r.json()
+    scenePrompt: function ({ gameId, player = 'joy', saveName = 'main' }) {
+      return this._call('/rooms/' + encodeURIComponent(gameId) + '/scene-prompt?channel=web&player=' + encodeURIComponent(player) + '&save_name=' + encodeURIComponent(saveName))
     },
   },
   uploadImage: async (file) => {
