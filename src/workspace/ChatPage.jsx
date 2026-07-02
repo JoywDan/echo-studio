@@ -132,7 +132,7 @@ function CopyBtn({ text }) {
   return <button className={"msg-act-btn" + (done ? " copied" : "")} onClick={copy} title="复制整段">{done ? "已复制 ✓" : "复制"}</button>
 }
 
-function Message({ msg, onImage, onDecide, deco }) {
+function Message({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
   const isMe = msg.from === "me"
   const imgs = (msg.attachments || []).filter(a => a.kind === "image")
   const files = (msg.attachments || []).filter(a => a.kind === "file")
@@ -149,6 +149,7 @@ function Message({ msg, onImage, onDecide, deco }) {
       {(msg.text || msg.streamed != null) && (<div className="bubble-me-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(226,170,164,0.6)", inset: "-14px -10px", borderRadius: 30 }} />
         <div className="bubble-me">{body || msg.text}</div></div>)}
+      {onEdit && <div className="msg-actions" style={{ justifyContent: "flex-end" }}><button className="msg-act-btn" onClick={onEdit} title="编辑这句并从这里重新生成">✎ 编辑</button></div>}
       {meta}</div></div>)
   }
   return (<div className="msg-row echo">
@@ -165,6 +166,7 @@ function Message({ msg, onImage, onDecide, deco }) {
       {msg.text && (<div className="msg-actions">
         <VoiceBubble text={msg.text} />
         <CopyBtn text={msg.text} />
+        {onRoll && <button className="msg-act-btn" onClick={onRoll} title="不满意？同一句话让他重新回答">🎲 换一个</button>}
       </div>)}
       {msg.thinking && <ThinkingBlock text={msg.thinking} />}
       {msg.pendingActions && msg.pendingActions.map(pa => <ActionCard key={pa.id} pa={pa} onDecide={onDecide} />)}
@@ -266,7 +268,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     api.history(sessionId).then(d => {
       if (!alive) return
       const msgs = (d.messages || []).map((m, i) => ({
-        id: "h" + i, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
+        id: "h" + i, dbId: m.id || null, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
         text: m.content, createdAt: m.created_at, thinking: m.thinking_content || null,
         attachments: m.attachments_json ? (() => { try { return JSON.parse(m.attachments_json) } catch { return null } })() : null,
         apiFallback: !!m.api_fallback,
@@ -285,6 +287,8 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   React.useEffect(() => { scrollToEnd(false) }, [])
 
   const abortRef = React.useRef(null)
+  const [editingId, setEditingId] = React.useState(null)
+  const [editDraft, setEditDraft] = React.useState("")
   // 手机切后台→连接被系统杀死、流挂死不 reject。回到前台主动中断那条死流, 触发 catch 里的 recover 把已落库的回复捞回来
   React.useEffect(() => {
     const onVis = () => { if (!document.hidden && abortRef.current) { try { abortRef.current.abort() } catch {} } }
@@ -314,6 +318,36 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     return false
   }
 
+  const streamTo = async (body, { userBubbleId = null } = {}) => {
+    const echoId = "e" + Date.now()
+    const baseTs = (() => { for (let i = messages.length - 1; i >= 0; i--) { const mm = messages[i]; if (mm.from === "echo" && mm.createdAt) return mm.createdAt } return new Date().toISOString().slice(0, 19).replace("T", " ") })()
+    setMessages(m => [...m, { id: echoId, from: "echo", time: now(), streamed: "", done: false }])
+    setTimeout(() => scrollToEnd(), 40)
+    const ac = new AbortController(); abortRef.current = ac
+    try {
+      const meta = await api.stream(body,
+        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() }, signal: ac.signal })
+      const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
+      setProviderStatus({
+        label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
+        privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
+      })
+      setMessages(m => m.map(x => {
+        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
+        if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
+        return x
+      }))
+      onSessionTouched && onSessionTouched()
+    } catch (e) {
+      const recovered = e.server ? false : await recoverReply(echoId, baseTs)
+      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
+        (x.streamed && x.streamed.length)
+          ? { ...x, done: true, text: x.streamed, streamed: undefined }
+          : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
+      ) : x))
+    } finally { abortRef.current = null; setTimeout(() => scrollToEnd(), 60) }
+  }
+
   const send = async () => {
     const text = draft.trim()
     if ((!text && pendingFiles.length === 0) || sending) return
@@ -329,31 +363,40 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         }))
       } catch (e) {}
     }
-    const baseTs = (() => { for (let i = messages.length - 1; i >= 0; i--) { const mm = messages[i]; if (mm.from === "echo" && mm.createdAt) return mm.createdAt } return new Date().toISOString().slice(0, 19).replace("T", " ") })()
-    setMessages(m => [...m, { id: "u" + Date.now(), from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
-    const echoId = "e" + Date.now()
-    setMessages(m => [...m, { id: echoId, from: "echo", time: now(), streamed: "", done: false }])
-    setTimeout(() => scrollToEnd(), 40)
-    const ac = new AbortController(); abortRef.current = ac
-    try {
-      const meta = await api.stream({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code },
-        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() }, signal: ac.signal })
-      const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
-      setProviderStatus({
-        label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
-        privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
-      })
-      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null } : x))
-      onSessionTouched && onSessionTouched()
-    } catch (e) {
-      const recovered = e.server ? false : await recoverReply(echoId, baseTs)
-      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
-        (x.streamed && x.streamed.length)
-          ? { ...x, done: true, text: x.streamed, streamed: undefined }
-          : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
-      ) : x))
-    } finally { abortRef.current = null; setSending(false); setTimeout(() => scrollToEnd(), 60) }
+    const userBubbleId = "u" + Date.now()
+    setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
+    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+    setSending(false)
   }
+
+  // 重掷: 归档他这条回复, 同一句话重新生成 (2026-07-02)
+  const rollMsg = async (m) => {
+    if (sending || !m.dbId) return
+    setSending(true)
+    try { await api.rewind({ session_id: sessionId, message_id: m.dbId, mode: "roll" }) }
+    catch (e) { alert("重掷失败：" + e.message); setSending(false); return }
+    setMessages(ms => ms.filter(x => x.id !== m.id && !(x.dbId && x.dbId > m.dbId)))
+    await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code })
+    setSending(false)
+  }
+
+  // 编辑: 归档原消息及之后所有, 用改后的文字重发 (2026-07-02)
+  const saveEdit = async () => {
+    const m = messages.find(x => x.id === editingId)
+    const newText = editDraft.trim()
+    if (!m || !m.dbId || !newText || sending) return
+    setSending(true)
+    try { await api.rewind({ session_id: sessionId, message_id: m.dbId, mode: "edit" }) }
+    catch (e) { alert("编辑失败：" + e.message); setSending(false); return }
+    const cutIdx = messages.findIndex(x => x.id === editingId)
+    setMessages(ms => ms.slice(0, cutIdx))
+    setEditingId(null)
+    const userBubbleId = "u" + Date.now()
+    setMessages(ms => [...ms, { id: userBubbleId, from: "me", time: now(), text: newText, read: true }])
+    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+    setSending(false)
+  }
+
   const onKey = (e) => {}  // 回车=换行，只有发送键才发送（Joy 2026-06-15，照官方 app）
   const decide = async (id, decision) => api.codingAction(id, decision)
   const onPickFile = (kind) => (e) => { const fs = Array.from(e.target.files || []); if (fs.length) setPendingFiles(p => [...p, ...fs.map(f => ({ kind, file: f }))].slice(0, 4)); e.target.value = "" }
@@ -381,7 +424,17 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           )}
           {messages.slice(Math.max(0, messages.length - visibleCount)).map((m, gi) => {
             const i = Math.max(0, messages.length - visibleCount) + gi
-            return <Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]} />
+            if (m.id === editingId) return (
+              <div key={m.id} className="msg-row me"><div className="msg-col" style={{ width: "100%", maxWidth: 560 }}>
+                <textarea className="input-field" style={{ width: "100%", minHeight: 76, borderRadius: 14, padding: "10px 12px", boxSizing: "border-box" }} value={editDraft} onChange={(e) => setEditDraft(e.target.value)} autoFocus />
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 6 }}>
+                  <button className="msg-act-btn" disabled={sending} onClick={() => setEditingId(null)}>取消</button>
+                  <button className="msg-act-btn" disabled={sending || !editDraft.trim()} onClick={saveEdit} style={{ fontWeight: 700 }}>保存并重新生成 ↻</button>
+                </div></div></div>)
+            const isLastEcho = m.from === "echo" && m === messages[messages.length - 1]
+            return <Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]}
+              onEdit={m.from === "me" && m.dbId && !sending ? () => { setEditingId(m.id); setEditDraft(m.text || "") } : null}
+              onRoll={isLastEcho && m.dbId && !sending ? () => rollMsg(m) : null} />
           })}
         </div>
 

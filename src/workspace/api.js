@@ -16,6 +16,7 @@ export const api = {
   models: () => call('GET', '/api/chat/models'),
   sessions: () => call('GET', '/api/chat/sessions'),
   history: (sid) => call('GET', '/api/chat/history?session_id=' + encodeURIComponent(sid)),
+  rewind: (body) => call('POST', '/api/chat/rewind', body),
   renameSession: (sid, title) => call('PUT', '/api/chat/sessions/' + encodeURIComponent(sid), { title }),
   deleteSession: (sid) => call('DELETE', '/api/chat/sessions/' + encodeURIComponent(sid)),
   codingAction: (id, decision) => call('POST', '/api/chat/coding-action/' + encodeURIComponent(id), { decision }),
