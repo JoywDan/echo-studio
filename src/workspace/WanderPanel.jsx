@@ -50,7 +50,7 @@ export default function WanderPanel({ onClose }) {
 
   React.useEffect(() => {
     let alive = true
-    api.wander.config().then(d => loadGmaps(d.key)).then(() => {
+    api.streetWander.config().then(d => loadGmaps(d.key)).then(() => {
       if (!alive || !svRef.current) return
       const g = window.google
       panoRef.current = new g.maps.StreetViewPanorama(svRef.current, {
@@ -73,7 +73,7 @@ export default function WanderPanel({ onClose }) {
     const pov = panoRef.current.getPov() || { heading: 0, pitch: 0 }
     setSharing(true); setReply('')
     try {
-      const d = await api.wander.share({ lat: coords.lat, lng: coords.lng, heading: pov.heading || 0, pitch: pov.pitch || 0, note: note.trim() })
+      const d = await api.streetWander.share({ lat: coords.lat, lng: coords.lng, heading: pov.heading || 0, pitch: pov.pitch || 0, note: note.trim() })
       setReply(d.reply || '（他看了，但没说出话来）')
       setNote('')
     } catch (e) { setReply('（叫他失败了：' + e.message + '）') }
