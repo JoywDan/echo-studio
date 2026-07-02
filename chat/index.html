@@ -2,6 +2,25 @@
 <html lang="zh-CN">
 <head>
 <script>
+(function(){
+try{
+  var q=new URLSearchParams(location.search);
+  if(q.get('reset-sw')==='1'||q.get('reset-local')==='1'){
+    try{localStorage.removeItem('ws_theme');localStorage.removeItem('ws_fontname')}catch(e){}
+    try{indexedDB.deleteDatabase('echo_ws')}catch(e){}
+    var jobs=[];
+    if('serviceWorker' in navigator) jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}).catch(function(){}));
+    if(window.caches&&caches.keys) jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).catch(function(){}));
+    Promise.all(jobs).then(function(){
+      if(q.get('reset-sw')==='1') location.replace('/echo-studio/chat/?safe=1&fresh='+Date.now());
+    }).catch(function(){
+      if(q.get('reset-sw')==='1') location.replace('/echo-studio/chat/?safe=1&fresh='+Date.now());
+    });
+  }
+}catch(e){}
+})();
+</script>
+<script>
 (function(){var sent=0;window.__errlist=[];function ship(m){try{window.__errlist.push(String(m).slice(0,300))}catch(e){}if(sent>=2)return;sent++;try{var u='https://studio.echowjoy.uk/api/client-err?ua='+encodeURIComponent(navigator.userAgent.slice(0,70))+'&msg='+encodeURIComponent(String(m).slice(0,450));(new Image()).src=u}catch(e){}}
 window.addEventListener('error',function(e){ship((e.error&&e.error.stack)||e.message||('res:'+(e.target&&e.target.src||e.target&&e.target.href||'?')))},true);
 window.addEventListener('unhandledrejection',function(e){ship('REJ:'+((e.reason&&e.reason.stack)||e.reason))});

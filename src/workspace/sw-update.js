@@ -2,6 +2,10 @@
 import { registerSW } from 'virtual:pwa-register'
 
 export function setupSWUpdatePrompt() {
+  const ua = navigator.userAgent || ''
+  const isIOSWebKit = /iP(hone|ad|od)/.test(ua) && /AppleWebKit/.test(ua)
+  if (isIOSWebKit) return
+
   let bar = null
   let swReg = null
   const updateSW = registerSW({
@@ -25,7 +29,15 @@ export function setupSWUpdatePrompt() {
       const btn = document.createElement('button')
       btn.textContent = '点我刷新'
       btn.style.cssText = 'border:none;border-radius:999px;padding:6px 14px;background:#b1492f;color:#f6e6df;font-size:13px;cursor:pointer;'
-      btn.onclick = () => { btn.textContent = '换血中…'; btn.disabled = true; updateSW(true) }
+      btn.onclick = () => {
+        btn.textContent = '换血中…'; btn.disabled = true
+        try {
+          const p = updateSW(true)
+          if (p && p.catch) p.catch(() => { location.reload() })
+        } catch {
+          location.reload()
+        }
+      }
       const close = document.createElement('button')
       close.textContent = '✕'
       close.setAttribute('aria-label', '本次忽略')
