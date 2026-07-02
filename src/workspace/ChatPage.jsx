@@ -104,7 +104,11 @@ function MusicBar({ song, onClose }) {
   const [prog, setProg] = React.useState(0)
   const [dur, setDur] = React.useState(0)
   const [err, setErr] = React.useState("")
+  const closeTimer = React.useRef(null)
+  const cancelAutoClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null } }
+  React.useEffect(() => () => cancelAutoClose(), [])
   React.useEffect(() => {
+    cancelAutoClose()
     if (!song) return
     let alive = true
     setErr(""); setProg(0); setDur(0)
@@ -118,7 +122,8 @@ function MusicBar({ song, onClose }) {
   if (!song) return null
   const fmt = (x) => { const v = Math.floor(x || 0); return Math.floor(v / 60) + ":" + String(v % 60).padStart(2, "0") }
   return (<div className="music-bar">
-    <audio ref={aRef} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)}
+    <audio ref={aRef} onPlay={() => { setPlaying(true); cancelAutoClose() }} onPause={() => setPlaying(false)}
+      onEnded={() => { setPlaying(false); closeTimer.current = setTimeout(() => onClose && onClose(), 1600) }}
       onTimeUpdate={(e) => setProg(e.target.currentTime)} onDurationChange={(e) => setDur(e.target.duration || 0)} />
     <button className="music-bar-btn" onClick={() => { const a = aRef.current; if (!a) return; if (a.paused) a.play().catch(() => {}); else a.pause() }} aria-label={playing ? "暂停" : "播放"}>{playing ? "❚❚" : "▶"}</button>
     <div className="music-bar-mid">
