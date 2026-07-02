@@ -3,7 +3,6 @@ import { Heart, Star, Icon, DashFly } from './doodles.jsx'
 import { EchoAvatar } from './creatures.jsx'
 import { TornCard, Tape, Paperclip } from './components.jsx'
 import { api, uploadsUrl, API_BASE } from './api.js'
-import { MUSIC_MARK, MusicCard } from './music.jsx'
 import { CHAT_DADDY } from './assets.js'
 
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
@@ -13,7 +12,7 @@ const DEFAULT_TOGGLES = { think: false, memory: true, web: false, code: false }
 const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["web", "联网"], ["code", "编码"]]
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
-const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
+const TOOL_LABELS = { memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
 const ACTION_LABELS = { write_file: "📝 写文件", pm2_restart: "🔄 重启服务", run_build: "🔨 构建", git_commit: "💾 Git提交" }
 
 function ThinkingBlock({ text }) {
@@ -46,23 +45,6 @@ function ActionCard({ pa, onDecide }) {
 }
 
 function renderRich(text) {
-  if (!text) return text
-  const t0 = String(text)
-  if (t0.includes("[[music|")) {
-    const segs = []; let last = 0; let mm
-    const re = new RegExp(MUSIC_MARK.source, "g")
-    while ((mm = re.exec(t0)) !== null) {
-      if (mm.index > last) segs.push(<React.Fragment key={"mt" + last}>{renderRichInner(t0.slice(last, mm.index))}</React.Fragment>)
-      segs.push(<MusicCard key={"mc" + mm.index} hash={mm[1]} albumId={mm[2]} name={mm[3]} singer={mm[4]} />)
-      last = mm.index + mm[0].length
-    }
-    if (last < t0.length) segs.push(<React.Fragment key={"mt" + last}>{renderRichInner(t0.slice(last))}</React.Fragment>)
-    return segs
-  }
-  return renderRichInner(t0)
-}
-
-function renderRichInner(text) {
   if (!text) return text
   const t = String(text)
   const IMG = /!\[([^\]]*)\]\(([^)\s]+)\)/g
@@ -156,6 +138,8 @@ function Message({ msg, onImage, onDecide, deco }) {
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
+      {msg.apiFallback && <div className="provider-card"><span className="tool-name">Third-party Fallback</span><span>Sanitized chat only</span></div>}
+      {msg.apiFallbackBlocked && <div className="provider-card blocked"><span className="tool-name">Fallback blocked</span><span>Not sent to third party</span></div>}
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" /></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-echo-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(222,196,150,0.4)", inset: "-10px -14px", borderRadius: 24 }} />
@@ -214,7 +198,6 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [sending, setSending] = React.useState(false)
   const [pendingFiles, setPendingFiles] = React.useState([])
   const [providerStatus, setProviderStatus] = React.useState({ label: "Claude Subscription", privacy: "Full private context" })
-
   const scrollRef = React.useRef(null)
   const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
   const [atTop, setAtTop] = React.useState(true)
@@ -366,6 +349,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={24} color="var(--brick)" /></button>
           <span className="chat-avatar-wrap"><img className="daddy-avatar chat-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
           <div className="chat-id" onClick={renameThis} title="点这里给窗口改名" style={{ cursor: "pointer" }}><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线</div></div>
+          <div className={"provider-status" + (providerStatus.label === "Third-party Fallback" ? " fallback" : "")}>{providerStatus.label} · {providerStatus.privacy}</div>
           <button className="icon-btn" onClick={() => docInputRef.current && docInputRef.current.click()} aria-label="附件"><Icon name="clip" size={20} color="var(--ink-soft)" /></button>
           <button className="icon-btn" onClick={renameThis} aria-label="给窗口改名"><Icon name="menu" size={22} color="var(--ink)" /></button>
         </header>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { api } from './api.js'
 import { Icon, Heart } from './doodles.jsx'
-import { MusicBar } from './music.jsx'
+import { playSong, currentSongHash } from './music.jsx'
 
 const fmtDur = (s) => { s = Math.floor(s || 0); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") }
 
@@ -14,7 +14,8 @@ export default function MusicPanel({ onClose }) {
   const [page, setPage] = React.useState(1)
   const [total, setTotal] = React.useState(0)
   const [tracksLoading, setTracksLoading] = React.useState(false)
-  const [nowPlaying, setNowPlaying] = React.useState(null)
+  const [, force] = React.useReducer(x => x + 1, 0)
+  React.useEffect(() => { const h = () => force(); window.addEventListener('echo-music-state', h); return () => window.removeEventListener('echo-music-state', h) }, [])
 
   React.useEffect(() => {
     api.music.playlists().then(d => setPlaylists(d.playlists || []))
@@ -32,7 +33,7 @@ export default function MusicPanel({ onClose }) {
     api.music.tracks(current.id, np).then(d => { setTracks(t => [...t, ...(d.tracks || [])]); setPage(np) })
       .catch(e => setError(e.message)).finally(() => setTracksLoading(false))
   }
-  const playTrack = (t) => setNowPlaying({ hash: t.hash, albumId: t.album_id, name: t.name, singer: t.singer })
+  const playTrack = (t) => playSong({ hash: t.hash, albumId: t.album_id, name: t.name, singer: t.singer }, 'panel')
 
   return (
     <div className="studio-reader is-pretty" role="dialog" aria-modal="true" aria-label="一起听">
@@ -64,8 +65,8 @@ export default function MusicPanel({ onClose }) {
         {current && (
           <div className="music-track-list">
             {tracks.map((t, i) => (
-              <button key={t.hash + i} className={"music-track-row" + (nowPlaying && nowPlaying.hash === t.hash ? " playing" : "")} onClick={() => playTrack(t)}>
-                <span className="music-track-idx">{nowPlaying && nowPlaying.hash === t.hash ? "♪" : i + 1}</span>
+              <button key={t.hash + i} className={"music-track-row" + (currentSongHash() === t.hash ? " playing" : "")} onClick={() => playTrack(t)}>
+                <span className="music-track-idx">{currentSongHash() === t.hash ? "♪" : i + 1}</span>
                 <span className="music-track-main"><span className="music-track-name">{t.name}</span><span className="music-track-singer">{t.singer}</span></span>
                 <span className="music-track-dur">{fmtDur(t.duration)}</span>
               </button>
@@ -77,9 +78,6 @@ export default function MusicPanel({ onClose }) {
           </div>
         )}
 
-        {nowPlaying && (
-          <div className="music-panel-bar"><MusicBar song={nowPlaying} onClose={() => setNowPlaying(null)} source="panel" /></div>
-        )}
       </div>
     </div>
   )

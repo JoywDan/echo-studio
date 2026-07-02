@@ -5,6 +5,7 @@ import { api, getToken, setToken, clearToken } from './api.js'
 import { AVATAR_CYCLE, AVATAR_TINTS } from './data.jsx'
 import { useTheme } from './theme.js'
 import Settings from './Settings.jsx'
+import { MusicBar } from './music.jsx'
 
 function genId() { return 'chat-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) }
 function relTime(s) {
@@ -116,6 +117,7 @@ export default function App() {
         <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onRenameConv={promptRenameConv} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
         <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} onRenameConv={renameConv} />
       </div>
+      <MusicBar />
       <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} applyTheme={applyTheme} exportTheme={exportTheme} importTheme={importTheme} />
     </div>)
 }
