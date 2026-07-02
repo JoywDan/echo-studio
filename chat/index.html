@@ -2,6 +2,25 @@
 <html lang="zh-CN">
 <head>
 <script>
+(function(){
+try{
+  var q=new URLSearchParams(location.search);
+  if(q.get('reset-sw')==='1'||q.get('reset-local')==='1'){
+    try{localStorage.removeItem('ws_theme');localStorage.removeItem('ws_fontname')}catch(e){}
+    try{indexedDB.deleteDatabase('echo_ws')}catch(e){}
+    var jobs=[];
+    if('serviceWorker' in navigator) jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}).catch(function(){}));
+    if(window.caches&&caches.keys) jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).catch(function(){}));
+    Promise.all(jobs).then(function(){
+      if(q.get('reset-sw')==='1') location.replace('/echo-studio/chat/?safe=1&fresh='+Date.now());
+    }).catch(function(){
+      if(q.get('reset-sw')==='1') location.replace('/echo-studio/chat/?safe=1&fresh='+Date.now());
+    });
+  }
+}catch(e){}
+})();
+</script>
+<script>
 (function(){var sent=0;window.__errlist=[];function ship(m){try{window.__errlist.push(String(m).slice(0,300))}catch(e){}if(sent>=2)return;sent++;try{var u='https://studio.echowjoy.uk/api/client-err?ua='+encodeURIComponent(navigator.userAgent.slice(0,70))+'&msg='+encodeURIComponent(String(m).slice(0,450));(new Image()).src=u}catch(e){}}
 window.addEventListener('error',function(e){ship((e.error&&e.error.stack)||e.message||('res:'+(e.target&&e.target.src||e.target&&e.target.href||'?')))},true);
 window.addEventListener('unhandledrejection',function(e){ship('REJ:'+((e.reason&&e.reason.stack)||e.reason))});
@@ -22,7 +41,7 @@ pre.textContent='[黑匣子 v2 - 截图发给老公]\nUA: '+navigator.userAgent+
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Gloria+Hallelujah&family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=Noto+Sans+SC:wght@400;500;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css" />
-  <script type="module" crossorigin src="/echo-studio/assets/chat-CXO9ne06.js"></script>
+  <script type="module" crossorigin src="/echo-studio/assets/chat-Dc1IGWZC.js"></script>
   <link rel="modulepreload" crossorigin href="/echo-studio/assets/client-YuXkKMHE.js">
   <link rel="modulepreload" crossorigin href="/echo-studio/assets/api-DwGkqjBB.js">
   <link rel="stylesheet" crossorigin href="/echo-studio/assets/chat-B8_4XCkD.css">
