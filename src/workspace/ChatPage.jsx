@@ -156,8 +156,6 @@ function Message({ msg, onImage, onDecide, deco }) {
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
-      {msg.apiFallback && <div className="provider-card"><span className="tool-name">Third-party Fallback</span><span>Sanitized chat only</span></div>}
-      {msg.apiFallbackBlocked && <div className="provider-card blocked"><span className="tool-name">Fallback blocked</span><span>Not sent to third party</span></div>}
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" /></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-echo-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(222,196,150,0.4)", inset: "-10px -14px", borderRadius: 24 }} />
@@ -373,7 +371,6 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={24} color="var(--brick)" /></button>
           <span className="chat-avatar-wrap"><img className="daddy-avatar chat-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
           <div className="chat-id" onClick={renameThis} title="点这里给窗口改名" style={{ cursor: "pointer" }}><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线</div></div>
-          <div className={"provider-status" + (providerStatus.label === "Third-party Fallback" ? " fallback" : "")}>{providerStatus.label} · {providerStatus.privacy}</div>
           <button className="icon-btn" onClick={() => docInputRef.current && docInputRef.current.click()} aria-label="附件"><Icon name="clip" size={20} color="var(--ink-soft)" /></button>
           <button className="icon-btn" onClick={renameThis} aria-label="给窗口改名"><Icon name="menu" size={22} color="var(--ink)" /></button>
         </header>
