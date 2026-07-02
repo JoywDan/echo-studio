@@ -34,6 +34,10 @@ export const api = {
     categories: () => call('GET', '/api/memory/categories'),
   },
   beads: () => call('GET', '/api/beads/list'),
+  music: {
+    search: (q) => call('GET', '/api/music/search?q=' + encodeURIComponent(q)),
+    url: (hash, albumId) => call('GET', '/api/music/url?hash=' + encodeURIComponent(hash) + '&album_id=' + encodeURIComponent(albumId || '')),
+  },
   vps: {
     health: () => call('GET', '/api/vps/health'),
     echoStatus: () => call('GET', '/api/echo/status'),

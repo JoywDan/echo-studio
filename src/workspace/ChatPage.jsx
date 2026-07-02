@@ -12,7 +12,7 @@ const DEFAULT_TOGGLES = { think: false, memory: true, web: false, code: false }
 const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["web", "联网"], ["code", "编码"]]
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
-const TOOL_LABELS = { memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
+const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
 const ACTION_LABELS = { write_file: "📝 写文件", pm2_restart: "🔄 重启服务", run_build: "🔨 构建", git_commit: "💾 Git提交" }
 
 function ThinkingBlock({ text }) {
@@ -44,7 +44,35 @@ function ActionCard({ pa, onDecide }) {
   </div>)
 }
 
+const MUSIC_MARK = /\[\[music\|([0-9A-Fa-f]{8,})\|([^|\]]*)\|([^|\]]*)\|([^|\]]*)\]\]/g
+
+function MusicCard({ hash, albumId, name, singer }) {
+  const play = () => window.dispatchEvent(new CustomEvent("echo-play-music", { detail: { hash, albumId, name, singer } }))
+  return (<span className="music-card" onClick={play} role="button" title="点了就一起听">
+    <span className="music-card-disc">♪</span>
+    <span className="music-card-txt"><span className="music-card-name">{name || "未知曲目"}</span><span className="music-card-singer">{singer}</span></span>
+    <span className="music-card-play">▶ 播放</span>
+  </span>)
+}
+
 function renderRich(text) {
+  if (!text) return text
+  const t0 = String(text)
+  if (t0.includes("[[music|")) {
+    const segs = []; let last = 0; let mm
+    const re = new RegExp(MUSIC_MARK.source, "g")
+    while ((mm = re.exec(t0)) !== null) {
+      if (mm.index > last) segs.push(<React.Fragment key={"mt" + last}>{renderRichInner(t0.slice(last, mm.index))}</React.Fragment>)
+      segs.push(<MusicCard key={"mc" + mm.index} hash={mm[1]} albumId={mm[2]} name={mm[3]} singer={mm[4]} />)
+      last = mm.index + mm[0].length
+    }
+    if (last < t0.length) segs.push(<React.Fragment key={"mt" + last}>{renderRichInner(t0.slice(last))}</React.Fragment>)
+    return segs
+  }
+  return renderRichInner(t0)
+}
+
+function renderRichInner(text) {
   if (!text) return text
   const t = String(text)
   const IMG = /!\[([^\]]*)\]\(([^)\s]+)\)/g
@@ -68,6 +96,39 @@ function renderRich(text) {
   return segs.map((seg, i) => seg.type === 'img'
     ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} loading="lazy" /></a>
     : <React.Fragment key={'t' + i}>{renderNarr(seg.v, 't' + i)}</React.Fragment>)
+}
+
+function MusicBar({ song, onClose }) {
+  const aRef = React.useRef(null)
+  const [playing, setPlaying] = React.useState(false)
+  const [prog, setProg] = React.useState(0)
+  const [dur, setDur] = React.useState(0)
+  const [err, setErr] = React.useState("")
+  React.useEffect(() => {
+    if (!song) return
+    let alive = true
+    setErr(""); setProg(0); setDur(0)
+    api.music.url(song.hash, song.albumId).then(d => {
+      if (!alive || !aRef.current) return
+      aRef.current.src = d.url
+      aRef.current.play().catch(() => {})
+    }).catch(e => { if (alive) setErr(e.message || "拿不到播放链接") })
+    return () => { alive = false }
+  }, [song && song.hash])
+  if (!song) return null
+  const fmt = (x) => { const v = Math.floor(x || 0); return Math.floor(v / 60) + ":" + String(v % 60).padStart(2, "0") }
+  return (<div className="music-bar">
+    <audio ref={aRef} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)}
+      onTimeUpdate={(e) => setProg(e.target.currentTime)} onDurationChange={(e) => setDur(e.target.duration || 0)} />
+    <button className="music-bar-btn" onClick={() => { const a = aRef.current; if (!a) return; if (a.paused) a.play().catch(() => {}); else a.pause() }} aria-label={playing ? "暂停" : "播放"}>{playing ? "❚❚" : "▶"}</button>
+    <div className="music-bar-mid">
+      <div className="music-bar-title">{song.name}<span className="music-bar-singer"> · {song.singer}</span>{err && <span className="music-bar-err">（{err}）</span>}</div>
+      <input className="music-bar-range" type="range" min={0} max={dur || 1} step={0.1} value={Math.min(prog, dur || 1)}
+        onChange={(e) => { if (aRef.current) aRef.current.currentTime = Number(e.target.value) }} aria-label="进度" />
+    </div>
+    <span className="music-bar-time">{fmt(prog)}/{fmt(dur)}</span>
+    <button className="music-bar-close" onClick={onClose} aria-label="收起播放条">✕</button>
+  </div>)
 }
 
 function VoiceBubble({ text }) {
@@ -138,6 +199,8 @@ function Message({ msg, onImage, onDecide, deco }) {
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
+      {msg.apiFallback && <div className="provider-card"><span className="tool-name">Third-party Fallback</span><span>Sanitized chat only</span></div>}
+      {msg.apiFallbackBlocked && <div className="provider-card blocked"><span className="tool-name">Fallback blocked</span><span>Not sent to third party</span></div>}
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" /></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-echo-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(222,196,150,0.4)", inset: "-10px -14px", borderRadius: 24 }} />
@@ -195,6 +258,13 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [lightbox, setLightbox] = React.useState(null)
   const [sending, setSending] = React.useState(false)
   const [pendingFiles, setPendingFiles] = React.useState([])
+  const [providerStatus, setProviderStatus] = React.useState({ label: "Claude Subscription", privacy: "Full private context" })
+  const [nowPlaying, setNowPlaying] = React.useState(null)
+  React.useEffect(() => {
+    const onPlayReq = (e) => setNowPlaying(e.detail)
+    window.addEventListener("echo-play-music", onPlayReq)
+    return () => window.removeEventListener("echo-play-music", onPlayReq)
+  }, [])
   const scrollRef = React.useRef(null)
   const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
   const [atTop, setAtTop] = React.useState(true)
@@ -249,6 +319,10 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         id: "h" + i, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
         text: m.content, createdAt: m.created_at, thinking: m.thinking_content || null,
         attachments: m.attachments_json ? (() => { try { return JSON.parse(m.attachments_json) } catch { return null } })() : null,
+        apiFallback: !!m.api_fallback,
+        apiFallbackBlocked: !!m.api_fallback_blocked,
+        providerLabel: m.provider_label || null,
+        providerPrivacyLabel: m.provider_privacy_label || null,
         read: m.role === "user",
       }))
       setVisibleCount(60)
@@ -281,7 +355,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         const a = (d.messages || []).filter(m => m.role !== "user")
         const last = a[a.length - 1]
         if (last && (last.created_at || "") > (baseTs || "")) {
-          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null } : x))
+          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null, apiFallback: !!last.api_fallback, apiFallbackBlocked: !!last.api_fallback_blocked, providerLabel: last.provider_label || null, providerPrivacyLabel: last.provider_privacy_label || null } : x))
           onSessionTouched && onSessionTouched()
           return true
         }
@@ -315,7 +389,11 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       const meta = await api.stream({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code },
         { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() }, signal: ac.signal })
       const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
-      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions } : x))
+      setProviderStatus({
+        label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
+        privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
+      })
+      setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null } : x))
       onSessionTouched && onSessionTouched()
     } catch (e) {
       const recovered = e.server ? false : await recoverReply(echoId, baseTs)
@@ -338,6 +416,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={24} color="var(--brick)" /></button>
           <span className="chat-avatar-wrap"><img className="daddy-avatar chat-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
           <div className="chat-id" onClick={renameThis} title="点这里给窗口改名" style={{ cursor: "pointer" }}><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线</div></div>
+          <div className={"provider-status" + (providerStatus.label === "Third-party Fallback" ? " fallback" : "")}>{providerStatus.label} · {providerStatus.privacy}</div>
           <button className="icon-btn" onClick={() => docInputRef.current && docInputRef.current.click()} aria-label="附件"><Icon name="clip" size={20} color="var(--ink-soft)" /></button>
           <button className="icon-btn" onClick={renameThis} aria-label="给窗口改名"><Icon name="menu" size={22} color="var(--ink)" /></button>
         </header>
@@ -361,6 +440,8 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           {!atTop && <button className="chat-jump-btn" onClick={scrollToTop} aria-label="回到顶部"><Icon name="back" size={18} color="var(--ink-soft)" style={{ transform: "rotate(90deg)" }} /></button>}
           {!atBottom && <button className="chat-jump-btn" onClick={() => scrollToEnd(true)} aria-label="到最新"><Icon name="back" size={18} color="var(--ink-soft)" style={{ transform: "rotate(-90deg)" }} /></button>}
         </div>
+
+        <MusicBar song={nowPlaying} onClose={() => setNowPlaying(null)} />
 
         <div className="chat-input">
           <TornCard className="input-strip-bg" />

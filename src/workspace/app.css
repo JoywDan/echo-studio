@@ -544,6 +544,8 @@ input, textarea { font-family: inherit; }
 .chat-name { font-family: var(--font-cute); font-size: 22px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-status { display: flex; align-items: center; gap: 5px; font-size: 14px; color: var(--ink-soft); font-family: var(--font-cn); margin-top: -2px; }
 .chat-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #6fa86b; }
+.provider-status { flex: 0 1 210px; max-width: 210px; padding: 6px 10px; border: 1.5px solid rgba(120,95,70,0.2); border-radius: 999px; background: rgba(255,253,248,0.72); color: var(--ink-faint); font-size: 11.5px; line-height: 1.2; text-align: right; }
+.provider-status.fallback { border-color: rgba(167,55,42,0.34); color: var(--vermillion); background: rgba(167,55,42,0.08); }
 .icon-btn { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; transition: background 0.15s; }
 .icon-btn:hover { background: rgba(167,55,42,0.08); }
 
@@ -608,6 +610,10 @@ input, textarea { font-family: inherit; }
 .tool-card { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; margin-bottom: 7px; font-size: 13px; color: var(--ink-soft);
   background: rgba(243,230,191,0.5); border: 1.6px dashed rgba(177,73,47,0.35); border-radius: 12px; filter: url(#crayon-edge-2); }
 .tool-card .tool-name { font-weight: 600; color: var(--ink); } .tool-card .tool-status { color: var(--brick-l); font-family: var(--font-hand); font-size: 14px; }
+.provider-card { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; margin-bottom: 7px; font-size: 13px; color: var(--ink-soft);
+  background: rgba(167,55,42,0.07); border: 1.6px dashed rgba(167,55,42,0.32); border-radius: 12px; filter: url(#crayon-edge-2); max-width: 100%; }
+.provider-card.blocked { background: rgba(243,230,191,0.5); border-color: rgba(120,95,70,0.28); }
+.provider-card .tool-name { font-weight: 600; color: var(--ink); }
 
 .type-cursor { display: inline-block; width: 2px; height: 1.05em; background: var(--ink-soft); margin-left: 1px; vertical-align: text-bottom; animation: blink 0.9s steps(1) infinite; }
 .bubble-me .type-cursor { background: #f6e6df; }
@@ -1740,6 +1746,7 @@ input, textarea { font-family: inherit; }
   .chat-title-row { gap: 6px; align-items: flex-start; }
   .chat-name { font-size: 20px; max-width: 42vw; }
   .chat-id { padding-right: 46vw; }
+  .provider-status { position: absolute; right: 104px; top: 78px; max-width: 42vw; font-size: 10.5px; padding: 5px 8px; }
   .chat-title-row .model-pill { max-width: 42vw; padding: 5px 8px; }
   .chat-title-row .mp-feats { max-width: 72px; }
   .chat-scroll { padding-left: 14px; padding-right: 14px; }
@@ -2594,3 +2601,28 @@ input, textarea { font-family: inherit; }
     margin-bottom: 8px !important;            /* 原 14 */
   }
 }
+
+/* ── 一起听 · 歌卡 + 播放条 (2026-07-02, 蜡笔皮肤) ── */
+.music-card { display: inline-flex; align-items: center; gap: 10px; padding: 9px 14px; margin: 6px 0; max-width: 100%;
+  background: rgba(243,230,191,0.5); border: 1.6px dashed rgba(177,73,47,0.4); border-radius: 12px; cursor: pointer; filter: url(#crayon-edge-2); }
+.music-card:hover { background: rgba(243,230,191,0.8); }
+.music-card-disc { width: 30px; height: 30px; border-radius: 50%; background: var(--brick); color: #f6e6df;
+  display: flex; align-items: center; justify-content: center; font-size: 15px; flex: none; }
+.music-card-txt { display: flex; flex-direction: column; min-width: 0; }
+.music-card-name { font-weight: 600; color: var(--ink); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-card-singer { font-size: 12px; color: var(--ink-faint); }
+.music-card-play { color: var(--brick-l); font-size: 12.5px; font-family: var(--font-hand); flex: none; margin-left: 4px; }
+
+.music-bar { display: flex; align-items: center; gap: 12px; margin: 0 16px 8px; padding: 9px 14px; position: relative;
+  background: var(--paper-2); border: 1.6px dashed rgba(177,73,47,0.4); border-radius: 14px; filter: url(#crayon-edge-2); }
+.music-bar-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--brick); color: #f6e6df; border: none;
+  cursor: pointer; font-size: 13px; flex: none; display: flex; align-items: center; justify-content: center; }
+.music-bar-btn:hover { background: var(--brick-l); }
+.music-bar-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.music-bar-title { font-size: 13px; color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-bar-singer { color: var(--ink-faint); font-weight: 400; }
+.music-bar-err { color: var(--brick); font-weight: 400; font-size: 12px; }
+.music-bar-range { width: 100%; accent-color: var(--brick); height: 4px; cursor: pointer; }
+.music-bar-time { font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-hand); flex: none; }
+.music-bar-close { border: none; background: none; color: var(--ink-faint); cursor: pointer; font-size: 13px; flex: none; padding: 4px; }
+.music-bar-close:hover { color: var(--brick); }
