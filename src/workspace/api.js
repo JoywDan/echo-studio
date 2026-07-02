@@ -44,6 +44,7 @@ export const api = {
   streetWander: {
     config: () => call('GET', '/api/wander/config'),
     share: (d) => call('POST', '/api/wander/share', d),
+    geocode: (q) => call('GET', '/api/wander/geocode?q=' + encodeURIComponent(q)),
   },
   vps: {
     health: () => call('GET', '/api/vps/health'),

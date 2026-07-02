@@ -74,16 +74,48 @@ export default function WanderPanel({ onClose }) {
     return () => { alive = false }
   }, [])
 
-  const share = async () => {
-    if (!panoRef.current || !coords || sharing) return
-    const pov = panoRef.current.getPov() || { heading: 0, pitch: 0 }
+  const share = async (noteOverride) => {
+    const pano = panoRef.current
+    if (!pano || sharing) return
+    const p = pano.getPosition()
+    if (!p) return
+    const pov = pano.getPov() || { heading: 0, pitch: 0 }
     setSharing(true); setReply('')
     try {
-      const d = await api.streetWander.share({ lat: coords.lat, lng: coords.lng, heading: pov.heading || 0, pitch: pov.pitch || 0, note: note.trim() })
+      const d = await api.streetWander.share({ lat: p.lat(), lng: p.lng(), heading: pov.heading || 0, pitch: pov.pitch || 0, note: (noteOverride != null ? noteOverride : note).trim() })
       setReply(d.reply || '（他看了，但没说出话来）')
-      setNote('')
+      if (noteOverride == null) setNote('')
     } catch (e) { setReply('（叫他失败了：' + e.message + '）') }
     finally { setSharing(false) }
+  }
+
+  const [dest, setDest] = React.useState('')
+  const [going, setGoing] = React.useState(false)
+  const goTo = async (alsoShare) => {
+    const q = dest.trim()
+    if (!q || going || !window.google || !panoRef.current) return
+    setGoing(true); setStatus('查地图…'); setReply('')
+    try {
+      const g = await api.streetWander.geocode(q)
+      const svc = new window.google.maps.StreetViewService()
+      const radii = [1500, 15000, 100000]
+      const found = await new Promise((resolve) => {
+        const tryR = (i) => {
+          if (i >= radii.length) return resolve(null)
+          svc.getPanorama({ location: { lat: g.lat, lng: g.lng }, radius: radii[i], source: 'google' }, (data, st) => {
+            if (st === 'OK' && data && data.location) resolve(data)
+            else tryR(i + 1)
+          })
+        }
+        tryR(0)
+      })
+      if (!found) { setStatus(`${g.address} 附近没有街景车到过…换个地方？`); setGoing(false); return }
+      panoRef.current.setPano(found.location.pano)
+      panoRef.current.setPov({ heading: Math.random() * 360, pitch: 5 })
+      setStatus('到了：' + (g.address || q))
+      if (alsoShare) setTimeout(() => { share(`带我来${q}看看呀`); }, 900)
+    } catch (e) { setStatus('没找到这个地方：' + e.message) }
+    finally { setGoing(false) }
   }
 
   return (
@@ -103,8 +135,14 @@ export default function WanderPanel({ onClose }) {
           <div className="wander-sv" ref={svRef} />
           <div className="wander-status">{status}{coords ? ` · ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : ''}</div>
           <div className="wander-ctl">
+            <input className="wander-note" placeholder="想去哪？（地名/地标，比如：东京塔）" value={dest} onChange={e => setDest(e.target.value)} maxLength={80}
+              onKeyDown={e => { if (e.key === 'Enter') goTo(false) }} />
+            <button className="wander-go" onClick={() => goTo(false)} disabled={going || !dest.trim()}>{going ? '路上…' : '先去看看'}</button>
+            <button className="wander-share" onClick={() => goTo(true)} disabled={going || sharing || !dest.trim()}>他带我去 🧳</button>
+          </div>
+          <div className="wander-ctl">
             <input className="wander-note" placeholder="想跟他说的一句话（可空）" value={note} onChange={e => setNote(e.target.value)} maxLength={100} />
-            <button className="wander-share" onClick={share} disabled={sharing || !coords}>{sharing ? '他正在看…' : '叫他来看 👀'}</button>
+            <button className="wander-share" onClick={() => share()} disabled={sharing || !coords}>{sharing ? '他正在看…' : '叫他来看 👀'}</button>
           </div>
           {reply && (<div className="wander-reply">{reply}</div>)}
         </div>
