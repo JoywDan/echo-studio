@@ -4,7 +4,22 @@ import { Icon } from './doodles.jsx'
 
 const PLAYER = 'joy'
 const SAVE_NAME = 'main'
-const QUICK_COMMANDS = ['status', 'help', 'look 大厅', 'shop', 'check 房间', 'journal']
+const ROOM_PRESETS = {
+  'cat-hotel': {
+    command: 'status',
+    placeholder: '输入游戏命令，例如 look 大厅',
+    quick: ['status', 'help', 'look 大厅', 'shop', 'check 房间', 'journal'],
+    empty: '选择一个房间，然后发送 status 或 help。Web 存档和 GPT 存档是分开的。',
+  },
+  'joy-kitchen': {
+    command: '状态',
+    placeholder: '输入私厨命令，例如 菜场 / 记得 Joy 爱吃虾',
+    quick: ['状态', '帮助', '菜场', '去 egg_1', '记得 Joy 爱吃虾', '私厨模式 开'],
+    empty: '开一间 Joy 的私厨，买菜、做饭、记住她的口味。Web 存档和 GPT 存档是分开的。',
+  },
+}
+
+const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
 
 export default function GameRoomPanel({ onClose }) {
   const [rooms, setRooms] = React.useState([])
@@ -15,6 +30,7 @@ export default function GameRoomPanel({ onClose }) {
   const [err, setErr] = React.useState('')
 
   const activeRoom = rooms.find((room) => room.id === activeId) || rooms[0]
+  const preset = ROOM_PRESETS[activeRoom?.id || activeId] || DEFAULT_PRESET
 
   React.useEffect(() => {
     let alive = true
@@ -23,7 +39,10 @@ export default function GameRoomPanel({ onClose }) {
         if (!alive) return
         const nextRooms = data.rooms || []
         setRooms(nextRooms)
-        if (nextRooms.length && !nextRooms.some((room) => room.id === activeId)) setActiveId(nextRooms[0].id)
+        if (nextRooms.length && !nextRooms.some((room) => room.id === activeId)) {
+          setActiveId(nextRooms[0].id)
+          setCommand((ROOM_PRESETS[nextRooms[0].id] || DEFAULT_PRESET).command)
+        }
       })
       .catch((e) => setErr(e.message || '读取房间失败'))
     return () => { alive = false }
@@ -91,7 +110,7 @@ export default function GameRoomPanel({ onClose }) {
           </div>
           <div className="studio-reader-title">
             <h2>小游戏房间</h2>
-            <p>一个入口，很多小房间 · 当前先接猫猫旅馆</p>
+            <p>一个入口，很多小房间 · Web / GPT / Claude 各玩各的</p>
           </div>
         </header>
 
@@ -103,7 +122,11 @@ export default function GameRoomPanel({ onClose }) {
               <button
                 key={room.id}
                 className={'gr-room' + (room.id === activeId ? ' on' : '')}
-                onClick={() => { setActiveId(room.id); setOutput('') }}
+                onClick={() => {
+                  setActiveId(room.id)
+                  setCommand((ROOM_PRESETS[room.id] || DEFAULT_PRESET).command)
+                  setOutput('')
+                }}
               >
                 <span>{room.name}</span>
                 <small>{room.description}</small>
@@ -113,7 +136,7 @@ export default function GameRoomPanel({ onClose }) {
 
           <div className="gr-actions">
             <button onClick={newGame} disabled={loading || !activeRoom}>新开</button>
-            <button onClick={() => run('status')} disabled={loading || !activeRoom}>状态</button>
+            <button onClick={() => run(preset.command)} disabled={loading || !activeRoom}>状态</button>
             <button onClick={scenePrompt} disabled={loading || !activeRoom}>画面提示</button>
           </div>
 
@@ -121,17 +144,17 @@ export default function GameRoomPanel({ onClose }) {
             <input
               value={command}
               onChange={(e) => setCommand(e.target.value)}
-              placeholder="输入游戏命令，例如 look 大厅"
+              placeholder={preset.placeholder}
               disabled={loading || !activeRoom}
             />
             <button disabled={loading || !activeRoom || !command.trim()}>{loading ? '执行中…' : '发送'}</button>
           </form>
 
           <div className="gr-quick">
-            {QUICK_COMMANDS.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading || !activeRoom}>{cmd}</button>)}
+            {preset.quick.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading || !activeRoom}>{cmd}</button>)}
           </div>
 
-          <pre className="gr-output">{output || '选择一个房间，然后发送 status 或 help。Web 存档和 GPT 存档是分开的。'}</pre>
+          <pre className="gr-output">{output || preset.empty}</pre>
         </div>
       </div>
     </div>
