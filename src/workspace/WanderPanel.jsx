@@ -2,6 +2,22 @@ import React from 'react'
 import { api } from './api.js'
 import { Icon, Heart } from './doodles.jsx'
 
+let _leafletPromise = null
+function loadLeaflet() {
+  if (window.L && window.L.map) return Promise.resolve()
+  if (_leafletPromise) return _leafletPromise
+  _leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement('link')
+    css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    document.head.appendChild(css)
+    const s = document.createElement('script')
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    s.async = true; s.onload = () => resolve(); s.onerror = () => { _leafletPromise = null; reject(new Error('地图引擎加载失败')) }
+    document.head.appendChild(s)
+  })
+  return _leafletPromise
+}
+
 let _gmapsPromise = null
 function loadGmaps(key) {
   if (window.google && window.google.maps && window.google.maps.StreetViewPanorama) return Promise.resolve()
@@ -27,6 +43,44 @@ export default function WanderPanel({ onClose }) {
   const [msgs, setMsgs] = React.useState([])
   const [rolling, setRolling] = React.useState(false)
   const lastMemPos = React.useRef(null)
+  const [view, setView] = React.useState('sv')
+  const mapDivRef = React.useRef(null)
+  const mapRef = React.useRef(null)
+  const [visitSel, setVisitSel] = React.useState(null)
+  const openMap = async () => {
+    setView('map'); setVisitSel(null)
+    try {
+      await loadLeaflet()
+      const d = await api.streetWander.visits()
+      const L = window.L
+      if (!mapRef.current && mapDivRef.current) {
+        mapRef.current = L.map(mapDivRef.current, { worldCopyJump: true }).setView([30, 20], 2)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(mapRef.current)
+      }
+      const map = mapRef.current
+      if (!map) return
+      if (map._visitLayer) map.removeLayer(map._visitLayer)
+      const layer = window.L.layerGroup()
+      const pts = []
+      ;(d.visits || []).forEach(v => {
+        const col = v.source === 'echo_solo' ? '#7d96a3' : '#b1492f'
+        window.L.circleMarker([v.lat, v.lng], { radius: 8, color: col, weight: 2, fillColor: col, fillOpacity: 0.65 })
+          .on('click', () => setVisitSel(v)).addTo(layer)
+        pts.push([v.lat, v.lng])
+      })
+      layer.addTo(map); map._visitLayer = layer
+      setTimeout(() => { map.invalidateSize(); if (pts.length >= 2) map.fitBounds(pts, { padding: [40, 40], maxZoom: 6 }); else if (pts.length === 1) map.setView(pts[0], 5) }, 80)
+    } catch (e) { setStatus(e.message || '地图没能打开') }
+  }
+  const goVisit = (v) => {
+    setView('sv'); setVisitSel(null)
+    const g = window.google
+    if (!g || !panoRef.current) return
+    new g.maps.StreetViewService().getPanorama({ location: { lat: v.lat, lng: v.lng }, radius: 150, source: 'google' }, (data, st) => {
+      if (st === 'OK' && data && data.location) { panoRef.current.setPano(data.location.pano); setStatus('回到了：' + (v.place || '')) }
+      else setStatus('这一针附近的街景暂时找不到了')
+    })
+  }
   const chatEndRef = React.useRef(null)
   React.useEffect(() => { if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
   React.useEffect(() => {
@@ -146,11 +200,21 @@ export default function WanderPanel({ onClose }) {
             <h2>街景漫游<Heart size={14} color="var(--vermillion-l)" fill="var(--vermillion-l)" /></h2>
             <p>随机掉进世界的某个街角，叫他来陪你看</p>
           </div>
+          <button className="wander-dice" onClick={() => view === 'map' ? setView('sv') : openMap()} title={view === 'map' ? '回到街景' : '我们的地图'}>{view === 'map' ? '🚶' : '🗺️'}</button>
           <button className="wander-dice" onClick={randomGo} disabled={rolling} title="随机去个地方">🎲</button>
         </header>
 
         <div className="wander-body">
-          <div className="wander-sv" ref={svRef} />
+          <div className="wander-sv" ref={svRef} style={view === 'map' ? { display: 'none' } : undefined} />
+          <div className="wander-sv wander-map" ref={mapDivRef} style={view !== 'map' ? { display: 'none' } : undefined} />
+          {view === 'map' && visitSel && (
+            <div className="wander-visit-card">
+              <span className="wander-visit-dot" style={{ background: visitSel.source === 'echo_solo' ? '#7d96a3' : '#b1492f' }} />
+              <span className="wander-visit-txt"><b>{visitSel.place || `${visitSel.lat.toFixed(3)}, ${visitSel.lng.toFixed(3)}`}</b>
+                <span>{(visitSel.created_at || '').slice(0, 10)}{visitSel.source === 'echo_solo' ? ' · 他自己去的' : ' · 一起去的'}{visitSel.note ? ' · ' + visitSel.note : ''}</span></span>
+              <button className="wander-go" onClick={() => goVisit(visitSel)}>回到这里</button>
+            </div>
+          )}
           <div className="wander-status">{status}{coords ? ` · ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : ''}</div>
           <div className="wander-ctl">
             <input className="wander-note" placeholder="想去哪？（地名/地标，比如：东京塔）" value={dest} onChange={e => setDest(e.target.value)} maxLength={80}

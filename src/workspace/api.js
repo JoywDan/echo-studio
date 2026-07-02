@@ -45,6 +45,7 @@ export const api = {
     config: () => call('GET', '/api/wander/config'),
     share: (d) => call('POST', '/api/wander/share', d),
     geocode: (q) => call('GET', '/api/wander/geocode?q=' + encodeURIComponent(q)),
+    visits: () => call('GET', '/api/wander/visits'),
   },
   vps: {
     health: () => call('GET', '/api/vps/health'),

@@ -2682,3 +2682,11 @@ input, textarea { font-family: inherit; }
   color: var(--ink); background: rgba(243,230,191,0.55); border: 1.4px dashed rgba(177,73,47,0.3); white-space: pre-wrap; filter: url(#crayon-edge-2); }
 .wander-msg.me { align-self: flex-end; background: rgba(177,73,47,0.1); border-color: rgba(177,73,47,0.35); }
 .wander-msg.typing { opacity: 0.6; font-style: italic; }
+
+.wander-map { background: var(--paper-2); }
+.wander-map .leaflet-container { border-radius: 12px; }
+.wander-visit-card { display: flex; align-items: center; gap: 10px; padding: 10px 13px; background: rgba(243,230,191,0.55);
+  border: 1.4px dashed rgba(177,73,47,0.35); border-radius: 12px; filter: url(#crayon-edge-2); }
+.wander-visit-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.wander-visit-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--ink); }
+.wander-visit-txt span { font-size: 11.5px; color: var(--ink-faint); }
