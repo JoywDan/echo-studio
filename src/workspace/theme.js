@@ -19,6 +19,14 @@ export const THEME_PRESETS = [
   { id: 'seasalt', name: '海盐蓝',     t: { accent:'#3f7fa6', paper:'#dfeef3', paperPreset:'sky-grid',      textColor:'#39495a', texture:28, radius:18, titleFont:'Caveat', cnFont:'ZCOOL KuaiLe',  decor:'soft' } },
   { id: 'muji',    name: '无印·性冷淡', t: { accent:'#8a8175', paper:'#f1ede3', paperPreset:'cotton',        textColor:'#4a463e', texture:0,  radius:6,  titleFont:'Caveat', cnFont:'Noto Sans SC', decor:'none' } },
 ]
+function isSafeMode() {
+  try {
+    const p = new URLSearchParams(window.location.search)
+    return p.get('safe') === '1' || p.get('reset-local') === '1'
+  } catch {
+    return false
+  }
+}
 export function shade(hex, pct) {
   const h = hex.replace('#', '')
   let r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
@@ -40,7 +48,11 @@ function downscaleImage(file, maxDim, quality) {
   })
 }
 export function useTheme() {
-  const [t, setT] = React.useState(() => { try { return { ...THEME_DEFAULTS, ...JSON.parse(localStorage.getItem('ws_theme') || '{}') } } catch { return { ...THEME_DEFAULTS } } })
+  const safeMode = isSafeMode()
+  const [t, setT] = React.useState(() => {
+    if (safeMode) return { ...THEME_DEFAULTS, decor: 'none', texture: 0, cnFont: 'Noto Sans SC' }
+    try { return { ...THEME_DEFAULTS, ...JSON.parse(localStorage.getItem('ws_theme') || '{}') } } catch { return { ...THEME_DEFAULTS } }
+  })
   const [wallpaper, setWallpaper] = React.useState(null)
   const [customFont, setCustomFont] = React.useState(null)
   const set = (key, val) => setT((p) => { const n = { ...p, [key]: val }; localStorage.setItem('ws_theme', JSON.stringify(n)); return n })
@@ -59,12 +71,13 @@ export function useTheme() {
   }
 
   React.useEffect(() => {
+    if (safeMode) return
     idbGet('wallpaper').then((blob) => { if (blob) setWallpaper(URL.createObjectURL(blob)) }).catch(() => {})
     idbGet('font').then(async (blob) => {
       if (!blob) return
       try { const ff = new FontFace('UserCN', await blob.arrayBuffer()); await ff.load(); document.fonts.add(ff); setCustomFont(localStorage.getItem('ws_fontname') || '自定义字体') } catch {}
     }).catch(() => {})
-  }, [])
+  }, [safeMode])
 
   const uploadWallpaper = async (file) => {
     let blob = file
