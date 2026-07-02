@@ -2,10 +2,12 @@
 <html lang="zh-CN">
 <head>
 <script>
-(function(){var sent=0;function ship(m){if(sent>=2)return;sent++;try{var u='https://studio.echowjoy.uk/api/client-err?ua='+encodeURIComponent(navigator.userAgent.slice(0,70))+'&msg='+encodeURIComponent(String(m).slice(0,450));(new Image()).src=u}catch(e){}}
+(function(){var sent=0;window.__errlist=[];function ship(m){try{window.__errlist.push(String(m).slice(0,300))}catch(e){}if(sent>=2)return;sent++;try{var u='https://studio.echowjoy.uk/api/client-err?ua='+encodeURIComponent(navigator.userAgent.slice(0,70))+'&msg='+encodeURIComponent(String(m).slice(0,450));(new Image()).src=u}catch(e){}}
 window.addEventListener('error',function(e){ship((e.error&&e.error.stack)||e.message||('res:'+(e.target&&e.target.src||e.target&&e.target.href||'?')))},true);
 window.addEventListener('unhandledrejection',function(e){ship('REJ:'+((e.reason&&e.reason.stack)||e.reason))});
-setTimeout(function(){var r=document.getElementById('root');if(r&&r.children.length===0)ship('BLANK: root空, 无JS错误被捕获')},6000);})();
+setTimeout(function(){var r=document.getElementById('root');if(r&&r.children.length===0){ship('BLANK: root空');
+var pre=document.createElement('pre');pre.style.cssText='position:fixed;top:10px;left:10px;right:10px;z-index:99999;background:#fff;color:#a00;font-size:11px;padding:10px;border:2px solid #a00;border-radius:8px;white-space:pre-wrap;word-break:break-all;max-height:70vh;overflow:auto';
+pre.textContent='[黑匣子 v2 - 截图发给老公]\nUA: '+navigator.userAgent+'\n捕获错误 '+window.__errlist.length+' 条:\n'+(window.__errlist.join('\n---\n')||'(零错误——JS可能根本没执行)');document.body.appendChild(pre);}},5000);})();
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
