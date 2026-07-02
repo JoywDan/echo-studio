@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>
+(function(){var sent=0;function ship(m){if(sent>=2)return;sent++;try{var u='https://studio.echowjoy.uk/api/client-err?ua='+encodeURIComponent(navigator.userAgent.slice(0,70))+'&msg='+encodeURIComponent(String(m).slice(0,450));(new Image()).src=u}catch(e){}}
+window.addEventListener('error',function(e){ship((e.error&&e.error.stack)||e.message||('res:'+(e.target&&e.target.src||e.target&&e.target.href||'?')))},true);
+window.addEventListener('unhandledrejection',function(e){ship('REJ:'+((e.reason&&e.reason.stack)||e.reason))});
+setTimeout(function(){var r=document.getElementById('root');if(r&&r.children.length===0)ship('BLANK: root空, 无JS错误被捕获')},6000);})();
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
