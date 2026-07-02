@@ -35,7 +35,7 @@ export default function WanderPanel({ onClose }) {
     const tryOnce = (attempt) => {
       if (attempt > 14) { setRolling(false); setStatus('这轮没摇到有路的地方，再掷一次🎲'); return }
       const lat = -60 + Math.random() * 130, lng = -180 + Math.random() * 360
-      sv.getPanorama({ location: { lat, lng }, radius: 50000, source: 'outdoor' }, (data, st) => {
+      sv.getPanorama({ location: { lat, lng }, radius: 50000, source: 'google' }, (data, st) => {
         if (st === 'OK' && data && data.location) {
           const p = data.location.latLng
           panoRef.current.setPosition(p)
@@ -54,9 +54,15 @@ export default function WanderPanel({ onClose }) {
       if (!alive || !svRef.current) return
       const g = window.google
       panoRef.current = new g.maps.StreetViewPanorama(svRef.current, {
-        position: { lat: 48.85814, lng: 2.29354 }, pov: { heading: 57, pitch: 10 }, zoom: 0.9,
+        pov: { heading: 57, pitch: 5 }, zoom: 0.9,
         addressControl: false, showRoadLabels: false, motionTracking: false, motionTrackingControl: false,
         fullscreenControl: false, enableCloseButton: false, panControl: false, zoomControl: false,
+        linksControl: true, clickToGo: true,
+      })
+      const sv0 = new g.maps.StreetViewService()
+      sv0.getPanorama({ location: { lat: 48.85814, lng: 2.29354 }, radius: 300, source: 'google' }, (data, st) => {
+        if (st === 'OK' && data && data.location) panoRef.current.setPano(data.location.pano)
+        else panoRef.current.setPosition({ lat: 48.85251, lng: 2.30204 })
       })
       panoRef.current.addListener('position_changed', () => {
         const p = panoRef.current.getPosition()
