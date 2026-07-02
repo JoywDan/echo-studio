@@ -1783,12 +1783,14 @@ input, textarea { font-family: inherit; }
 .app {
   color: var(--ink);
   background-color: var(--paper);
+  position: relative;
+  isolation: isolate;
 }
 .app::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--paper) 72%, #fff 28%), transparent 56%),
@@ -1805,7 +1807,7 @@ input, textarea { font-family: inherit; }
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-image: url("./paper.png");
   background-size: 320px 320px;
@@ -1817,6 +1819,10 @@ input, textarea { font-family: inherit; }
 .panel-scroll,
 .ws-inner {
   position: relative;
+}
+.auth-screen {
+  position: relative;
+  z-index: 2;
 }
 .layout,
 .panel-scroll {
