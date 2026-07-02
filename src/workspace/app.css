@@ -2676,3 +2676,9 @@ input, textarea { font-family: inherit; }
   color: var(--ink); font-size: 13px; cursor: pointer; filter: url(#crayon-edge-2); }
 .wander-go:hover { background: rgba(243,230,191,0.85); }
 .wander-go:disabled { opacity: 0.55; cursor: default; }
+
+.wander-chat { display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; max-height: 30vh; overflow-y: auto; }
+.wander-msg { align-self: flex-start; max-width: 86%; padding: 9px 13px; border-radius: 13px; font-size: 13.5px; line-height: 1.7;
+  color: var(--ink); background: rgba(243,230,191,0.55); border: 1.4px dashed rgba(177,73,47,0.3); white-space: pre-wrap; filter: url(#crayon-edge-2); }
+.wander-msg.me { align-self: flex-end; background: rgba(177,73,47,0.1); border-color: rgba(177,73,47,0.35); }
+.wander-msg.typing { opacity: 0.6; font-style: italic; }

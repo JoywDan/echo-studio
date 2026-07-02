@@ -24,8 +24,20 @@ export default function WanderPanel({ onClose }) {
   const [coords, setCoords] = React.useState(null)
   const [note, setNote] = React.useState('')
   const [sharing, setSharing] = React.useState(false)
-  const [reply, setReply] = React.useState('')
+  const [msgs, setMsgs] = React.useState([])
   const [rolling, setRolling] = React.useState(false)
+  const lastMemPos = React.useRef(null)
+  const chatEndRef = React.useRef(null)
+  React.useEffect(() => { if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
+  React.useEffect(() => {
+    api.history('wander-journal').then(d => {
+      const hist = (d.messages || []).slice(-8).map((m, i) => ({
+        id: 'h' + i, me: m.role === 'user',
+        text: m.role === 'user' ? (m.content.includes('\n') && m.content.startsWith('[街景漫游') ? m.content.slice(m.content.indexOf('\n') + 1) : (m.content.startsWith('[街景漫游') ? '📍 分享了一帧街景' : m.content)) : m.content,
+      }))
+      setMsgs(hist)
+    }).catch(() => {})
+  }, [])
 
   const randomGo = React.useCallback(() => {
     const g = window.google
@@ -74,18 +86,24 @@ export default function WanderPanel({ onClose }) {
     return () => { alive = false }
   }, [])
 
+  const dist = (a, b) => { if (!a || !b) return 1e9; const dx = (a.lat - b.lat) * 111320, dy = (a.lng - b.lng) * 111320 * Math.cos(a.lat * Math.PI / 180); return Math.hypot(dx, dy) }
   const share = async (noteOverride) => {
     const pano = panoRef.current
     if (!pano || sharing) return
     const p = pano.getPosition()
     if (!p) return
     const pov = pano.getPov() || { heading: 0, pitch: 0 }
-    setSharing(true); setReply('')
+    const pos = { lat: p.lat(), lng: p.lng() }
+    const sayText = (noteOverride != null ? noteOverride : note).trim()
+    const remember = dist(pos, lastMemPos.current) > 250
+    setSharing(true)
+    setMsgs(m => [...m, { id: 'u' + Date.now(), me: true, text: sayText || '📍 分享了一帧街景' }])
+    if (noteOverride == null) setNote('')
     try {
-      const d = await api.streetWander.share({ lat: p.lat(), lng: p.lng(), heading: pov.heading || 0, pitch: pov.pitch || 0, note: (noteOverride != null ? noteOverride : note).trim() })
-      setReply(d.reply || '（他看了，但没说出话来）')
-      if (noteOverride == null) setNote('')
-    } catch (e) { setReply('（叫他失败了：' + e.message + '）') }
+      const d = await api.streetWander.share({ lat: pos.lat, lng: pos.lng, heading: pov.heading || 0, pitch: pov.pitch || 0, note: sayText, remember })
+      if (remember) lastMemPos.current = pos
+      setMsgs(m => [...m, { id: 'e' + Date.now(), me: false, text: d.reply || '（他看了，但没说出话来）' }])
+    } catch (e) { setMsgs(m => [...m, { id: 'e' + Date.now(), me: false, text: '（没送到：' + e.message + '）' }]) }
     finally { setSharing(false) }
   }
 
@@ -140,11 +158,18 @@ export default function WanderPanel({ onClose }) {
             <button className="wander-go" onClick={() => goTo(false)} disabled={going || !dest.trim()}>{going ? '路上…' : '先去看看'}</button>
             <button className="wander-share" onClick={() => goTo(true)} disabled={going || sharing || !dest.trim()}>他带我去 🧳</button>
           </div>
+          {msgs.length > 0 && (
+            <div className="wander-chat">
+              {msgs.map(m => (<div key={m.id} className={'wander-msg' + (m.me ? ' me' : '')}>{m.text}</div>))}
+              {sharing && <div className="wander-msg typing">他正看着你眼前的画面…</div>}
+              <div ref={chatEndRef} />
+            </div>
+          )}
           <div className="wander-ctl">
-            <input className="wander-note" placeholder="想跟他说的一句话（可空）" value={note} onChange={e => setNote(e.target.value)} maxLength={100} />
-            <button className="wander-share" onClick={() => share()} disabled={sharing || !coords}>{sharing ? '他正在看…' : '叫他来看 👀'}</button>
+            <input className="wander-note" placeholder="跟他说话（他能看见你眼前的画面）" value={note} onChange={e => setNote(e.target.value)} maxLength={300}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); share() } }} />
+            <button className="wander-share" onClick={() => share()} disabled={sharing || !coords}>{sharing ? '…' : (note.trim() ? '说给他听 💬' : '叫他来看 👀')}</button>
           </div>
-          {reply && (<div className="wander-reply">{reply}</div>)}
         </div>
       </div>
     </div>
