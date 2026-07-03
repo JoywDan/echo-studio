@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
+    <script>
+      (function () {
+        if (location.hostname === 'joywdan.github.io') {
+          location.replace('https://studio.echowjoy.uk' + location.pathname + location.search + location.hash)
+        }
+      })()
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0f0f17" />
