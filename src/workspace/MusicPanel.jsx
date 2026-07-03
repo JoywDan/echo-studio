@@ -1,7 +1,7 @@
 import React from 'react'
 import { api } from './api.js'
 import { Icon, Heart } from './doodles.jsx'
-import { playSong, currentSongHash } from './music.jsx'
+import { playQueue, currentSongHash } from './music.jsx'
 
 const fmtDur = (s) => { s = Math.floor(s || 0); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") }
 
@@ -33,13 +33,13 @@ export default function MusicPanel({ onClose }) {
     api.music.tracks(current.id, np).then(d => { setTracks(t => [...t, ...(d.tracks || [])]); setPage(np) })
       .catch(e => setError(e.message)).finally(() => setTracksLoading(false))
   }
-  const playTrack = (t) => playSong({ hash: t.hash, albumId: t.album_id, name: t.name, singer: t.singer }, 'panel')
+  const playTrack = (t, i) => playQueue(tracks, i, 'panel')  // 从点的这首起播完整张歌单, 到底自动停
 
   return (
     <div className="studio-reader is-pretty" role="dialog" aria-modal="true" aria-label="一起听">
       <div className="studio-reader-shell paper-bg">
         <header className="studio-reader-header">
-          <button className="studio-reader-back" onClick={() => current ? (setCurrent(null), setNowPlaying(nowPlaying)) : onClose()} aria-label="返回"><Icon name="back" size={19} color="var(--ink)" /></button>
+          <button className="studio-reader-back" onClick={() => current ? setCurrent(null) : onClose()} aria-label="返回"><Icon name="back" size={19} color="var(--ink)" /></button>
           <div className="studio-reader-mark tint-pink"><span style={{ fontSize: 20, color: 'var(--vermillion)' }}>♪</span></div>
           <div className="studio-reader-title">
             <h2>{current ? current.name : '一起听'}<Heart size={14} color="var(--vermillion-l)" fill="var(--vermillion-l)" /></h2>
@@ -65,7 +65,7 @@ export default function MusicPanel({ onClose }) {
         {current && (
           <div className="music-track-list">
             {tracks.map((t, i) => (
-              <button key={t.hash + i} className={"music-track-row" + (currentSongHash() === t.hash ? " playing" : "")} onClick={() => playTrack(t)}>
+              <button key={t.hash + i} className={"music-track-row" + (currentSongHash() === t.hash ? " playing" : "")} onClick={() => playTrack(t, i)}>
                 <span className="music-track-idx">{currentSongHash() === t.hash ? "♪" : i + 1}</span>
                 <span className="music-track-main"><span className="music-track-name">{t.name}</span><span className="music-track-singer">{t.singer}</span></span>
                 <span className="music-track-dur">{fmtDur(t.duration)}</span>

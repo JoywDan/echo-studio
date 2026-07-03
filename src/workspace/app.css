@@ -2624,6 +2624,9 @@ input, textarea { font-family: inherit; }
 .music-bar-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--brick); color: #f6e6df; border: none;
   cursor: pointer; font-size: 13px; flex: none; display: flex; align-items: center; justify-content: center; }
 .music-bar-btn:hover { background: var(--brick-l); }
+.music-bar-btn-sm { width: 26px; height: 26px; font-size: 12px; background: transparent; color: var(--ink-soft); }
+.music-bar-btn-sm:hover:not(:disabled) { background: rgba(177,73,47,0.12); color: var(--brick); }
+.music-bar-btn-sm:disabled { opacity: 0.3; cursor: default; }
 .music-bar-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .music-bar-title { font-size: 13px; color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .music-bar-singer { color: var(--ink-faint); font-weight: 400; }
