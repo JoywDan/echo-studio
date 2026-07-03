@@ -9,8 +9,8 @@ export default defineConfig({
     react(),
     VitePWA({
       // chat 是日常入口，离线可用壳 + 静态资源
-      registerType: 'autoUpdate',
-      injectRegister: 'inline',
+      registerType: 'prompt',   // 2026-07-02: 配"新版本已就绪"提示条, 点了才换血——告别关三次开三次
+      injectRegister: null,      // 注册改由 workspace/main.jsx 手动做(带 onNeedRefresh 回调)
       filename: 'sw.js',
       manifestFilename: 'manifest-pwa.json',
       includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
