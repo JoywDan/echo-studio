@@ -3,6 +3,13 @@
 <head>
 <script>
 (function(){
+  if(location.hostname==='joywdan.github.io'){
+    location.replace('https://studio.echowjoy.uk'+location.pathname+location.search+location.hash);
+  }
+})();
+</script>
+<script>
+(function(){
 try{
   var q=new URLSearchParams(location.search);
   if(q.get('reset-sw')==='1'||q.get('reset-local')==='1'){
