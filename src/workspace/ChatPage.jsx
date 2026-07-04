@@ -262,6 +262,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }, [models, sessionId])
 
   React.useEffect(() => {
+    setSending(false)  // 进/切换任何窗口先清"发送中"卡死态——否则上个窗口没发完会让新窗口编辑/重掷键全消失(时有时无根因)
     if (!sessionId) { setMessages([]); return }
     if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return }
     let alive = true
@@ -365,8 +366,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     }
     const userBubbleId = "u" + Date.now()
     setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
-    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
-    setSending(false)
+    try {
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+    } finally { setSending(false) }
   }
 
   // 重掷: 归档他这条回复, 同一句话重新生成 (2026-07-02)
@@ -376,8 +378,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     try { await api.rewind({ session_id: sessionId, message_id: m.dbId, mode: "roll" }) }
     catch (e) { alert("重掷失败：" + e.message); setSending(false); return }
     setMessages(ms => ms.filter(x => x.id !== m.id && !(x.dbId && x.dbId > m.dbId)))
-    await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code })
-    setSending(false)
+    try {
+      await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code })
+    } finally { setSending(false) }
   }
 
   // 编辑: 归档原消息及之后所有, 用改后的文字重发 (2026-07-02)
@@ -393,8 +396,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     setEditingId(null)
     const userBubbleId = "u" + Date.now()
     setMessages(ms => [...ms, { id: userBubbleId, from: "me", time: now(), text: newText, read: true }])
-    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
-    setSending(false)
+    try {
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+    } finally { setSending(false) }
   }
 
   const onKey = (e) => {}  // 回车=换行，只有发送键才发送（Joy 2026-06-15，照官方 app）
