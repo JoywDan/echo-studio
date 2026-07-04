@@ -238,14 +238,24 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
   const scrollToTop = () => { const el = scrollRef.current; if (el) el.scrollTo({ top: 0, behavior: "smooth" }) }
+  const loadingEarlierRef = React.useRef(false)
   const loadEarlier = () => {
+    if (loadingEarlierRef.current || visibleCount >= messages.length) return
+    loadingEarlierRef.current = true
     const el = scrollRef.current
     const prevH = el ? el.scrollHeight : 0
     setVisibleCount(c => Math.min(c + 60, messages.length))
     // 下一帧: 把视口锚回原来看的位置(新内容撑在上面, 不跳)
-    requestAnimationFrame(() => { const e2 = scrollRef.current; if (e2) e2.scrollTop += (e2.scrollHeight - prevH) })
+    requestAnimationFrame(() => { const e2 = scrollRef.current; if (e2) e2.scrollTop += (e2.scrollHeight - prevH); loadingEarlierRef.current = false })
   }
-  const onScroll = () => { const el = scrollRef.current; if (!el) return; const top = el.scrollTop < 40; setAtTop(top); setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 60); if (top && visibleCount < messages.length) loadEarlier() }
+  const onScroll = () => {
+    const el = scrollRef.current; if (!el) return
+    setAtTop(el.scrollTop < 40)
+    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 60)
+    // 自动加载更早只在\"真贴顶(<8px)且此刻没在打字\"时触发——躲开手机键盘弹出致 scrollTop 瞬时抖动误触(打字时自己往上滑的根因)
+    const typing = typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'TEXTAREA'
+    if (el.scrollTop < 8 && !typing && visibleCount < messages.length) loadEarlier()
+  }
   const setToggle = (k) => setToggles(s => { const n = { ...s, [k]: !s[k] }; if (sessionId) writeSessionSettings(sessionId, { toggles: n }); return n })
   const pickModel = (id) => { setModel(id); if (sessionId) writeSessionSettings(sessionId, { model: id }); const m = models.find(x => x.id === id); if (m && !m.supportsThinking) setToggle && setToggles(s => ({ ...s, think: false })) }
 
