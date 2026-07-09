@@ -45,6 +45,16 @@ const ROOM_PRESETS = {
     empty: '抽一张时空坐标，再配上母题、身份和变数。喜欢这组设定，就把它带去涩涩走格棋。',
     blurb: '抽取一组穿越设定：地点、时代、母题、身份与意外变数。它可以独立成为灵感游戏，也可以把当前设定传给涩涩走格棋。',
   },
+  'spicy-monopoly': {
+    icon: '🎩',
+    eyebrow: 'SPICY MONOPOLY',
+    tone: 'brick',
+    command: 'status',
+    placeholder: '输入大富翁指令，例如 roll / done / skip / 404',
+    quick: ['new', 'roll', 'status', 'done', 'skip', 'swap', 'help'],
+    empty: '双人轮流掷骰的成人向棋盘游戏：占地、收租、身份卡、任务卡和真心话都由引擎保存。安全词：404。',
+    blurb: 'Joy 和当前 AI 伙伴一起走 20 格棋盘。每回合掷骰，遇到任务可以完成、跳过或换掉；红线和安全词始终有效。',
+  },
 }
 
 const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
@@ -339,6 +349,7 @@ const GAME_ROOM_CSS = `
   .game-room-panel .gr-rose .gr-card-icon, .game-room-panel .gr-detail-rose .gr-detail-icon { background:rgba(217,140,132,.2); }
   .game-room-panel .gr-violet .gr-card-icon, .game-room-panel .gr-detail-violet .gr-detail-icon { background:rgba(159,137,190,.2); }
   .game-room-panel .gr-gold .gr-card-icon, .game-room-panel .gr-detail-gold .gr-detail-icon { background:rgba(216,169,63,.22); }
+  .game-room-panel .gr-brick .gr-card-icon, .game-room-panel .gr-detail-brick .gr-detail-icon { background:rgba(177,73,47,.18); }
   .game-room-panel .gr-card-copy { min-width:0; flex:1; }
   .game-room-panel .gr-card-copy strong { display:block; margin:3px 0 4px; font:500 17px var(--font-cute); }
   .game-room-panel .gr-card-copy small { display:block; color:var(--ink-soft); font:12px/1.45 var(--font-cn); }
