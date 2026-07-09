@@ -30,7 +30,8 @@ const SLOTS = [
 function Rose({ x, y, r, color, i, hot, night, onTap }) {
   const bloomY = -r * 2.5
   return (
-    <g className="gd-rose" style={{ '--sd': `${(i % 7) * 0.7}s`, '--st': `${5.6 + (i % 5) * 0.8}s` }} transform={`translate(${x},${y})`} onClick={onTap}>
+    <g transform={`translate(${x},${y})`} onClick={onTap} style={{ cursor: 'pointer' }}>
+    <g className="gd-rose" style={{ '--sd': `${(i % 7) * 0.7}s`, '--st': `${5.6 + (i % 5) * 0.8}s` }}>
       <path d={`M0,0 C ${i % 2 ? 3 : -3},${bloomY * 0.4} ${i % 2 ? -2 : 2},${bloomY * 0.72} 0,${bloomY}`} stroke="#5f7a4c" strokeWidth="2.2" fill="none" strokeLinecap="round" />
       <path d={`M${i % 2 ? -1 : 1},${bloomY * 0.5} q ${i % 2 ? -9 : 9},-2 ${i % 2 ? -11 : 11},-8`} stroke="#5f7a4c" strokeWidth="1.6" fill="none" />
       <ellipse cx={i % 2 ? -11 : 11} cy={bloomY * 0.5 - 8} rx="5.4" ry="2.8" fill="#6d8f58" transform={`rotate(${i % 2 ? -36 : 36} ${i % 2 ? -11 : 11} ${bloomY * 0.5 - 8})`} />
@@ -49,6 +50,7 @@ function Rose({ x, y, r, color, i, hot, night, onTap }) {
         <circle cx={-r * 0.08} cy={bloomY - r * 0.08} r={r * 0.16} fill="#fff8ec" opacity=".8" />
         {hot && <circle className="gd-pulse" cx="0" cy={bloomY} r={r} fill="none" stroke={color} strokeWidth="1.2" />}
       </g>
+    </g>
     </g>
   )
 }
@@ -106,7 +108,7 @@ export default function GardenPanel({ onClose }) {
 .gd-mid{transform:translate(calc(var(--px)*-12px),calc(var(--py)*-5px));transition:transform .5s cubic-bezier(.2,.8,.3,1)}
 .gd-near{transform:translate(calc(var(--px)*-20px),calc(var(--py)*-8px));transition:transform .4s cubic-bezier(.2,.8,.3,1)}
 .gd-rose{cursor:pointer;animation:gdSway var(--st) ease-in-out var(--sd) infinite}
-@keyframes gdSway{0%,100%{transform:translate(var(--tx,0),0) rotate(-1.6deg)}50%{transform:translate(var(--tx,0),0) rotate(1.6deg)}}
+@keyframes gdSway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
 .gd-rose{transform-box:fill-box;transform-origin:50% 100%}
 .gd-bloom{animation:gdBreathe var(--bt) ease-in-out var(--bd) infinite;transform-box:view-box}
 @keyframes gdBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
