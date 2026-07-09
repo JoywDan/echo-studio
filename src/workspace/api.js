@@ -182,6 +182,9 @@ export const api = {
       return r.json()
     },
     rooms: function () { return this._call('/rooms') },
+    dashboard: function ({ gameId, player = 'joy', saveName = 'main' }) {
+      return this._call('/rooms/' + encodeURIComponent(gameId) + '/dashboard?channel=web&player=' + encodeURIComponent(player) + '&save_name=' + encodeURIComponent(saveName))
+    },
     newGame: function ({ gameId, player = 'joy', saveName = 'main', seed = 20260629 }) {
       return this._call('/rooms/' + encodeURIComponent(gameId) + '/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: 'web', player, saveName, seed }) })
     },
