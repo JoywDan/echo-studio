@@ -35,6 +35,16 @@ const ROOM_PRESETS = {
     empty: '这是一局完整的成人向走格棋。网页入口会使用 Echo，GPT/MCP 入口会使用 Dan；两边存档分开。',
     blurb: '保留原作完整成人向规则：主题、掷骰、任务、卡牌、状态和终局小纸条。Joy 和当前 AI 伙伴各自拥有自己的房间存档。',
   },
+  'mingyun-paizhen': {
+    icon: '🃏',
+    eyebrow: 'DESTINY SPREAD',
+    tone: 'gold',
+    command: '抽卡',
+    placeholder: '输入命运牌阵命令，例如 抽卡 nsfw / 带去走格棋',
+    quick: ['抽卡', '抽卡 nsfw', '抽卡 safe', '状态', '牌库', '带去走格棋'],
+    empty: '抽一张时空坐标，再配上母题、身份和变数。喜欢这组设定，就把它带去涩涩走格棋。',
+    blurb: '抽取一组穿越设定：地点、时代、母题、身份与意外变数。它可以独立成为灵感游戏，也可以把当前设定传给涩涩走格棋。',
+  },
 }
 
 const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
@@ -218,6 +228,7 @@ const GAME_ROOM_CSS = `
   .game-room-panel .gr-card-icon, .game-room-panel .gr-detail-icon { display:grid; place-items:center; flex:0 0 auto; width:44px; height:44px; border-radius:12px; background:rgba(143,166,192,.2); font-size:25px; }
   .game-room-panel .gr-rose .gr-card-icon, .game-room-panel .gr-detail-rose .gr-detail-icon { background:rgba(217,140,132,.2); }
   .game-room-panel .gr-violet .gr-card-icon, .game-room-panel .gr-detail-violet .gr-detail-icon { background:rgba(159,137,190,.2); }
+  .game-room-panel .gr-gold .gr-card-icon, .game-room-panel .gr-detail-gold .gr-detail-icon { background:rgba(216,169,63,.22); }
   .game-room-panel .gr-card-copy { min-width:0; flex:1; }
   .game-room-panel .gr-card-copy strong { display:block; margin:3px 0 4px; font:500 17px var(--font-cute); }
   .game-room-panel .gr-card-copy small { display:block; color:var(--ink-soft); font:12px/1.45 var(--font-cn); }
@@ -225,6 +236,7 @@ const GAME_ROOM_CSS = `
   .game-room-panel .gr-detail { border:1.5px solid rgba(120,95,70,.18); border-radius:16px; padding:16px; background:rgba(255,253,247,.72); }
   .game-room-panel .gr-detail-rose { background:rgba(255,248,244,.78); }
   .game-room-panel .gr-detail-violet { background:rgba(248,245,252,.8); }
+  .game-room-panel .gr-detail-gold { background:rgba(255,250,238,.82); }
   .game-room-panel .gr-detail-top { display:flex; gap:13px; align-items:flex-start; }
   .game-room-panel .gr-detail-icon { width:50px; height:50px; font-size:29px; }
   .game-room-panel .gr-detail h3 { margin:3px 0 4px; font:500 21px var(--font-cute); color:var(--ink); }
