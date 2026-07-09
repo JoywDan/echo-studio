@@ -58,11 +58,11 @@ export default function GardenPanel({ onClose }) {
   const weather = g?.weather?.type || 'clear'
   const roses = (g?.roses || []).slice(0, SLOTS.length)
   const ivyN = Math.min(56, Math.round((g?.ivy?.growth || 0) * 1.1 + (g?.ivy?.repairs || 0) * 2))
-  const beadN = Math.min(10, g?.glasshouse?.beads || 0)
-  const thorns = g?.thorns || { total: 0, open: 0, healing: 0 }
-  const thornN = Math.min(14, 2 + thorns.total * 3)
+  const beadN = Math.max(0, Math.min(10, g?.glasshouse?.beads || 0))
+  const thorns = g?.thorns || { total: 0, open: 0, patched: 0, healing: 0, scar: 0 }
+  const thornN = Math.min(14, 2 + (thorns.total || 0) * 3)
   const pondGlow = Math.max(0.15, Math.min(0.9, (g?.pond?.satiety || 0) * 2.2 + (g?.pond?.recent_feeds || 0) * 0.08))
-  const flyN = Math.max(2, Math.min(12, Math.round((g?.fireflies?.activity || 0) / 3)))
+  const flyN = Math.max(2, Math.min(12, Math.round((g?.fireflies?.activity || 0) / 3) || 0))
 
   // 常春藤叶位置(拱门弧线)
   const ivyLeaves = []
@@ -175,7 +175,7 @@ export default function GardenPanel({ onClose }) {
                 const y = i % 2 ? 483 : 500
                 return <path key={i} d={`M${x},${y} l4,-7 l4,7`} fill="none" stroke={thorns.open ? '#7a4a3a' : '#8a7355'} strokeWidth="2" />
               })}
-              {[...Array(Math.min(6, (thorns.healing + thorns.patched) * 2))].map((_, i) => (
+              {[...Array(Math.max(0, Math.min(6, ((thorns.healing || 0) + (thorns.patched || 0)) * 2)))].map((_, i) => (
                 <ellipse key={i} cx={492 + i * 34} cy={479} rx="4.4" ry="2.4" fill="#87ae6f" transform={`rotate(-24 ${492 + i * 34} 479)`} />
               ))}
             </g>
