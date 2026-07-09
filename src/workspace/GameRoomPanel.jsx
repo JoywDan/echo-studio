@@ -52,8 +52,8 @@ const ROOM_PRESETS = {
     command: 'status',
     placeholder: '输入大富翁指令，例如 roll / done / skip / 404',
     quick: ['new', 'roll', 'status', 'done', 'skip', 'swap', 'help'],
-    empty: '双人轮流掷骰的成人向棋盘游戏：占地、收租、身份卡、任务卡和真心话都由引擎保存。安全词：404。',
-    blurb: 'Joy 和当前 AI 伙伴一起走 20 格棋盘。每回合掷骰，遇到任务可以完成、跳过或换掉；红线和安全词始终有效。',
+    empty: '默认 heavy 重口盘：双人轮流掷骰、占地、收租、成人身份卡、任务卡和真心话。安全词：404。',
+    blurb: 'Joy 和当前 AI 伙伴一起走 20 格棋盘。默认 heavy 重口强度，不再把前两回合强制压成热身；安全词、跳过和红线过滤始终有效。',
   },
 }
 
