@@ -6,16 +6,24 @@ const PLAYER = 'joy'
 const SAVE_NAME = 'main'
 const ROOM_PRESETS = {
   'cat-hotel': {
+    icon: '🐈',
+    eyebrow: 'CAT HOTEL',
+    tone: 'blue',
     command: 'status',
     placeholder: '输入游戏命令，例如 look 大厅',
     quick: ['status', 'help', 'look 大厅', 'shop', 'check 房间', 'journal'],
-    empty: '选择一个房间，然后发送 status 或 help。Web 存档和 GPT 存档是分开的。',
+    empty: '选择一个房间，然后发送 status 或 help。这里的 Web 存档和 GPT 存档是分开的。',
+    blurb: '照顾猫猫、安排房间、喂食陪玩，把一间小旅馆慢慢经营成它们愿意回来的地方。',
   },
   'joy-kitchen': {
+    icon: '🍳',
+    eyebrow: 'JOY\'S PRIVATE KITCHEN',
+    tone: 'rose',
     command: '状态',
     placeholder: '输入私厨命令，例如 菜场 / 记得 Joy 爱吃虾',
     quick: ['状态', '帮助', '菜场', '去 egg_1', '记得 Joy 爱吃虾', '私厨模式 开'],
-    empty: '开一间 Joy 的私厨，买菜、做饭、记住她的口味。Web 存档和 GPT 存档是分开的。',
+    empty: '开一间 Joy 的私厨，买菜、做饭、记住她的口味。这里的 Web 存档和 GPT 存档是分开的。',
+    blurb: '从菜市场挑今天的食材，做一顿只属于 Joy 和 Dan 的饭，也可以把她喜欢的口味交给这间厨房记住。',
   },
 }
 
@@ -47,6 +55,13 @@ export default function GameRoomPanel({ onClose }) {
       .catch((e) => setErr(e.message || '读取房间失败'))
     return () => { alive = false }
   }, [])
+
+  const selectRoom = (id) => {
+    setActiveId(id)
+    setCommand((ROOM_PRESETS[id] || DEFAULT_PRESET).command)
+    setOutput('')
+    setErr('')
+  }
 
   const run = async (nextCommand = command) => {
     const gameId = activeRoom?.id || activeId
@@ -92,11 +107,6 @@ export default function GameRoomPanel({ onClose }) {
     }
   }
 
-  const onSubmit = (e) => {
-    e.preventDefault()
-    run(command)
-  }
-
   return (
     <div className="studio-reader game-room-panel" role="dialog" aria-modal="true" aria-label="小游戏房间">
       <div className="studio-reader-shell paper-bg">
@@ -105,56 +115,65 @@ export default function GameRoomPanel({ onClose }) {
           <button className="studio-reader-back" onClick={onClose} aria-label="返回 Workspace">
             <Icon name="back" size={19} color="var(--ink)" />
           </button>
-          <div className="studio-reader-mark tint-blue">
-            <Icon name="monitor" size={22} color="var(--ink)" />
-          </div>
+          <div className="studio-reader-mark tint-blue"><Icon name="monitor" size={22} color="var(--ink)" /></div>
           <div className="studio-reader-title">
-            <h2>小游戏房间</h2>
-            <p>一个入口，很多小房间 · Web / GPT / Claude 各玩各的</p>
+            <h2>游戏室</h2>
+            <p>一个入口，很多小房间 · 每个端口各自保存</p>
           </div>
         </header>
 
         <div className="gr-body">
+          <div className="gr-intro">
+            <div>
+              <span className="gr-kicker">JOY &amp; DAN / GAME HUB</span>
+              <h3>今天想去哪间小房间？</h3>
+              <p>游戏独立运行，入口统一放在这里。你从网页玩，GPT 也可以从自己的 MCP 入口玩。</p>
+            </div>
+            <span className="gr-room-count">{rooms.length || 0} 间房</span>
+          </div>
+
           {err && <div className="gr-error">{err}</div>}
 
-          <div className="gr-rooms">
-            {rooms.length === 0 ? <span className="gr-muted">读取房间中…</span> : rooms.map((room) => (
-              <button
-                key={room.id}
-                className={'gr-room' + (room.id === activeId ? ' on' : '')}
-                onClick={() => {
-                  setActiveId(room.id)
-                  setCommand((ROOM_PRESETS[room.id] || DEFAULT_PRESET).command)
-                  setOutput('')
-                }}
-              >
-                <span>{room.name}</span>
-                <small>{room.description}</small>
-              </button>
-            ))}
+          <div className="gr-cards" aria-label="游戏列表">
+            {rooms.length === 0 ? <div className="gr-muted">读取房间中…</div> : rooms.map((room) => {
+              const item = ROOM_PRESETS[room.id] || DEFAULT_PRESET
+              return (
+                <button key={room.id} className={'gr-card gr-' + item.tone + (room.id === activeId ? ' on' : '')} onClick={() => selectRoom(room.id)}>
+                  <span className="gr-card-icon" aria-hidden="true">{item.icon}</span>
+                  <span className="gr-card-copy">
+                    <span className="gr-card-eyebrow">{item.eyebrow}</span>
+                    <strong>{room.name}</strong>
+                    <small>{room.description}</small>
+                  </span>
+                  <span className="gr-card-arrow" aria-hidden="true">→</span>
+                </button>
+              )
+            })}
           </div>
 
-          <div className="gr-actions">
-            <button onClick={newGame} disabled={loading || !activeRoom}>新开</button>
-            <button onClick={() => run(preset.command)} disabled={loading || !activeRoom}>状态</button>
-            <button onClick={scenePrompt} disabled={loading || !activeRoom}>画面提示</button>
-          </div>
-
-          <form className="gr-command" onSubmit={onSubmit}>
-            <input
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              placeholder={preset.placeholder}
-              disabled={loading || !activeRoom}
-            />
-            <button disabled={loading || !activeRoom || !command.trim()}>{loading ? '执行中…' : '发送'}</button>
-          </form>
-
-          <div className="gr-quick">
-            {preset.quick.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading || !activeRoom}>{cmd}</button>)}
-          </div>
-
-          <pre className="gr-output">{output || preset.empty}</pre>
+          {activeRoom && <section className={'gr-detail gr-detail-' + preset.tone}>
+            <div className="gr-detail-top">
+              <div className="gr-detail-icon" aria-hidden="true">{preset.icon}</div>
+              <div>
+                <span className="gr-card-eyebrow">{preset.eyebrow}</span>
+                <h3>{activeRoom.name}</h3>
+                <p>{preset.blurb}</p>
+              </div>
+            </div>
+            <div className="gr-actions">
+              <button className="gr-primary" onClick={newGame} disabled={loading}>新开一局</button>
+              <button onClick={() => run(preset.command)} disabled={loading}>继续游戏</button>
+              <button onClick={scenePrompt} disabled={loading}>画面提示</button>
+            </div>
+            <form className="gr-command" onSubmit={(e) => { e.preventDefault(); run(command) }}>
+              <input value={command} onChange={(e) => setCommand(e.target.value)} placeholder={preset.placeholder} disabled={loading} />
+              <button className="gr-primary" disabled={loading || !command.trim()}>{loading ? '执行中…' : '发送'}</button>
+            </form>
+            <div className="gr-quick">
+              {preset.quick.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading}>{cmd}</button>)}
+            </div>
+            <pre className="gr-output">{output || preset.empty}</pre>
+          </section>}
         </div>
       </div>
     </div>
@@ -162,25 +181,39 @@ export default function GameRoomPanel({ onClose }) {
 }
 
 const GAME_ROOM_CSS = `
-  .game-room-panel .studio-reader-shell { max-width: 720px; }
-  .game-room-panel .gr-body { flex: 1; overflow-y: auto; padding: 12px 18px 28px; }
-  .game-room-panel .gr-error { color: #b1492f; background: rgba(177,73,47,0.1); border: 1px solid rgba(177,73,47,0.25); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-family: var(--font-cn); font-size: 13px; }
-  .game-room-panel .gr-rooms { display: grid; gap: 10px; margin-bottom: 14px; }
-  .game-room-panel .gr-room { text-align: left; border: 1.5px solid rgba(120,95,70,0.22); background: rgba(255,253,247,0.78); border-radius: 16px; padding: 12px 14px; cursor: pointer; box-shadow: var(--card-shadow-sm); }
-  .game-room-panel .gr-room.on { border-color: #8fa6c0; background: rgba(233,243,248,0.82); }
-  .game-room-panel .gr-room span { display: block; font-family: var(--font-cute); font-size: 17px; color: var(--ink); margin-bottom: 4px; }
-  .game-room-panel .gr-room small { display: block; font-family: var(--font-cn); font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
-  .game-room-panel .gr-muted { font-family: var(--font-cn); color: var(--ink-faint); font-size: 13px; }
-  .game-room-panel .gr-actions, .game-room-panel .gr-quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-  .game-room-panel button { font-family: var(--font-cn); }
-  .game-room-panel .gr-actions button, .game-room-panel .gr-quick button, .game-room-panel .gr-command button { border: 1.4px solid rgba(120,95,70,0.24); background: rgba(255,253,247,0.86); color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; }
-  .game-room-panel .gr-actions button:first-child, .game-room-panel .gr-command button { background: var(--brick); border-color: var(--brick); color: #fff6ef; }
-  .game-room-panel button[disabled] { opacity: 0.58; cursor: default; }
-  .game-room-panel .gr-command { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 12px 0; }
-  .game-room-panel .gr-command input { min-width: 0; border: 1.5px solid rgba(120,95,70,0.24); background: rgba(255,253,247,0.9); color: var(--ink); border-radius: 13px; padding: 10px 12px; font-family: var(--font-cn); font-size: 14px; }
-  .game-room-panel .gr-output { min-height: 220px; white-space: pre-wrap; word-break: break-word; border: 1.5px solid rgba(120,95,70,0.18); background: rgba(255,253,247,0.82); color: var(--ink); border-radius: 16px; padding: 14px; font-family: var(--font-cn); font-size: 13.5px; line-height: 1.7; overflow-x: auto; box-shadow: var(--card-shadow-sm); }
-  @media (max-width: 520px) {
-    .game-room-panel .gr-command { grid-template-columns: 1fr; }
-    .game-room-panel .gr-actions button, .game-room-panel .gr-quick button { flex: 1 1 auto; }
-  }
+  .game-room-panel .studio-reader-shell { max-width: 760px; }
+  .game-room-panel .gr-body { flex: 1; overflow-y: auto; padding: 14px 18px 30px; }
+  .game-room-panel .gr-intro { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; padding:4px 2px 16px; }
+  .game-room-panel .gr-kicker, .game-room-panel .gr-card-eyebrow { display:block; font-size:10px; letter-spacing:1.5px; color:var(--ink-faint); font-family:var(--font-cn); }
+  .game-room-panel .gr-intro h3 { margin:5px 0 4px; font-family:var(--font-cute); font-size:24px; font-weight:500; color:var(--ink); }
+  .game-room-panel .gr-intro p { margin:0; max-width:530px; color:var(--ink-soft); font:13px/1.6 var(--font-cn); }
+  .game-room-panel .gr-room-count { white-space:nowrap; color:var(--ink-soft); font:12px var(--font-cn); padding-top:7px; }
+  .game-room-panel .gr-error { color:#b1492f; background:rgba(177,73,47,.1); border:1px solid rgba(177,73,47,.25); border-radius:12px; padding:10px 12px; margin-bottom:12px; font:13px var(--font-cn); }
+  .game-room-panel .gr-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+  .game-room-panel .gr-card { min-width:0; display:flex; align-items:flex-start; gap:11px; text-align:left; border:1.5px solid rgba(120,95,70,.2); background:rgba(255,253,247,.78); border-radius:14px; padding:13px; cursor:pointer; color:var(--ink); box-shadow:var(--card-shadow-sm); transition:transform .15s,border-color .15s,background .15s; }
+  .game-room-panel .gr-card:hover { transform:translateY(-1px); }
+  .game-room-panel .gr-card.on { border-color:#8fa6c0; background:rgba(233,243,248,.86); }
+  .game-room-panel .gr-card.gr-rose.on { border-color:#d89a95; background:rgba(251,236,231,.9); }
+  .game-room-panel .gr-card-icon, .game-room-panel .gr-detail-icon { display:grid; place-items:center; flex:0 0 auto; width:44px; height:44px; border-radius:12px; background:rgba(143,166,192,.2); font-size:25px; }
+  .game-room-panel .gr-rose .gr-card-icon, .game-room-panel .gr-detail-rose .gr-detail-icon { background:rgba(217,140,132,.2); }
+  .game-room-panel .gr-card-copy { min-width:0; flex:1; }
+  .game-room-panel .gr-card-copy strong { display:block; margin:3px 0 4px; font:500 17px var(--font-cute); }
+  .game-room-panel .gr-card-copy small { display:block; color:var(--ink-soft); font:12px/1.45 var(--font-cn); }
+  .game-room-panel .gr-card-arrow { color:var(--ink-faint); font-size:20px; line-height:1; }
+  .game-room-panel .gr-detail { border:1.5px solid rgba(120,95,70,.18); border-radius:16px; padding:16px; background:rgba(255,253,247,.72); }
+  .game-room-panel .gr-detail-rose { background:rgba(255,248,244,.78); }
+  .game-room-panel .gr-detail-top { display:flex; gap:13px; align-items:flex-start; }
+  .game-room-panel .gr-detail-icon { width:50px; height:50px; font-size:29px; }
+  .game-room-panel .gr-detail h3 { margin:3px 0 4px; font:500 21px var(--font-cute); color:var(--ink); }
+  .game-room-panel .gr-detail p { margin:0; color:var(--ink-soft); font:13px/1.65 var(--font-cn); }
+  .game-room-panel .gr-actions, .game-room-panel .gr-quick { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 10px; }
+  .game-room-panel button { font-family:var(--font-cn); }
+  .game-room-panel .gr-actions button, .game-room-panel .gr-quick button, .game-room-panel .gr-command button { border:1.4px solid rgba(120,95,70,.24); background:rgba(255,253,247,.86); color:var(--ink); border-radius:11px; padding:8px 12px; cursor:pointer; }
+  .game-room-panel .gr-actions .gr-primary, .game-room-panel .gr-command .gr-primary { background:var(--brick); border-color:var(--brick); color:#fff6ef; }
+  .game-room-panel button[disabled] { opacity:.58; cursor:default; }
+  .game-room-panel .gr-command { display:grid; grid-template-columns:1fr auto; gap:8px; margin:12px 0 0; }
+  .game-room-panel .gr-command input { min-width:0; border:1.5px solid rgba(120,95,70,.24); background:rgba(255,253,247,.9); color:var(--ink); border-radius:11px; padding:10px 12px; font:14px var(--font-cn); }
+  .game-room-panel .gr-output { min-height:180px; white-space:pre-wrap; word-break:break-word; border:1.5px solid rgba(120,95,70,.18); background:rgba(255,253,247,.82); color:var(--ink); border-radius:13px; padding:14px; margin:12px 0 0; font:13.5px/1.7 var(--font-cn); overflow-x:auto; box-shadow:var(--card-shadow-sm); }
+  .game-room-panel .gr-muted { grid-column:1/-1; padding:12px; color:var(--ink-faint); font:13px var(--font-cn); }
+  @media (max-width:520px) { .game-room-panel .gr-intro h3 { font-size:21px; } .game-room-panel .gr-cards { grid-template-columns:1fr; } .game-room-panel .gr-command { grid-template-columns:1fr; } .game-room-panel .gr-actions button { flex:1 1 auto; } }
 `
