@@ -49,6 +49,105 @@ const ROOM_PRESETS = {
 
 const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
 
+function DestinyChat({ settingText }) {
+  const sessionId = 'game-mingyun-web-joy-main'
+  const [messages, setMessages] = React.useState([])
+  const [draft, setDraft] = React.useState('')
+  const [sending, setSending] = React.useState(false)
+  const [started, setStarted] = React.useState(false)
+  const [err, setErr] = React.useState('')
+
+  React.useEffect(() => {
+    let alive = true
+    api.history(sessionId).then((data) => {
+      if (!alive) return
+      const history = (data.messages || []).map((item) => ({
+        from: item.role === 'user' ? 'joy' : 'echo',
+        text: item.content || '',
+      })).filter((item) => item.text)
+      setMessages(history)
+      setStarted(history.length > 0)
+    }).catch(() => {})
+    return () => { alive = false }
+  }, [])
+
+  const start = async () => {
+    if (sending) return
+    setSending(true); setErr('')
+    const prompt = [
+      '开始命运牌阵独立游戏。',
+      '你是 Echo，Joy 的成年伴侣。请把下面的牌阵当作本局世界设定，直接进入场景，用沉浸式叙事和 Joy 互动。',
+      '这是虚构的成人向剧情空间，所有角色必须明确成年，互动保持自愿和可停止。不要解释规则，不要只做总结；先描写 Joy 和 Echo 此刻身处的地方，然后问 Joy 想怎么做。',
+      '',
+      '本局命运牌阵：',
+      settingText || '请先抽一组命运牌阵。',
+    ].join('\n')
+    const userText = '我准备好了，带我进入这组命运牌阵。'
+    setMessages([{ from: 'joy', text: userText }])
+    try {
+      await api.stream({ session_id: sessionId, messages: [{ role: 'user', content: prompt }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
+        onDelta: (text) => setMessages((items) => {
+          const next = [...items]
+          const last = next[next.length - 1]
+          if (last?.from === 'echo' && last.streaming) last.text += text
+          else next.push({ from: 'echo', text, streaming: true })
+          return next
+        }),
+      })
+      setMessages((items) => items.map((item) => ({ ...item, streaming: false })))
+      setStarted(true)
+    } catch (e) {
+      setErr(e.message || 'Echo 没有回应')
+    } finally { setSending(false) }
+  }
+
+  const send = async (e) => {
+    e?.preventDefault()
+    const text = draft.trim()
+    if (!text || sending) return
+    setDraft(''); setSending(true); setErr('')
+    setMessages((items) => [...items, { from: 'joy', text }])
+    try {
+      await api.stream({ session_id: sessionId, messages: [{ role: 'user', content: text }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
+        onDelta: (delta) => setMessages((items) => {
+          const next = [...items]
+          const last = next[next.length - 1]
+          if (last?.from === 'echo' && last.streaming) last.text += delta
+          else next.push({ from: 'echo', text: delta, streaming: true })
+          return next
+        }),
+      })
+      setMessages((items) => items.map((item) => ({ ...item, streaming: false })))
+    } catch (e) {
+      setErr(e.message || '发送失败')
+    } finally { setSending(false) }
+  }
+
+  return (
+    <section className="gr-play">
+      <div className="gr-play-heading">
+        <div>
+          <span className="gr-card-eyebrow">PLAY WITH ECHO</span>
+          <h4>直接在这里继续</h4>
+          <p>不用输入游戏指令，像聊天一样告诉 Echo 你想做什么。</p>
+        </div>
+        {!started && <button className="gr-primary" onClick={start} disabled={sending}>开始进入</button>}
+      </div>
+      {messages.length > 0 && <div className="gr-chat-log">
+        {messages.map((message, index) => <div key={index} className={'gr-chat-line ' + message.from}>
+          <span className="gr-chat-label">{message.from === 'joy' ? 'Joy' : 'Echo'}</span>
+          <p>{message.text}{message.streaming && <span className="gr-chat-cursor" />}</p>
+        </div>)}
+      </div>}
+      {err && <div className="gr-error">{err}</div>}
+      {started && <form className="gr-play-input" onSubmit={send}>
+        <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="告诉 Echo 你要做什么……" rows={2} disabled={sending} />
+        <button className="gr-primary" disabled={sending || !draft.trim()}>{sending ? '回应中…' : '发送'}</button>
+      </form>}
+    </section>
+  )
+}
+
 export default function GameRoomPanel({ onClose }) {
   const [rooms, setRooms] = React.useState([])
   const [activeId, setActiveId] = React.useState('')
@@ -203,6 +302,7 @@ export default function GameRoomPanel({ onClose }) {
               {preset.quick.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading}>{cmd}</button>)}
             </div>
             <pre className="gr-output">{output || preset.empty}</pre>
+            {activeRoom.id === 'mingyun-paizhen' && <DestinyChat settingText={output} />}
           </section>}
         </div>
       </div>
@@ -249,6 +349,21 @@ const GAME_ROOM_CSS = `
   .game-room-panel .gr-command { display:grid; grid-template-columns:1fr auto; gap:8px; margin:12px 0 0; }
   .game-room-panel .gr-command input { min-width:0; border:1.5px solid rgba(120,95,70,.24); background:rgba(255,253,247,.9); color:var(--ink); border-radius:11px; padding:10px 12px; font:14px var(--font-cn); }
   .game-room-panel .gr-output { min-height:180px; white-space:pre-wrap; word-break:break-word; border:1.5px solid rgba(120,95,70,.18); background:rgba(255,253,247,.82); color:var(--ink); border-radius:13px; padding:14px; margin:12px 0 0; font:13.5px/1.7 var(--font-cn); overflow-x:auto; box-shadow:var(--card-shadow-sm); }
+  .game-room-panel .gr-play { margin-top:14px; padding:15px; border:1.5px solid rgba(120,95,70,.18); border-radius:14px; background:rgba(255,253,247,.82); }
+  .game-room-panel .gr-play-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .game-room-panel .gr-play h4 { margin:4px 0 3px; font:500 19px var(--font-cute); color:var(--ink); }
+  .game-room-panel .gr-play-heading p { margin:0; color:var(--ink-soft); font:12.5px/1.5 var(--font-cn); }
+  .game-room-panel .gr-chat-log { display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto; margin-top:13px; padding-top:12px; border-top:1px solid rgba(120,95,70,.14); }
+  .game-room-panel .gr-chat-line { max-width:88%; font:13.5px/1.65 var(--font-cn); }
+  .game-room-panel .gr-chat-line.joy { align-self:flex-end; text-align:right; }
+  .game-room-panel .gr-chat-line.echo { align-self:flex-start; }
+  .game-room-panel .gr-chat-label { display:block; margin-bottom:2px; color:var(--ink-faint); font:10px var(--font-cn); letter-spacing:1px; }
+  .game-room-panel .gr-chat-line p { margin:0; padding:9px 11px; border-radius:12px; background:rgba(233,243,248,.75); color:var(--ink); white-space:pre-wrap; }
+  .game-room-panel .gr-chat-line.joy p { background:rgba(251,236,231,.85); }
+  .game-room-panel .gr-chat-cursor { display:inline-block; width:6px; height:15px; margin-left:3px; vertical-align:-2px; background:var(--brick); animation:gr-blink 1s steps(1) infinite; }
+  .game-room-panel .gr-play-input { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:12px; }
+  .game-room-panel .gr-play-input textarea { min-width:0; resize:vertical; border:1.5px solid rgba(120,95,70,.24); background:rgba(255,253,247,.9); color:var(--ink); border-radius:11px; padding:10px 12px; font:14px/1.5 var(--font-cn); }
+  @keyframes gr-blink { 50% { opacity:0; } }
   .game-room-panel .gr-muted { grid-column:1/-1; padding:12px; color:var(--ink-faint); font:13px var(--font-cn); }
-  @media (max-width:520px) { .game-room-panel .gr-lobby-heading h3 { font-size:21px; } .game-room-panel .gr-cards { grid-template-columns:1fr; } .game-room-panel .gr-command { grid-template-columns:1fr; } .game-room-panel .gr-actions button { flex:1 1 auto; } }
+  @media (max-width:520px) { .game-room-panel .gr-lobby-heading h3 { font-size:21px; } .game-room-panel .gr-cards { grid-template-columns:1fr; } .game-room-panel .gr-command { grid-template-columns:1fr; } .game-room-panel .gr-actions button { flex:1 1 auto; } .game-room-panel .gr-play-heading { flex-direction:column; } .game-room-panel .gr-play-input { grid-template-columns:1fr; } }
 `
