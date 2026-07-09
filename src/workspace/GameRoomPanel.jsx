@@ -49,13 +49,14 @@ const ROOM_PRESETS = {
 
 const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
 
-function DestinyChat({ settingText }) {
-  const sessionId = 'game-mingyun-web-joy-main'
+function DestinyChat({ settingText, gameId = 'mingyun-paizhen', gameTitle = '命运牌阵', intro = '' }) {
+  const sessionId = `game-${gameId}-web-joy-main`
   const [messages, setMessages] = React.useState([])
   const [draft, setDraft] = React.useState('')
   const [sending, setSending] = React.useState(false)
   const [started, setStarted] = React.useState(false)
   const [err, setErr] = React.useState('')
+  const [modelLabel, setModelLabel] = React.useState('Echo 默认模型')
 
   React.useEffect(() => {
     let alive = true
@@ -74,10 +75,15 @@ function DestinyChat({ settingText }) {
   const start = async () => {
     if (sending) return
     setSending(true); setErr('')
+    const isDestiny = gameId === 'mingyun-paizhen'
     const prompt = [
-      '开始命运牌阵独立游戏。',
-      '你是 Echo，Joy 的成年伴侣。请把下面的牌阵当作本局世界设定，直接进入场景，用沉浸式叙事和 Joy 互动。',
-      '这是虚构的成人向剧情空间，所有角色必须明确成年，互动保持自愿和可停止。不要解释规则，不要只做总结；先描写 Joy 和 Echo 此刻身处的地方，然后问 Joy 想怎么做。',
+      `开始${gameTitle}独立陪玩。`,
+      isDestiny
+        ? '你是 Echo，Joy 的成年伴侣。请把下面的牌阵当作本局世界设定，直接进入场景，用沉浸式叙事和 Joy 互动。'
+        : `你是 Echo，正在陪 Joy 玩「${gameTitle}」。请根据下面的当前游戏状态陪她聊天、解释结果、给出下一步建议。不要只复述状态，要像真正一起玩。${intro}`,
+      isDestiny
+        ? '这是虚构的成人向剧情空间，所有角色必须明确成年，互动保持自愿和可停止。不要解释规则，不要只做总结；先描写 Joy 和 Echo 此刻身处的地方，然后问 Joy 想怎么做。'
+        : 'Joy 可以用自然语言告诉你想做什么；如果某个动作必须改变游戏存档，请提醒她使用上方按钮或命令，不要假装已经执行。',
       '',
       '本局命运牌阵：',
       settingText || '请先抽一组命运牌阵。',
@@ -85,7 +91,7 @@ function DestinyChat({ settingText }) {
     const userText = '我准备好了，带我进入这组命运牌阵。'
     setMessages([{ from: 'joy', text: userText }])
     try {
-      await api.stream({ session_id: sessionId, messages: [{ role: 'user', content: prompt }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
+      const meta = await api.stream({ session_id: sessionId, session_title: `游戏陪玩 · ${gameTitle}`, messages: [{ role: 'user', content: prompt }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
         onDelta: (text) => setMessages((items) => {
           const next = [...items]
           const last = next[next.length - 1]
@@ -94,6 +100,7 @@ function DestinyChat({ settingText }) {
           return next
         }),
       })
+      setModelLabel(meta.actual_model || meta.model || meta.provider_label || 'Echo 默认模型')
       setMessages((items) => items.map((item) => ({ ...item, streaming: false })))
       setStarted(true)
     } catch (e) {
@@ -108,7 +115,7 @@ function DestinyChat({ settingText }) {
     setDraft(''); setSending(true); setErr('')
     setMessages((items) => [...items, { from: 'joy', text }])
     try {
-      await api.stream({ session_id: sessionId, messages: [{ role: 'user', content: text }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
+      const meta = await api.stream({ session_id: sessionId, messages: [{ role: 'user', content: text }], thinking: false, tools: true, web_tools: false, coding_tools: false }, {
         onDelta: (delta) => setMessages((items) => {
           const next = [...items]
           const last = next[next.length - 1]
@@ -117,6 +124,7 @@ function DestinyChat({ settingText }) {
           return next
         }),
       })
+      setModelLabel(meta.actual_model || meta.model || meta.provider_label || modelLabel)
       setMessages((items) => items.map((item) => ({ ...item, streaming: false })))
     } catch (e) {
       setErr(e.message || '发送失败')
@@ -127,9 +135,9 @@ function DestinyChat({ settingText }) {
     <section className="gr-play">
       <div className="gr-play-heading">
         <div>
-          <span className="gr-card-eyebrow">PLAY WITH ECHO</span>
-          <h4>直接在这里继续</h4>
-          <p>不用输入游戏指令，像聊天一样告诉 Echo 你想做什么。</p>
+          <span className="gr-card-eyebrow">PLAY WITH ECHO · {modelLabel}</span>
+          <h4>直接和 Echo 玩</h4>
+          <p>{gameId === 'mingyun-paizhen' ? '不用输入游戏指令，像聊天一样告诉 Echo 你想做什么。' : '可以自然聊天；需要改变游戏存档时，使用上方按钮或指令。'}</p>
         </div>
         {!started && <button className="gr-primary" onClick={start} disabled={sending}>开始进入</button>}
       </div>
@@ -302,7 +310,9 @@ export default function GameRoomPanel({ onClose }) {
               {preset.quick.map((cmd) => <button key={cmd} onClick={() => run(cmd)} disabled={loading}>{cmd}</button>)}
             </div>
             <pre className="gr-output">{output || preset.empty}</pre>
-            {activeRoom.id === 'mingyun-paizhen' && <DestinyChat settingText={output} />}
+            {activeRoom.id === 'mingyun-paizhen'
+              ? <DestinyChat settingText={output} />
+              : <DestinyChat settingText={output || preset.empty} gameId={activeRoom.id} gameTitle={activeRoom.name} intro={preset.blurb} />}
           </section>}
         </div>
       </div>
