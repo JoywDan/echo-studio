@@ -18,6 +18,7 @@ export const STUDIO = [
   { id: "s10", title: "夜骰", edge: "pink", icon: "star", deco: ["star","heart"], module: "ao3dice" },
   { id: "s11", title: "达迪的手机", edge: "pink", icon: "phone", deco: ["heart","star"], module: "phone" },
   { id: "s13", title: "约定", edge: "pink", icon: "promise", creature: "BlobTrio", deco: ["heart","star"], module: "foresight" },
+  { id: "s14", title: "Echo的花园", edge: "sage", icon: "flower", creature: "SleepCloud", deco: ["flower","star"], module: "garden" },
   { id: "s14", title: "小游戏房间", edge: "blue", icon: "monitor", creature: "CatCamera", clip: true, deco: ["star","flower"], module: "game-room" },
   { id: "s16", title: "一起听", edge: "pink", icon: "star", creature: "BlobTrio", clip: true, deco: ["heart","star"], module: "music" },
   { id: "s17", title: "街景漫游", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["star","flower"], module: "street-wander" },

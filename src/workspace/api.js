@@ -144,6 +144,7 @@ export const api = {
     get: (id) => call('GET', '/api/travel/' + encodeURIComponent(id)),
   },
   wander: () => call('GET', '/api/wander'),
+  garden: () => call('GET', '/api/garden'),
   growth: {
     list: (status) => call('GET', '/api/growth/candidates' + (status ? ('?status=' + encodeURIComponent(status)) : '')),
     get: (id) => call('GET', '/api/growth/candidate/' + encodeURIComponent(id)),

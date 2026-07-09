@@ -61,6 +61,7 @@ import PhonePanel from './PhonePanel.jsx'
 import MusicPanel from './MusicPanel.jsx'
 import WanderPanel from './WanderPanel.jsx'
 import GameRoomPanel from './GameRoomPanel.jsx'
+import GardenPanel from './GardenPanel.jsx'
 const ForesightPanel = React.lazy(() => import('./ForesightPanel.jsx'))
 const BookReader = React.lazy(() => import('./BookReader.jsx'))
 
@@ -74,6 +75,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const [reader, setReader] = React.useState(null)
   const [foresightOpen, setForesightOpen] = React.useState(false)
   const [memOpen, setMemOpen] = React.useState(false)
+  const [gardenOpen, setGardenOpen] = React.useState(false)
   const [drawOpen, setDrawOpen] = React.useState(false)
   const [bookOpen, setBookOpen] = React.useState(false)
   const [diceOpen, setDiceOpen] = React.useState(false)
@@ -147,7 +149,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   const toggleTask = (id) => { const cur = tasks.find(t => t.id === id); if (!cur) return; const nx = !cur.done; setTasks(ts => ts.map(t => t.id === id ? { ...t, done: nx } : t)); api.tasks.update(id, { done: nx }).catch(() => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: cur.done } : t))) }
   async function saveTask(d) { if (editingTask === 'new') { const r = await api.tasks.create(d); setTasks(t => [...t, r]) } else { const r = await api.tasks.update(editingTask.id, d); setTasks(t => t.map(x => x.id === r.id ? r : x)) } setEditingTask(null) }
   async function delTask(id) { await api.tasks.remove(id); setTasks(t => t.filter(x => x.id !== id)) }
-  function openStudio(m) { if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.module === 'game-room') { setGameRoomOpen(true) } else if (m.module === 'foresight') { setForesightOpen(true) } else if (m.module === 'music') { setMusicOpen(true) } else if (m.module === 'street-wander') { setWanderOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
+  function openStudio(m) { if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.module === 'game-room') { setGameRoomOpen(true) } else if (m.module === 'foresight') { setForesightOpen(true) } else if (m.module === 'garden') { setGardenOpen(true) } else if (m.module === 'music') { setMusicOpen(true) } else if (m.module === 'street-wander') { setWanderOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
 
   return (
     <div className="panel workspace-panel">
@@ -240,6 +242,7 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
       {editingTask !== null && <TaskEditor task={editingTask === 'new' ? null : editingTask} onSave={saveTask} onClose={() => setEditingTask(null)} />}
       {reader && <StudioReader module={reader.module} title={reader.title} tabs={reader.tabs} onClose={() => setReader(null)} />}
       {memOpen && <MemoryRiver onClose={() => setMemOpen(false)} />}
+      {gardenOpen && <GardenPanel onClose={() => setGardenOpen(false)} />}
       {drawOpen && <DrawPrompt onClose={() => setDrawOpen(false)} />}
       {diceOpen && <DicePanel onClose={() => setDiceOpen(false)} />}
       {phoneOpen && <PhonePanel onClose={() => setPhoneOpen(false)} />}
