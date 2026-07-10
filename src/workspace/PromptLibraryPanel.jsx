@@ -33,13 +33,13 @@ export default function PromptLibraryPanel({ onClose }) {
     <div className="prompt-parlour" role="dialog" aria-modal="true" aria-label="Prompt Parlour">
       <section className="prompt-parlour-shell">
         <header className="prompt-parlour-header">
-          <button className="prompt-parlour-back" onClick={onClose} aria-label="返回 Studio"><Icon name="back" size={20} color="var(--ink)" /></button>
+          <span className="prompt-dial" aria-hidden="true"><i /></span>
           <div className="prompt-parlour-title"><span className="prompt-parlour-kicker">JOY'S LITTLE</span><h2>Prompt Parlour <Heart size={16} color="#b45f91" fill="#e6aac8" /></h2><p>把画面慢慢挑出来</p></div>
-          <Star className="prompt-parlour-star" size={30} color="#8b629f" fill="#ead5ef" />
+          <div className="prompt-window-controls"><span className="prompt-window-min" aria-hidden="true">−</span><button className="prompt-window-close" onClick={onClose} aria-label="返回 Studio">×</button></div>
         </header>
 
         <div className="prompt-parlour-scroll">
-          <TornCard className="prompt-preview-card"><Tape kind="pink" style={{ top: -12, left: '50%', transform: 'translateX(-50%) rotate(-2deg)' }} /><div className="prompt-preview-label"><Sparkle size={15} color="#9b5b8a" /> 今日的小配方</div><p>{composePrompt(selected)}</p></TornCard>
+          <TornCard className="prompt-preview-card"><span className="prompt-paperclip" aria-hidden="true" /><Tape kind="pink" style={{ top: -12, right: '7%', transform: 'rotate(-9deg)' }} /><div className="prompt-preview-label"><Sparkle size={15} color="#9b5b8a" /> 今日的小配方</div><p>{composePrompt(selected)}</p><span className="prompt-preview-doodles" aria-hidden="true">☆ ♡</span></TornCard>
           <div className="prompt-shelf-tabs" role="tablist" aria-label="Prompt 分类">
             {SHELVES.map((item) => <button key={item.id} className={'prompt-shelf-tab ' + item.color + (activeShelf === item.id ? ' is-active' : '')} onClick={() => setActiveShelf(item.id)} role="tab" aria-selected={activeShelf === item.id}><span>{item.label}</span><small>{item.note}</small></button>)}
           </div>
