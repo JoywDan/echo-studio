@@ -2237,51 +2237,6 @@ input, textarea { font-family: inherit; }
 .prompt-kept { position: relative; padding: 28px 17px 18px; margin: 20px 0 0; border: 2px solid #906d86; border-radius: 12px 12px 22px 22px; background: repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 3px, transparent 3px 8px), linear-gradient(135deg, #b491a4, #83647e); box-shadow: inset 0 5px 8px rgba(54,33,51,.2), 3px 5px 0 rgba(81,47,72,.13); }.prompt-kept::before { content: ''; position: absolute; top: -12px; left: 16px; width: 123px; height: 24px; background: #efdcd9; border: 1px dashed rgba(130,83,110,.35); transform: rotate(-2deg); }.prompt-kept-heading { color: #fff5fa; }.prompt-kept-heading small { color: #f6dbe8; }.prompt-kept-chips { position: relative; z-index: 1; }.prompt-kept-chips button { background: #f9edf0; border: 1.5px solid rgba(115,73,103,.45); color: #74495f; box-shadow: 1px 2px 0 rgba(53,31,48,.12); }.prompt-kept-chips button span { background: #efd5df; }
 .prompt-parlour-footer { position: relative; z-index: 2; grid-template-columns: 128px 1fr; padding: 15px 17px calc(15px + env(safe-area-inset-bottom)); border-top: 2px solid rgba(125,77,109,.24); background: #f4e7e5; box-shadow: inset 0 6px 0 rgba(255,255,255,.45); }.prompt-clear, .prompt-copy { min-height: 53px; border: 2px solid rgba(112,70,101,.42); }.prompt-clear { font-size: 17px; background: #f8edef; box-shadow: 2px 3px 0 rgba(102,62,91,.16); }.prompt-copy { font-size: 18px; background: linear-gradient(100deg, #ba668f, #98517c); box-shadow: inset 0 0 0 3px rgba(255,235,244,.35), 0 4px 0 #6f3f62, 0 8px 15px rgba(99,54,81,.2); }
 @media (min-width: 760px) { .prompt-parlour { padding: 24px; }.prompt-parlour-shell { border-radius: 25px; }.prompt-parlour-header { padding: 22px 28px; }.prompt-parlour-scroll { padding: 30px 38px 124px; }.prompt-choice-list { display: grid; grid-template-columns: repeat(4, 1fr); }.prompt-choice { justify-content: center; }.prompt-parlour-footer { padding-left: 38px; padding-right: 38px; } }
-
-/* The reference is one composed notebook page, not a vertically reflowing app. */
-@media (min-width: 560px) {
-  .prompt-parlour { align-items: center; padding: 18px; }
-  .prompt-parlour-shell {
-    width: min(1100px, calc(100vw - 36px), calc((100dvh - 36px) * 1.36));
-    height: auto;
-    aspect-ratio: 1.36 / 1;
-    max-height: calc(100dvh - 36px);
-    border-radius: 15px;
-  }
-  .prompt-parlour-header { flex: 0 0 16%; min-height: 0; padding: 2.1% 3.2%; }
-  .prompt-dial { width: clamp(38px, 4.8vw, 55px); height: clamp(38px, 4.8vw, 55px); }
-  .prompt-parlour-title h2 { font-size: clamp(23px, 3.2vw, 41px); }
-  .prompt-parlour-title p { font-size: clamp(10px, 1.25vw, 15px); }
-  .prompt-parlour-scroll {
-    display: grid;
-    grid-template-rows: 1.12fr .72fr 1.05fr .88fr;
-    gap: 2.4%;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
-    padding: 2.4% 5.3% 1.2%;
-  }
-  .prompt-preview-card { min-height: 0; height: 100%; padding: 5.4% 3.8% 2.5%; }
-  .prompt-preview-card p { margin-top: 2.5%; font-size: clamp(11px, 1.55vw, 18px); line-height: 1.42; }
-  .prompt-preview-label { padding: .5% 2.1%; font-size: clamp(10px, 1.25vw, 16px); }
-  .prompt-paperclip { left: 5%; top: -17%; transform: rotate(-19deg) scale(.74); transform-origin: top left; }
-  .prompt-shelf-tabs { grid-template-columns: repeat(4, 1fr); gap: 2%; margin: 0; }
-  .prompt-shelf-tab { min-height: 0; height: 100%; padding: 7% 6% 5% 28%; border-radius: 14px; }
-  .prompt-shelf-tab::before { left: 8%; top: 29%; width: clamp(20px, 2.4vw, 29px); height: clamp(20px, 2.4vw, 29px); font-size: clamp(12px, 1.4vw, 17px); }
-  .prompt-shelf-tab span { font-size: clamp(13px, 1.9vw, 22px); }.prompt-shelf-tab small { margin-top: 2%; font-size: clamp(8px, 1.05vw, 13px); white-space: nowrap; }
-  .prompt-choice-paper { min-height: 0; height: 100%; padding: 2.4% 3%; border-radius: 12px; }
-  .prompt-choice-paper::after { top: 5%; right: 1%; transform: rotate(4deg) scale(.72); transform-origin: top right; }
-  .prompt-choice-heading { margin-bottom: 1.5%; padding-bottom: 1.1%; }
-  .prompt-choice-heading span { font-size: clamp(9px, 1vw, 13px); }.prompt-choice-heading h3 { font-size: clamp(15px, 2vw, 25px); }
-  .prompt-choice-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.4%; }
-  .prompt-choice { justify-content: center; min-height: 0; height: clamp(28px, 4vw, 45px); padding: 3% 5%; font-size: clamp(10px, 1.25vw, 15px); white-space: nowrap; }
-  .prompt-kept { min-height: 0; height: 100%; margin: 0; padding: 5.2% 3% 2.4%; border-radius: 10px 10px 20px 20px; }
-  .prompt-kept::before { top: -14%; left: 3%; transform: rotate(-2deg) scale(.72); transform-origin: left top; }
-  .prompt-kept-heading span { font-size: clamp(12px, 1.45vw, 18px); }.prompt-kept-heading small { font-size: clamp(9px, 1vw, 13px); }
-  .prompt-kept-chips { gap: 4px; margin-top: 1.6%; }.prompt-kept-chips button { padding: 1.2% 2.2%; font-size: clamp(9px, 1.08vw, 13px); }.prompt-kept-chips button span { width: clamp(12px, 1.4vw, 16px); height: clamp(12px, 1.4vw, 16px); font-size: clamp(11px, 1.2vw, 14px); }
-  .prompt-parlour-footer { flex: 0 0 13%; min-height: 0; grid-template-columns: 18% 1fr; gap: 3%; padding: 1.6% 5.3%; }
-  .prompt-clear, .prompt-copy { min-height: 0; height: 100%; font-size: clamp(12px, 1.65vw, 19px); }
-}
 .book-reader { position: fixed; inset: 0; z-index: 170; background: var(--paper); display: flex; flex-direction: column; }
 .br-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1.5px dashed rgba(120,95,70,0.25); }
 .br-back { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,253,248,0.8); border: 1.4px solid rgba(120,95,70,0.2); flex-shrink: 0; }
