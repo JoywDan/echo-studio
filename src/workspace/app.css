@@ -2813,7 +2813,8 @@ input, textarea { font-family: inherit; }
   .prompt-parlour-skin .prompt-preview-card { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 4.5% 8% 2%; }
   .prompt-parlour-skin .prompt-paperclip,
   .prompt-parlour-skin .prompt-preview-doodles,
-  .prompt-parlour-skin .prompt-preview-card > .tape { display: none; }
+  .prompt-parlour-skin .prompt-preview-card > .tape,
+  .prompt-parlour-skin .prompt-preview-card > .torn-bg { display: none; }
   .prompt-parlour-skin .prompt-preview-label {
     align-self: flex-start;
     padding: 4px 12px;
