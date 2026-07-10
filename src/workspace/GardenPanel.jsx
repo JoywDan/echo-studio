@@ -98,7 +98,8 @@ export default function GardenPanel({ onClose }) {
 .gd-head h2{font-family:'Songti SC','Noto Serif SC',serif;font-size:22px;color:#3a342a;margin:0;font-weight:700}
 .gd-head p{margin:0;font-size:12px;color:#9d9081}
 .gd-back{width:38px;height:38px;border-radius:12px;border:none;background:#efe8da;box-shadow:4px 4px 9px #cdc4b1,-4px -4px 9px #fbf7ed;cursor:pointer;display:grid;place-items:center}
-.gd-wrap{position:relative;margin:6px 14px;border-radius:20px;overflow:hidden;background:#0a0e22;box-shadow:inset 0 0 0 1px rgba(180,170,220,.15), 0 8px 30px rgba(30,20,60,.35);--px:0;--py:0}
+.gd-wrap{position:relative;margin:6px 14px;border-radius:20px;overflow:hidden;background:#0a0e22;box-shadow:inset 0 0 0 1px rgba(180,170,220,.15), 0 8px 30px rgba(30,20,60,.35);--px:0;--py:0;display:grid;place-items:center}
+.gd-wrap svg{width:100%;height:auto;max-height:calc(100vh - 240px);min-height:320px}
 .gd-far{transform:translate(calc(var(--px)*-5px),calc(var(--py)*-2px));transition:transform .7s cubic-bezier(.2,.8,.3,1)}
 .gd-mid{transform:translate(calc(var(--px)*-11px),calc(var(--py)*-5px));transition:transform .55s cubic-bezier(.2,.8,.3,1)}
 .gd-near{transform:translate(calc(var(--px)*-18px),calc(var(--py)*-8px));transition:transform .4s cubic-bezier(.2,.8,.3,1)}
@@ -146,7 +147,7 @@ export default function GardenPanel({ onClose }) {
         </header>
         {err && <div style={{ padding: '0 20px 6px', color: '#c4452e', fontSize: 12 }}>花园暂时看不清：{err}</div>}
         <div className="gd-wrap" ref={wrapRef} onPointerMove={onMove} onClick={() => setTip(null)}>
-          <svg viewBox="0 0 760 600" width="100%" style={{ display: 'block' }}>
+          <svg viewBox="0 0 760 600" preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
             {/* ── 天空原画(双版本交叉淡入) ── */}
             <g className="gd-far">
               <image href={AST + 'sky-night.webp'} x="0" y="0" width="760" height="600" preserveAspectRatio="xMidYMid slice" className="gd-fade" opacity={night ? 1 : 0} />
@@ -155,8 +156,8 @@ export default function GardenPanel({ onClose }) {
             </g>
             {/* ── 结构原画: 拱门(左) 温室(右) ── */}
             <g className="gd-mid">
-              <image href={AST + 'arch.webp'} x="42" y="242" width="240" preserveAspectRatio="xMidYMax meet" />
-              <image href={AST + 'greenhouse.webp'} x="486" y="288" width="252" preserveAspectRatio="xMidYMax meet" />
+              <image href={AST + 'arch.webp'} x="42" y="252" width="240" height="188" preserveAspectRatio="xMidYMax meet" />
+              <image href={AST + 'greenhouse.webp'} x="486" y="292" width="252" height="198" preserveAspectRatio="xMidYMax meet" />
               {/* 藤光=信任: 沿拱门弧线的青碧微光 */}
               {archLights.map(([x, y], i) => (
                 <circle key={i} className="gd-vine" style={{ '--vt': `${3 + (i % 4) * 0.8}s`, '--vd': `${i * 0.35}s` }}
