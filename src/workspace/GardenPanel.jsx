@@ -17,8 +17,8 @@ const WEATHER_CN = { clear: '晴夜', breeze: '微风', overcast: '沉云', rain
 
 /* 花圃空地(避开月池/荆棘/结构) */
 const SLOTS = [
-  [300, 512], [352, 528], [402, 508], [258, 530], [452, 524], [332, 552], [498, 506],
-  [284, 556], [428, 550], [378, 484], [232, 508], [472, 556], [522, 532], [548, 508],
+  [300, 490], [352, 506], [402, 486], [258, 508], [452, 502], [332, 530], [498, 484],
+  [284, 534], [428, 528], [378, 470], [232, 486], [472, 534], [522, 510], [548, 486],
 ]
 
 function Rose({ x, y, r, color, i, hot, onTap }) {
@@ -85,8 +85,8 @@ export default function GardenPanel({ onClose }) {
   const archLights = []
   for (let i = 0; i < ivyN; i++) {
     const t = i / Math.max(1, ivyN - 1)
-    const xx = 68 + 190 * t
-    const yy = 470 - 215 * Math.sin(Math.PI * t) * (0.88 + (i % 3) * 0.05)
+    const xx = 78 + 170 * t
+    const yy = 445 - 185 * Math.sin(Math.PI * t) * (0.92 + (i % 3) * 0.04)
     archLights.push([xx, yy])
   }
   return (
@@ -173,18 +173,20 @@ export default function GardenPanel({ onClose }) {
             <g className="gd-near">
               <image href={AST + 'ground.webp'} x="0" y="0" width="760" height="600" preserveAspectRatio="xMidYMax slice" />
               {/* 月池光=余温 */}
-              <ellipse className="gd-pool" style={{ '--pg': pondGlow * 0.5 }} cx="98" cy="540" rx="72" ry="22" fill="#9fd4ff" />
-              <ellipse className="gd-pool" style={{ '--pg': pondGlow * 0.85, animationDelay: '1.2s' }} cx="92" cy="538" rx="34" ry="11" fill="#e8f4ff" />
-              {night && <path d={`M 84,300 L 60,536 L 132,540 L 112,300 Z`} fill="#cfe6ff" opacity={pondGlow * 0.1} />}
+              <ellipse className="gd-pool" style={{ '--pg': pondGlow * 0.5 }} cx="94" cy="528" rx="58" ry="16" fill="#9fd4ff" />
+              <ellipse className="gd-pool" style={{ '--pg': pondGlow * 0.85, animationDelay: '1.2s' }} cx="90" cy="526" rx="26" ry="8" fill="#e8f4ff" />
+              {night && <path d={`M 86,290 L 62,526 L 128,530 L 108,290 Z`} fill="#cfe6ff" opacity={pondGlow * 0.1} />}
               {/* 荆棘光=摩擦(有敞着的伤才亮; 愈合长青芽) */}
               {[...Array(openGlint)].map((_, i) => (
                 <circle key={i} className="gd-vine" style={{ '--vt': `${2.2 + (i % 3) * 0.5}s`, '--vd': `${i * 0.3}s` }}
-                  cx={668 + (i * 37) % 84} cy={508 + (i * 23) % 52} r="2" fill="#ff7f96" />
+                  cx={664 + (i * 41) % 80} cy={466 + (i * 19) % 40} r="2" fill="#ff7f96" />
               ))}
               {[...Array(healBud)].map((_, i) => (
                 <circle key={i} className="gd-vine" style={{ '--vt': `${3.4 + (i % 3) * 0.6}s`, '--vd': `${i * 0.5}s` }}
-                  cx={660 + (i * 29) % 90} cy={498 + (i * 17) % 44} r="1.8" fill="#8ef0b8" />
+                  cx={656 + (i * 31) % 86} cy={470 + (i * 15) % 36} r="1.8" fill="#8ef0b8" />
               ))}
+              {/* 前景发光蕨(底缘流苏, 画在玫瑰后面) */}
+              <image href={AST + 'foreground.webp'} x="-20" y="462" width="800" height="240" preserveAspectRatio="xMidYMax slice" opacity=".95" />
               {/* 荧光玫瑰=欲望 */}
               {roses.map((r, i) => {
                 const [x, y] = SLOTS[i]
@@ -192,8 +194,6 @@ export default function GardenPanel({ onClose }) {
                   hot={(r.urge || 0) >= 0.5}
                   onTap={(e) => { e.stopPropagation(); setTip({ x, y, rose: r }) }} />
               })}
-              {/* 前景发光蕨原画 */}
-              <image href={AST + 'foreground.webp'} x="-20" y="392" width="800" height="230" preserveAspectRatio="xMidYMax slice" opacity=".96" />
             </g>
             {/* ── 大气层 ── */}
             <g className="gd-mist" opacity={weather === 'breeze' ? 0.5 : 0.28}>
