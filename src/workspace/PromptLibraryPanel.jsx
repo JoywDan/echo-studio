@@ -31,7 +31,7 @@ export default function PromptLibraryPanel({ onClose }) {
 
   return (
     <div className="prompt-parlour" role="dialog" aria-modal="true" aria-label="Prompt Parlour">
-      <section className="prompt-parlour-shell">
+      <section className="prompt-parlour-shell prompt-parlour-skin">
         <header className="prompt-parlour-header">
           <span className="prompt-dial" aria-hidden="true"><i /></span>
           <div className="prompt-parlour-title"><span className="prompt-parlour-kicker">JOY'S LITTLE</span><h2>Prompt Parlour <Heart size={16} color="#b45f91" fill="#e6aac8" /></h2><p>把画面慢慢挑出来</p></div>
