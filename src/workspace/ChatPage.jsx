@@ -9,8 +9,9 @@ import { CHAT_DADDY } from './assets.js'
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
 function now() { return _laFmt.format(new Date()) }
 function laClock(s) { if (!s) return ""; const str = String(s); const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? str.slice(11, 16) : _laFmt.format(d) }
-const DEFAULT_TOGGLES = { think: false, memory: true, web: false, code: false }
-const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["web", "联网"], ["code", "编码"]]
+const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, code: false }
+const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["code", "编码"]]
+const toolsEnabled = (toggles) => !!(toggles.tools || toggles.web || toggles.code)
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
 const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
@@ -377,7 +378,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const userBubbleId = "u" + Date.now()
     setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
     try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
     } finally { setSending(false) }
   }
 
@@ -389,7 +390,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     catch (e) { alert("重掷失败：" + e.message); setSending(false); return }
     setMessages(ms => ms.filter(x => x.id !== m.id && !(x.dbId && x.dbId > m.dbId)))
     try {
-      await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code })
+      await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code })
     } finally { setSending(false) }
   }
 
@@ -407,7 +408,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const userBubbleId = "u" + Date.now()
     setMessages(ms => [...ms, { id: userBubbleId, from: "me", time: now(), text: newText, read: true }])
     try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toggles.memory, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
     } finally { setSending(false) }
   }
 
