@@ -44,15 +44,14 @@ export default function PromptLibraryPanel({ onClose }) {
         </header>
 
         <div className="prompt-parlour-scroll">
-          <TornCard className="prompt-preview-card"><span className="prompt-paperclip" aria-hidden="true" /><Tape kind="pink" style={{ top: -12, right: '7%', transform: 'rotate(-9deg)' }} /><div className="prompt-preview-label"><Sparkle size={15} color="#9b5b8a" /> 今日的小配方</div><p>{composePrompt(selected)}</p><span className="prompt-preview-doodles" aria-hidden="true">☆ ♡</span></TornCard>
+          <TornCard className="prompt-preview-card"><span className="prompt-paperclip" aria-hidden="true" /><Tape kind="pink" style={{ top: -12, right: '7%', transform: 'rotate(-9deg)' }} /><div className="prompt-preview-label"><Sparkle size={15} color="#9b5b8a" /> 今日的小配方</div><div className="prompt-preview-text">{composePrompt(selected)}</div><span className="prompt-preview-doodles" aria-hidden="true">☆ ♡</span></TornCard>
           <div className="prompt-shelf-tabs" role="tablist" aria-label="Prompt 分类">
             {SHELVES.map((item) => <button key={item.id} className={'prompt-shelf-tab ' + item.color + (activeShelf === item.id ? ' is-active' : '')} onClick={() => setActiveShelf(item.id)} role="tab" aria-selected={activeShelf === item.id}><span>{item.label}</span><small>{item.note}</small></button>)}
           </div>
           <section className={'prompt-choice-paper ' + shelf.color}>
             <div className="prompt-choice-heading"><div><span>选一点</span><h3>{shelf.label}</h3></div><Sparkle size={21} color="#b45f91" /></div>
-            <div className="prompt-choice-list">{choices.map((choice) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)} title={choice.major + ' · ' + choice.minor}><span>{active ? '✦' : '○'}</span>{choice.label}</button> })}</div>
+            <div className="prompt-choice-list">{choices.map((choice) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)} title={choice.major + ' · ' + choice.minor}><span>{active ? '✦' : '○'}</span><b>{choice.label}</b><small>{choice.en}</small></button> })}</div>
           </section>
-          <section className="prompt-kept"><div className="prompt-kept-heading"><span>已经放进小口袋</span><small>{selected.length} pieces</small></div><div className="prompt-kept-chips">{selected.map((choice) => <button key={choice.id} onClick={() => { setSelected((current) => current.filter((item) => item.id !== choice.id)); setCopied(false) }}>{choice.label}<span>×</span></button>)}</div></section>
         </div>
 
         <footer className="prompt-parlour-footer"><button className="prompt-clear" onClick={() => { setSelected(STARTER); setCopied(false) }}>重来</button><button className="prompt-copy" onClick={copyPrompt}>{copied ? '已经放进剪贴板' : '复制小配方'} <span>↗</span></button></footer>
