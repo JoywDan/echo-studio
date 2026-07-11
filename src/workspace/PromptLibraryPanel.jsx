@@ -1,26 +1,31 @@
 import React from 'react'
 import { Icon, Heart, Sparkle, Star } from './doodles.jsx'
 import { TornCard, Tape } from './components.jsx'
+import promptCatalog from './assets/prompt-parlour-data.json'
 
 const SHELVES = [
-  { id: 'style', label: '画风', note: 'pick a world', color: 'lilac', choices: ['韩漫柔光', '日漫胶片', '油画浪漫', '电影感摄影'] },
-  { id: 'scene', label: '场景', note: 'set the room', color: 'rose', choices: ['暮色窗边', '雨夜街灯', '烛光卧室', '月色花园'] },
-  { id: 'mood', label: '氛围', note: 'keep the feeling', color: 'plum', choices: ['亲密静谧', '暧昧浪漫', '柔雾梦境', '戏剧光影'] },
-  { id: 'camera', label: '镜头', note: 'frame the moment', color: 'mauve', choices: ['85mm 浅景深', '近景特写', '竖构图', '侧逆光'] },
+  { id: 'style', slot: 'style', label: '画风', note: 'pick a world', color: 'lilac' },
+  { id: 'scene', slot: 'background', label: '场景', note: 'set the room', color: 'rose' },
+  { id: 'mood', slot: 'mood', label: '氛围', note: 'keep the feeling', color: 'plum' },
+  { id: 'camera', slot: 'camera', label: '镜头', note: 'frame the moment', color: 'mauve' },
 ]
 
-const STARTER = ['Joy', 'Dan', 'romantic', 'cinematic']
+const STARTER = [
+  { id: 'subject-joy', label: 'Joy', en: 'Joy' },
+  { id: 'subject-dan', label: 'Dan', en: 'Dan' },
+]
 
-function composePrompt(parts) { return parts.length ? parts.join(', ') : 'Joy and Dan, romantic cinematic scene' }
+function composePrompt(parts) { return parts.length ? parts.map((item) => item.en).filter(Boolean).join(', ') : 'Joy and Dan' }
 
 export default function PromptLibraryPanel({ onClose }) {
   const [activeShelf, setActiveShelf] = React.useState('style')
   const [selected, setSelected] = React.useState(STARTER)
   const [copied, setCopied] = React.useState(false)
   const shelf = SHELVES.find((item) => item.id === activeShelf) || SHELVES[0]
+  const choices = promptCatalog.slots?.[shelf.slot] || []
 
   const toggleChoice = (choice) => {
-    setSelected((current) => current.includes(choice) ? current.filter((item) => item !== choice) : [...current, choice])
+    setSelected((current) => current.some((item) => item.id === choice.id) ? current.filter((item) => item.id !== choice.id) : [...current, choice])
     setCopied(false)
   }
 
@@ -45,9 +50,9 @@ export default function PromptLibraryPanel({ onClose }) {
           </div>
           <section className={'prompt-choice-paper ' + shelf.color}>
             <div className="prompt-choice-heading"><div><span>选一点</span><h3>{shelf.label}</h3></div><Sparkle size={21} color="#b45f91" /></div>
-            <div className="prompt-choice-list">{shelf.choices.map((choice) => { const active = selected.includes(choice); return <button key={choice} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)}><span>{active ? '✦' : '○'}</span>{choice}</button> })}</div>
+            <div className="prompt-choice-list">{choices.map((choice) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)} title={choice.major + ' · ' + choice.minor}><span>{active ? '✦' : '○'}</span>{choice.label}</button> })}</div>
           </section>
-          <section className="prompt-kept"><div className="prompt-kept-heading"><span>已经放进小口袋</span><small>{selected.length} pieces</small></div><div className="prompt-kept-chips">{selected.map((choice) => <button key={choice} onClick={() => { setSelected((current) => current.filter((item) => item !== choice)); setCopied(false) }}>{choice}<span>×</span></button>)}</div></section>
+          <section className="prompt-kept"><div className="prompt-kept-heading"><span>已经放进小口袋</span><small>{selected.length} pieces</small></div><div className="prompt-kept-chips">{selected.map((choice) => <button key={choice.id} onClick={() => { setSelected((current) => current.filter((item) => item.id !== choice.id)); setCopied(false) }}>{choice.label}<span>×</span></button>)}</div></section>
         </div>
 
         <footer className="prompt-parlour-footer"><button className="prompt-clear" onClick={() => { setSelected(STARTER); setCopied(false) }}>重来</button><button className="prompt-copy" onClick={copyPrompt}>{copied ? '已经放进剪贴板' : '复制小配方'} <span>↗</span></button></footer>
