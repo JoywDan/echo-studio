@@ -1,14 +1,21 @@
 import React from 'react'
 import { Icon, Heart, Sparkle, Star } from './doodles.jsx'
 import { TornCard, Tape } from './components.jsx'
-import promptCatalog from './assets/prompt-parlour-data.json'
+import visualCatalog from './assets/prompt-parlour-visual.json'
 
 const SHELVES = [
-  { id: 'style', slot: 'style', label: '画风', note: 'pick a world', color: 'lilac' },
-  { id: 'scene', slot: 'background', label: '场景', note: 'set the room', color: 'rose' },
-  { id: 'mood', slot: 'mood', label: '氛围', note: 'keep the feeling', color: 'plum' },
-  { id: 'camera', slot: 'camera', label: '镜头', note: 'frame the moment', color: 'mauve' },
+  { id: 'visual', label: '画风', note: 'pick a world', color: 'lilac', slots: [{ id: 'style', label: '画风' }, { id: 'color', label: '配色' }, { id: 'texture', label: '材质' }] },
+  { id: 'character', label: '人物', note: 'shape the cast', color: 'rose', slots: [{ id: 'character', label: '人设' }, { id: 'outfit', label: '服装' }, { id: 'pose', label: '姿势' }, { id: 'expression', label: '表情' }] },
+  { id: 'scene', label: '场景', note: 'set the room', color: 'plum', slots: [{ id: 'background', label: '背景' }, { id: 'lighting', label: '光线' }, { id: 'mood', label: '氛围' }] },
+  { id: 'camera', label: '镜头', note: 'frame the moment', color: 'mauve', slots: [{ id: 'camera', label: '镜头' }, { id: 'avoid', label: '负向词' }] },
 ]
+
+const CATALOG_LOADERS = {
+  visual: () => Promise.resolve(visualCatalog),
+  character: () => import('./assets/prompt-parlour-character.json').then((module) => module.default),
+  scene: () => import('./assets/prompt-parlour-scene.json').then((module) => module.default),
+  camera: () => import('./assets/prompt-parlour-camera.json').then((module) => module.default),
+}
 
 const STARTER = [
   { id: 'subject-joy', label: 'Joy', en: 'Joy' },
@@ -18,11 +25,21 @@ const STARTER = [
 function composePrompt(parts) { return parts.length ? parts.map((item) => item.en).filter(Boolean).join(', ') : 'Joy and Dan' }
 
 export default function PromptLibraryPanel({ onClose }) {
-  const [activeShelf, setActiveShelf] = React.useState('style')
+  const [activeShelf, setActiveShelf] = React.useState('visual')
+  const [activeSlot, setActiveSlot] = React.useState('style')
+  const [catalog, setCatalog] = React.useState(visualCatalog)
   const [selected, setSelected] = React.useState(STARTER)
   const [copied, setCopied] = React.useState(false)
   const shelf = SHELVES.find((item) => item.id === activeShelf) || SHELVES[0]
-  const choices = promptCatalog.slots?.[shelf.slot] || []
+  const slot = shelf.slots.find((item) => item.id === activeSlot) || shelf.slots[0]
+  const choices = catalog.slots?.[slot.id] || []
+
+  React.useEffect(() => {
+    let active = true
+    setActiveSlot(shelf.slots[0].id)
+    CATALOG_LOADERS[shelf.id]().then((nextCatalog) => { if (active) setCatalog(nextCatalog) })
+    return () => { active = false }
+  }, [shelf.id])
 
   const toggleChoice = (choice) => {
     setSelected((current) => current.some((item) => item.id === choice.id) ? current.filter((item) => item.id !== choice.id) : [...current, choice])
@@ -49,7 +66,8 @@ export default function PromptLibraryPanel({ onClose }) {
             {SHELVES.map((item) => <button key={item.id} className={'prompt-shelf-tab ' + item.color + (activeShelf === item.id ? ' is-active' : '')} onClick={() => setActiveShelf(item.id)} role="tab" aria-selected={activeShelf === item.id}><span>{item.label}</span><small>{item.note}</small></button>)}
           </div>
           <section className={'prompt-choice-paper ' + shelf.color}>
-            <div className="prompt-choice-heading"><div><span>选一点</span><h3>{shelf.label}</h3></div><Sparkle size={21} color="#b45f91" /></div>
+            <div className="prompt-choice-heading"><div><span>选一点</span><h3>{slot.label}</h3></div><Sparkle size={21} color="#b45f91" /></div>
+            <div className="prompt-subslot-tabs">{shelf.slots.map((item) => <button key={item.id} className={activeSlot === item.id ? 'is-active' : ''} onClick={() => setActiveSlot(item.id)}>{item.label}</button>)}</div>
             <div className="prompt-choice-list">{choices.map((choice) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)} title={choice.major + ' · ' + choice.minor}><span>{active ? '✦' : '○'}</span><b>{choice.label}</b><small>{choice.en}</small></button> })}</div>
           </section>
         </div>
