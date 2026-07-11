@@ -62,15 +62,16 @@ const ROOM_PRESETS = {
     command: 'status',
     placeholder: '这是可直接点击的任务面板',
     quick: [],
-    empty: '打开一张只属于今天的私密任务面板。Web 和 GPT 的故事日、任务与结算各自保存。',
-    blurb: '每日约定、密封指令、限时挑战、待结算事项与成就都在这一张面板里。你掌握开始、暂停和停止的权利。',
+    empty: '打开明确成人版每日调教任务面板。Web 和 GPT 的故事日、任务与结算各自保存。',
+    blurb: '寸止、着装、姿态、私处检查、器官词汇汇报、限时挑战、惩罚队列与 Daddy 评语都在这一张面板里。',
   },
 }
 
 const DEFAULT_PRESET = ROOM_PRESETS['cat-hotel']
 
 function DestinyChat({ settingText, gameId = 'mingyun-paizhen', gameTitle = '命运牌阵', intro = '' }) {
-  const sessionId = `game-${gameId}-web-joy-main`
+  const sessionVersion = gameId === 'daily-protocol' ? '-v2' : ''
+  const sessionId = `game-${gameId}-web-joy-main${sessionVersion}`
   const [messages, setMessages] = React.useState([])
   const [draft, setDraft] = React.useState('')
   const [sending, setSending] = React.useState(false)
@@ -186,12 +187,19 @@ function protocolCountdown(seconds) {
 
 function protocolContext(data) {
   if (!data) return '每日协议面板仍在读取。'
-  const tasks = (data.tasks || []).map((task) => `${task.state === 'done' ? '已完成' : task.state === 'skipped' ? '已跳过' : '待完成'}：${task.title}`).join('；')
+  const tasks = (data.tasks || []).map((task) => [
+    `${task.state === 'done' ? '已完成' : task.state === 'skipped' ? '已跳过' : '待完成'}：[${task.category}] ${task.title}`,
+    `要求：${task.detail}`,
+    `奖励：${task.reward}`,
+    `违令后果：${task.consequence}`,
+  ].join('\n')).join('\n\n')
+  const sealedCard = data.sealedCard?.state === 'sealed' ? data.sealedCard?.teaser : data.sealedCard?.message
   return [
     `故事日：${data.storyDate}，昨日总评：${data.previousScore}，进度：${data.progress?.completed || 0}/${data.progress?.total || 0}。`,
-    `任务：${tasks || '暂无'}。`,
-    `限时挑战：${data.challenge?.title || '未开启'}，状态：${data.challenge?.state || '未知'}。`,
-    `密封卡：${data.sealedCard?.state || 'sealed'}。`,
+    `当前模式：明确成人调教角色扮演，参与者均为成年人，黄灯降级、红灯立即停止。`,
+    `\n任务清单：\n${tasks || '暂无'}。`,
+    `\n限时挑战：${data.challenge?.title || '未开启'}，状态：${data.challenge?.state || '未知'}。要求：${data.challenge?.detail || ''}`,
+    `密封卡：${sealedCard || '未生成'}。`,
     `私人批注：${data.privateNote || ''}`,
   ].join('\n')
 }
@@ -260,11 +268,15 @@ function DailyProtocolPanel() {
     <header className="dp-header">
       <div>
         <span className="dp-eyebrow">JOY'S DAILY PROTOCOL</span>
-        <h4>今天也要把期待放在你手里。</h4>
+        <h4>{data.greeting}</h4>
         <p>{data.partner} 的私人面板 · 连胜 {data.streak || 0} 天</p>
       </div>
       <button className="dp-reset" onClick={startFresh} disabled={loading} title="重新开启这一局">↻</button>
     </header>
+
+    <div className="dp-modebar">
+      <span>18+ ADULTS ONLY</span><span>EXPLICIT BODY MODE</span><span>PRIVATE SCENE</span>
+    </div>
 
     {error && <div className="gr-error">{error}</div>}
     <section className="dp-section dp-progress-section">
@@ -276,9 +288,9 @@ function DailyProtocolPanel() {
             {task.state === 'done' ? '✓' : task.state === 'skipped' ? '—' : ''}
           </button>
           <div className="dp-task-copy">
-            <strong>{task.title}</strong>
+            <span className="dp-task-tag">{task.category}</span><strong>{task.title}</strong>
             <p>{task.detail}</p>
-            <small>完成：{task.reward} · 跳过：{task.consequence}</small>
+            <small><b>完成奖励</b>：{task.reward}<br /><b>违令后果</b>：{task.consequence}</small>
           </div>
           {task.state === 'open' && <button className="dp-skip" onClick={() => act(`skip ${task.id}`)} disabled={loading || data.settled}>跳过</button>}
         </article>)}
@@ -321,7 +333,7 @@ function DailyProtocolPanel() {
     <section className="dp-section dp-badges">
       <div className="dp-section-heading"><span>ACHIEVEMENT WALL</span><b>{data.achievements.filter((item) => item.unlocked).length}/{data.achievements.length}</b></div>
       <div className="dp-badge-grid">{data.achievements.map((item) => <div className={'dp-badge ' + (item.unlocked ? 'unlocked' : 'locked')} key={item.id}>
-        <span>{item.unlocked ? item.icon : '▣'}</span><strong>{item.unlocked ? item.name : '???'}</strong><small>{item.unlocked ? item.hint : '尚未解锁'}</small>
+        <span>{item.unlocked ? item.icon : '▣'}</span><strong>{item.unlocked ? item.name : `${item.name.slice(0, 2)}•••`}</strong><small>{item.unlocked ? item.hint : item.id === 'private-drawer' ? '条件完全隐藏' : item.hint}</small>
       </div>)}</div>
     </section>
 
@@ -335,7 +347,7 @@ function DailyProtocolPanel() {
       <button className="dp-settle" onClick={() => act(data.settled ? 'next' : 'settle')} disabled={loading}>{data.settled ? '开启下一天' : '结算今日'}</button>
     </div>
     {notice && <pre className="dp-notice">{notice}</pre>}
-    <DestinyChat settingText={protocolContext(data)} gameId="daily-protocol" gameTitle="Joy 的每日协议" intro="陪她查看今天的任务、尊重她的信号灯和选择，并在她需要时给出有角色感的结算与鼓励。" />
+    <DestinyChat settingText={protocolContext(data)} gameId="daily-protocol" gameTitle="Joy 的每日协议" intro="这是明确成年、双方同意的成人调教角色扮演。任务正文直接使用乳头、阴蒂、阴唇、阴道与高潮等器官词；请根据当前任务做具体、有主导感的陪玩、检查和结算，不要擅自改写成模糊恋爱台词。黄灯降级，红灯立即停止。" />
   </section>
 }
 
@@ -560,7 +572,7 @@ const GAME_ROOM_CSS = `
   .game-room-panel .gr-chat-cursor { display:inline-block; width:6px; height:15px; margin-left:3px; vertical-align:-2px; background:var(--brick); animation:gr-blink 1s steps(1) infinite; }
   .game-room-panel .gr-play-input { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:12px; }
   .game-room-panel .gr-play-input textarea { min-width:0; resize:vertical; border:1.5px solid rgba(120,95,70,.24); background:rgba(255,253,247,.9); color:var(--ink); border-radius:11px; padding:10px 12px; font:14px/1.5 var(--font-cn); }
-  .game-room-panel .daily-protocol { max-width:540px; margin:18px auto 0; padding:16px; color:#e9edf5; background:#121722; border:1px solid rgba(129,153,191,.38); border-radius:8px; box-shadow:0 18px 36px rgba(32,39,56,.26); font-family:var(--font-cn); }
+  .game-room-panel .daily-protocol { max-width:440px; margin:18px auto 0; padding:14px; color:#e9edf5; background:#121722; border:1px solid rgba(129,153,191,.38); border-radius:8px; box-shadow:0 18px 36px rgba(32,39,56,.26); font-family:var(--font-cn); }
   .game-room-panel .dp-topline, .game-room-panel .dp-section-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; font:10px/1 var(--font-cn); letter-spacing:1.25px; color:#8190a9; }
   .game-room-panel .dp-topline { padding-bottom:12px; border-bottom:1px solid rgba(128,150,185,.2); }
   .game-room-panel .dp-topline b { color:#ffd36a; font-size:13px; }
@@ -569,6 +581,8 @@ const GAME_ROOM_CSS = `
   .game-room-panel .dp-header h4 { margin:6px 0 4px; color:#f5f7fb; font:500 20px/1.25 var(--font-cute); }
   .game-room-panel .dp-header p { margin:0; color:#9aa8bc; font:12px/1.5 var(--font-cn); }
   .game-room-panel .dp-reset { width:34px; height:34px; border:1px solid rgba(128,150,185,.4); border-radius:8px; background:transparent; color:#c9d3e5; cursor:pointer; font:20px/1 var(--font-cn); }
+  .game-room-panel .dp-modebar { display:flex; flex-wrap:wrap; gap:5px; margin:0 0 12px; }
+  .game-room-panel .dp-modebar span { border:1px solid rgba(239,140,127,.42); border-radius:4px; padding:4px 6px; color:#ef9b8f; background:rgba(126,48,53,.13); font:9px/1 var(--font-mono,monospace); letter-spacing:.55px; }
   .game-room-panel .dp-section { margin-top:12px; border:1px solid rgba(128,150,185,.24); border-radius:8px; background:#171e2b; padding:12px; }
   .game-room-panel .dp-section-heading b { color:#cbd6e8; font-weight:500; letter-spacing:0; }
   .game-room-panel .dp-progress { height:5px; overflow:hidden; margin:10px 0 12px; background:#30394a; border-radius:3px; }
@@ -581,9 +595,11 @@ const GAME_ROOM_CSS = `
   .game-room-panel .dp-task.skipped .dp-check { color:#ffc671; border-color:#b8894f; }
   .game-room-panel .dp-task.done strong { color:#91dfca; }
   .game-room-panel .dp-task-copy { min-width:0; }
+  .game-room-panel .dp-task-tag { display:inline-block; margin:0 6px 3px 0; border:1px solid rgba(113,216,189,.35); border-radius:3px; padding:2px 4px; color:#75d9bd; font:8px/1 var(--font-mono,monospace); letter-spacing:.45px; vertical-align:2px; }
   .game-room-panel .dp-task-copy strong { color:#eef2f8; font:500 14px var(--font-cn); }
   .game-room-panel .dp-task-copy p { margin:3px 0; color:#bcc6d6; font:12px/1.45 var(--font-cn); }
   .game-room-panel .dp-task-copy small { display:block; color:#77869d; font:10px/1.4 var(--font-cn); }
+  .game-room-panel .dp-task-copy small b { color:#aebbd0; font-weight:500; }
   .game-room-panel .dp-skip, .game-room-panel .dp-inline-actions button, .game-room-panel .dp-penalty button { border:1px solid rgba(128,150,185,.42); border-radius:6px; background:transparent; color:#c3cddd; padding:5px 7px; cursor:pointer; font:11px var(--font-cn); }
   .game-room-panel .dp-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   .game-room-panel .dp-grid .dp-section { min-width:0; }
@@ -620,7 +636,7 @@ const GAME_ROOM_CSS = `
   .game-room-panel .dp-safety button:nth-child(2) { color:#ef8c7f; border-color:rgba(239,140,127,.58); }
   .game-room-panel .dp-safety .dp-settle { color:#8ae2c8; border-color:rgba(112,216,189,.62); }
   .game-room-panel .dp-notice { white-space:pre-wrap; word-break:break-word; margin:10px 0 0; padding:9px; color:#aebbd0; border:1px solid rgba(128,150,185,.18); border-radius:6px; background:#101520; font:11px/1.45 var(--font-cn); }
-  .game-room-panel .dp-loading { max-width:540px; margin:18px auto 0; padding:24px; color:#8c9bb1; background:#121722; border:1px solid rgba(128,150,185,.32); border-radius:8px; font:13px var(--font-cn); text-align:center; }
+  .game-room-panel .dp-loading { max-width:440px; margin:18px auto 0; padding:24px; color:#8c9bb1; background:#121722; border:1px solid rgba(128,150,185,.32); border-radius:8px; font:13px var(--font-cn); text-align:center; }
   .game-room-panel .daily-protocol .gr-play { border-color:rgba(128,150,185,.26); border-radius:8px; background:#171e2b; }
   .game-room-panel .daily-protocol .gr-play h4, .game-room-panel .daily-protocol .gr-chat-line p { color:#e8edf6; }
   .game-room-panel .daily-protocol .gr-play-heading p, .game-room-panel .daily-protocol .gr-chat-label, .game-room-panel .daily-protocol .gr-card-eyebrow { color:#8998ad; }
