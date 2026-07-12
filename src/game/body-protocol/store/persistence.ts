@@ -7,6 +7,7 @@ import { LearnedAction } from '../models/learnedAction'
 import { JoyPlaybook } from '../models/playbook'
 import { NarrativePromise } from '../models/narrativePromise'
 import { MemoryCandidate } from '../models/memoryCandidate'
+import { BodyStateDelta, NormalizedAction } from '../models/bodyState'
 
 export interface BodyProtocolSnapshot {
   seed: string
@@ -25,6 +26,7 @@ export interface BodyProtocolSnapshot {
   estimatedTokens?: number
   narrativePromise?: NarrativePromise
   memoryCandidates?: MemoryCandidate[]
+  pendingTurns?: Array<{ turn: number; action: NormalizedAction; delta: BodyStateDelta; events: string[]; agencyDecision?: string }>
 }
 
 export interface BodyProtocolSave { schemaVersion: number; sessionId: string; savedAt: string; bodyState: BodyState; snapshot: BodyProtocolSnapshot; engineVersion: string; rulesetVersion: string }

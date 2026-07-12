@@ -34,4 +34,15 @@ describe('V3.1 acceptance', () => {
     state = bodyProtocolReducer(state, { type: 'APPROVE_MEMORY_CANDIDATE', id: state.memoryCandidates[0].id })
     expect(state.memoryCandidates[0].approved).toBe(true)
   })
+
+  it('batches local turns until Echo has responded', () => {
+    let state = bodyProtocolReducer(initialProtocolState(), { type: 'BEGIN_SESSION', sessionId: 'batch', seed: 'batch' })
+    state = bodyProtocolReducer(state, { type: 'REVEAL_PROTOCOL' })
+    for (let i = 0; i < 3; i += 1) { const action = state.currentCards[0].action; state = bodyProtocolReducer(state, { type: 'ACTIONS_READY' }); state = bodyProtocolReducer(state, { type: 'RESOLVE_ACTION', action }) }
+    expect(state.pendingTurns).toHaveLength(3)
+    expect(state.modelCalls).toBe(0)
+    state = bodyProtocolReducer(state, { type: 'CLEAR_PENDING_TURNS' })
+    expect(state.pendingTurns).toHaveLength(0)
+    expect(state.turnIndex).toBe(3)
+  })
 })
