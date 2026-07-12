@@ -1,0 +1,17 @@
+import React from 'react'
+import { actionMenu, contentCardToAction } from '../game/body-protocol/content/actionMenuAdapter'
+
+export default function ActionMenuLibrary({ disabled, onChoose }) {
+  const [categoryId, setCategoryId] = React.useState(actionMenu.categories[0].id)
+  const [selected, setSelected] = React.useState(null)
+  const [query, setQuery] = React.useState('')
+  const category = actionMenu.categories.find((item) => item.id === categoryId) || actionMenu.categories[0]
+  const cards = category.cards.filter((card) => !query || `${card.title}${card.teaser}${card.organs}`.toLowerCase().includes(query.toLowerCase()))
+  return <section style={{ maxWidth: 1100, margin: '22px auto', padding: 18, borderRadius: 18, background: 'linear-gradient(145deg,#2a1730,#171624)', border: '1px solid #6b3f69' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}><div><div style={{ color: '#f0abfc', fontSize: 11, letterSpacing: 2 }}>PRIVATE ACTION LIBRARY · 180 CARDS</div><h2 style={{ margin: '6px 0' }}>今晚想怎么玩他？</h2></div><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜动作或器官" style={{ minWidth: 190, padding: 10, borderRadius: 9 }} /></div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 8, margin: '16px 0' }}>{actionMenu.categories.map((item) => <button key={item.id} onClick={() => { setCategoryId(item.id); setSelected(null) }} style={{ padding: '10px 8px', borderRadius: 10, border: item.id === categoryId ? '1px solid #f0abfc' : '1px solid #4a354f', background: item.id === categoryId ? '#65355f' : '#261f2d', color: '#fff', cursor: 'pointer' }}>{item.title}<small style={{ display: 'block', marginTop: 3, opacity: .65 }}>{item.cards.length} 张</small></button>)}</div>
+    <h3 style={{ color: '#f5d0fe' }}>{category.title}</h3>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 10 }}>{cards.map((card) => <button key={card.id} onClick={() => setSelected(card)} style={{ padding: 14, minHeight: 135, textAlign: 'left', borderRadius: 12, border: selected?.id === card.id ? '1px solid #f0abfc' : '1px solid #49384f', background: '#1d1a27', color: '#fff', cursor: 'pointer' }}><strong>{card.title}</strong><p style={{ margin: '8px 0', color: '#e7c8df', fontSize: 13, lineHeight: 1.55 }}>{card.teaser}</p><small style={{ color: '#c084fc' }}>{card.organs} · 强度 {card.intensity}</small></button>)}</div>
+    {selected && <article style={{ marginTop: 16, padding: 18, borderRadius: 13, background: '#351f38', border: '1px solid #784d76' }}><div style={{ color: '#f0abfc', fontSize: 11 }}>{selected.mechanicId} · {selected.riskLevel}</div><h3>{selected.title}</h3><p style={{ color: '#f8e7f4', fontSize: 16, lineHeight: 1.75 }}>{selected.description}</p><p style={{ color: '#cbb7ca', fontSize: 13 }}>器官：{selected.organs}<br />方式：{selected.method}<br />节奏：{selected.rhythm}<br />建议：{selected.duration}</p>{selected.requiresLiveCheckin && <p style={{ color: '#fbcfe8', fontSize: 12 }}>这张卡执行前需要实时确认。</p>}<button disabled={disabled} onClick={() => onChoose(contentCardToAction(selected), selected)} style={{ padding: '11px 17px', borderRadius: 9, background: '#d946ef', color: '#fff', border: 0, cursor: disabled ? 'not-allowed' : 'pointer' }}>执行这张动作</button></article>}
+  </section>
+}
