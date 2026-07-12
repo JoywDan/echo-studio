@@ -6,6 +6,8 @@ import { AVATAR_CYCLE, AVATAR_TINTS } from './data.jsx'
 import { useTheme } from './theme.js'
 import Settings from './Settings.jsx'
 import { MusicBar } from './music.jsx'
+import GoldenSessionDebug from '../game/body-protocol/debug/GoldenSessionDebug.tsx'
+import BodyProtocolPage from './BodyProtocolPage.jsx'
 
 function genId() { return 'chat-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) }
 function relTime(s) {
@@ -35,6 +37,8 @@ export default function App() {
   const appRef = React.useRef(null)
   const { t, set, reset, applyTheme, exportTheme, importTheme, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont } = useTheme()
   const [settingsOpen, setSettingsOpen] = React.useState(false)
+  const bodyProtocolDebug = import.meta.env.DEV && new URLSearchParams(window.location.search).get('bodyProtocolDebug') === '1'
+  const bodyProtocolPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get('bodyProtocolPreview') === '1'
 
   // responsive
   React.useEffect(() => {
@@ -102,6 +106,8 @@ export default function App() {
     }).catch(() => {})
   }, [])
 
+  if (bodyProtocolDebug) return <div className="app is-wide paper-bg" style={cssVars}><GoldenSessionDebug /></div>
+  if (bodyProtocolPreview) return <div className="app is-wide paper-bg" style={cssVars}><BodyProtocolPage onClose={() => window.location.href = window.location.pathname} /></div>
   if (authed === null) return <div className="app is-wide paper-bg" style={{ display: 'grid', placeItems: 'center', ...cssVars }}><span className="muted">载入中…</span></div>
   if (authed === false) return (
     <div className="app is-wide paper-bg" style={cssVars}><div className="auth-screen">
@@ -119,5 +125,6 @@ export default function App() {
       </div>
       <MusicBar />
       <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} applyTheme={applyTheme} exportTheme={exportTheme} importTheme={importTheme} />
+      {bodyProtocolDebug && <GoldenSessionDebug />}
     </div>)
 }

@@ -23,6 +23,7 @@ export const STUDIO = [
   { id: "s16", title: "一起听", edge: "pink", icon: "star", creature: "BlobTrio", clip: true, deco: ["heart","star"], module: "music" },
   { id: "s17", title: "街景漫游", edge: "blue", icon: "pic", creature: "CatCamera", clip: true, deco: ["star","flower"], module: "street-wander" },
   { id: "s18", title: "Prompt Parlour", edge: "pink", icon: "star", clip: true, deco: ["heart","star"], module: "promptLibrary", english: true },
+  { id: "s19", title: "BODY PROTOCOL", edge: "blue", icon: "monitor", creature: "BlobTrio", clip: true, deco: ["heart","star"], module: "body-protocol", english: true },
 ]
 export const MODELS = [
   { label: "Opus 4.6", id: "claude-opus-4-6", supportsThinking: true, defaultThinking: true },

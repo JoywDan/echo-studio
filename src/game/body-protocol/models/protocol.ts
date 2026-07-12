@@ -1,0 +1,4 @@
+export type ProtocolTheme = 'edge_control' | 'zone_rotation' | 'command_dependency'
+export interface Protocol { id: string; title: string; theme: ProtocolTheme; rules: string[]; modifiers: { controlDecayMultiplier: number; anticipatoryResponseGain: number }; specialRule?: string }
+export interface SessionDirectorState { phase: 'invitation' | 'buildup' | 'pressure' | 'destabilization' | 'turning_point' | 'resolution' | 'aftercare'; tensionBudget: number; targetSessionLength: number; phaseStartedAtTurn: number; transitionReasons: string[] }
+export const GOLDEN_PROTOCOL: Protocol = { id: 'protocol_edge_three', title: 'THREE INTERRUPTIONS', theme: 'edge_control', rules: ['release_requires_permission', 'minimum_edge_count_3'], modifiers: { controlDecayMultiplier: 1.15, anticipatoryResponseGain: 1.2 }, specialRule: 'echo_has_one_resistance_token' }

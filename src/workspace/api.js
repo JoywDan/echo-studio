@@ -13,6 +13,10 @@ async function call(method, path, body) {
 }
 export const api = {
   ping: () => call('GET', '/api/ping'),
+  bodyProtocol: {
+    health: () => call('GET', '/api/body-protocol/health'),
+    respond: (body) => call('POST', '/api/body-protocol/respond', body),
+  },
   models: () => call('GET', '/api/chat/models'),
   sessions: () => call('GET', '/api/chat/sessions'),
   history: (sid) => call('GET', '/api/chat/history?session_id=' + encodeURIComponent(sid)),

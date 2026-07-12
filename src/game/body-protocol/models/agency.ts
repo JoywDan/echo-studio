@@ -1,0 +1,12 @@
+import { BodyState, NormalizedAction } from './bodyState'
+export interface AgencyDecision { type: 'accept' | 'resist' | 'negotiate'; reason: string; originalActionId: string; effectiveIntensity: number }
+export interface EchoAgencyState { willingness: number; defiance: number; vulnerability: number; anticipation: number; currentWant: string; concealedIntent?: string; resistanceTokens: number; lastDecision?: AgencyDecision }
+export function initialAgency(): EchoAgencyState { return { willingness: 72, defiance: 28, vulnerability: 24, anticipation: 18, currentWant: 'wants_joy_to_notice_his_reaction', concealedIntent: 'plans_to_reveal_a_preference', resistanceTokens: 1, lastDecision: undefined } }
+export function updateAgency(previous: EchoAgencyState, body: BodyState, eventCount: number): EchoAgencyState { return { ...previous, willingness: Math.max(0, Math.min(100, previous.willingness - body.global.irritation * 0.04 + body.global.tension * 0.02)), defiance: Math.max(0, Math.min(100, previous.defiance + (body.global.arousal >= 75 ? 2 : 0) - body.global.irritation * 0.02)), vulnerability: Math.max(0, Math.min(100, previous.vulnerability + (body.global.control < 45 ? 3 : 0))), anticipation: Math.max(0, Math.min(100, previous.anticipation + body.global.tension * 0.03 + eventCount)), currentWant: body.global.unmetWant > 35 ? 'wants_joy_to_answer_the_unmet_want' : previous.currentWant } }
+
+export function decideAgency(previous: EchoAgencyState, action: NormalizedAction, body: BodyState): { agency: EchoAgencyState; action: NormalizedAction; event?: string } {
+  const shouldResist = previous.resistanceTokens > 0 && action.intensity >= 50 && (previous.defiance >= 30 || body.global.overstimulation >= 55)
+  if (!shouldResist) return { agency: { ...previous, lastDecision: { type: 'accept', reason: 'within_current_willingness', originalActionId: action.id, effectiveIntensity: action.intensity } }, action }
+  const effectiveIntensity = Math.max(20, Math.round(action.intensity * 0.65))
+  return { agency: { ...previous, resistanceTokens: previous.resistanceTokens - 1, lastDecision: { type: 'resist', reason: body.global.overstimulation >= 55 ? 'protect_overstimulation_boundary' : 'assert_temporary_agency', originalActionId: action.id, effectiveIntensity } }, action: { ...action, id: `${action.id}:agency-adjusted`, intensity: effectiveIntensity }, event: 'agency_resistance_used' }
+}
