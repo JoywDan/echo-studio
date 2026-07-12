@@ -20,6 +20,22 @@ async function req(method, path, body) {
   return res.json()
 }
 
+async function uploadImage(file) {
+  const res = await fetch(BASE + '/api/chat/upload-image', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'image/jpeg',
+      'Authorization': 'Bearer ' + token()
+    },
+    body: file
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || res.statusText)
+  }
+  return res.json()
+}
+
 export const api = {
   ping: () => req('GET', '/api/ping'),
 
@@ -116,5 +132,13 @@ export const api = {
     create: (d) => req('POST', '/api/tasks', d),
     update: (id, d) => req('PUT', `/api/tasks/${id}`, d),
     remove: (id) => req('DELETE', `/api/tasks/${id}`),
+  },
+
+  promptParlour: {
+    compose: (intent) => req('POST', '/api/prompt-parlour/compose', { intent }),
+    reverse: async (file, focus = '') => {
+      const uploaded = await uploadImage(file)
+      return req('POST', '/api/prompt-parlour/reverse', { filename: uploaded.filename, focus })
+    },
   },
 }
