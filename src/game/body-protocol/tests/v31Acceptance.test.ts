@@ -25,4 +25,13 @@ describe('V3.1 acceptance', () => {
     expect(state.estimatedTokens).toBe(0)
     expect(Object.values(state.body.zones).every((zone) => zone.zoneFatigue >= 0 && zone.zoneFatigue <= 100)).toBe(true)
   })
+
+  it('requires explicit approval for memory candidates and pays off the promise', () => {
+    let state = bodyProtocolReducer(initialProtocolState(), { type: 'BEGIN_SESSION', sessionId: 'memory', seed: 'memory' })
+    state = bodyProtocolReducer(state, { type: 'PAUSE' })
+    expect(state.narrativePromise.status).toBe('paid_off')
+    expect(state.memoryCandidates[0].approved).toBe(false)
+    state = bodyProtocolReducer(state, { type: 'APPROVE_MEMORY_CANDIDATE', id: state.memoryCandidates[0].id })
+    expect(state.memoryCandidates[0].approved).toBe(true)
+  })
 })

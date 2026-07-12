@@ -5,6 +5,8 @@ import { EchoAgencyState } from '../models/agency'
 import { Protocol, SessionDirectorState } from '../models/protocol'
 import { LearnedAction } from '../models/learnedAction'
 import { JoyPlaybook } from '../models/playbook'
+import { NarrativePromise } from '../models/narrativePromise'
+import { MemoryCandidate } from '../models/memoryCandidate'
 
 export interface BodyProtocolSnapshot {
   seed: string
@@ -21,6 +23,8 @@ export interface BodyProtocolSnapshot {
   playbook?: JoyPlaybook
   modelCalls?: number
   estimatedTokens?: number
+  narrativePromise?: NarrativePromise
+  memoryCandidates?: MemoryCandidate[]
 }
 
 export interface BodyProtocolSave { schemaVersion: number; sessionId: string; savedAt: string; bodyState: BodyState; snapshot: BodyProtocolSnapshot; engineVersion: string; rulesetVersion: string }
