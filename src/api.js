@@ -140,5 +140,11 @@ export const api = {
       const uploaded = await uploadImage(file)
       return req('POST', '/api/prompt-parlour/reverse', { filename: uploaded.filename, focus })
     },
+    startCompose: (intent) => req('POST', '/api/prompt-parlour/jobs/compose', { intent }),
+    startReverse: async (file, focus = '') => {
+      const uploaded = await uploadImage(file)
+      return req('POST', '/api/prompt-parlour/jobs/reverse', { filename: uploaded.filename, focus })
+    },
+    job: (id) => req('GET', `/api/prompt-parlour/jobs/${encodeURIComponent(id)}`),
   },
 }

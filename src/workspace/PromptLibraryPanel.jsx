@@ -19,6 +19,7 @@ const CATALOG_LOADERS = {
 }
 
 const STARTER = [{ id: 'subject-joy', label: 'Joy', en: 'Joy' }, { id: 'subject-dan', label: 'Dan', en: 'Dan' }]
+const ACTIVE_JOB_KEY = 'prompt_parlour_active_job'
 const SLOT_LABELS = Object.fromEntries(SHELVES.flatMap((s) => s.slots.map((slot) => [slot.id, slot.label])))
 const tokens = (text) => String(text || '').toLowerCase().match(/[a-z0-9\u4e00-\u9fff]+/g) || []
 const composePrompt = (parts) => parts.map((item) => item.en).filter(Boolean).join(', ') || 'Joy and Dan'
@@ -56,6 +57,38 @@ export default function PromptLibraryPanel({ onClose }) {
     return () => { active = false }
   }, [shelf.id])
 
+  const finishJob = React.useCallback(async (job) => {
+    if (job.status === 'working') return false
+    localStorage.removeItem(ACTIVE_JOB_KEY)
+    setWorking(false)
+    if (job.status === 'error') { setError(job.error || '这次没有配好，再试一次'); return true }
+    setDraft(job.result)
+    await matchDraft(job.result)
+    return true
+  }, [])
+
+  React.useEffect(() => {
+    let active = true
+    let timer
+    const poll = async () => {
+      const jobId = localStorage.getItem(ACTIVE_JOB_KEY)
+      if (!jobId || !active) return
+      setWorking(true)
+      try {
+        const job = await api.promptParlour.job(jobId)
+        if (!(await finishJob(job)) && active) timer = setTimeout(poll, 1800)
+      } catch (e) {
+        if (e.message?.includes('过期')) localStorage.removeItem(ACTIVE_JOB_KEY)
+        setWorking(false); setError(e.message || '任务状态读取失败')
+      }
+    }
+    const resume = () => { if (document.visibilityState === 'visible') { clearTimeout(timer); poll() } }
+    poll()
+    document.addEventListener('visibilitychange', resume)
+    window.addEventListener('focus', resume)
+    return () => { active = false; clearTimeout(timer); document.removeEventListener('visibilitychange', resume); window.removeEventListener('focus', resume) }
+  }, [finishJob])
+
   const toggleChoice = (choice) => {
     setSelected((current) => current.some((item) => item.id === choice.id) ? current.filter((item) => item.id !== choice.id) : [...current, choice])
     setCopied(false)
@@ -75,11 +108,15 @@ export default function PromptLibraryPanel({ onClose }) {
   const runAssistant = async () => {
     setWorking(true); setError(''); setDraft(null); setMatched([])
     try {
-      const next = assistantMode === 'image' ? await api.promptParlour.reverse(imageFile, intent) : await api.promptParlour.compose(intent)
-      setDraft(next)
-      await matchDraft(next)
+      const started = assistantMode === 'image' ? await api.promptParlour.startReverse(imageFile, intent) : await api.promptParlour.startCompose(intent)
+      localStorage.setItem(ACTIVE_JOB_KEY, started.jobId)
+      const check = async () => {
+        const job = await api.promptParlour.job(started.jobId)
+        if (await finishJob(job)) return
+        setTimeout(check, 1800)
+      }
+      check()
     } catch (e) { setError(e.message || '这次没有配好，再试一次') }
-    finally { setWorking(false) }
   }
 
   const applyDraft = () => {
@@ -108,7 +145,7 @@ export default function PromptLibraryPanel({ onClose }) {
           <div className="prompt-ai-sheet-head"><div><small>{assistantMode === 'image' ? 'reverse a picture' : 'tell me the scene'}</small><h3>{assistantMode === 'image' ? '看图反推' : '一句话创作'}</h3></div><button onClick={() => setAssistantMode('')} aria-label="关闭">×</button></div>
           {assistantMode === 'image' && <label className="prompt-ai-upload"><input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} /><span>{imageFile ? imageFile.name : '选择一张参考图'}</span></label>}
           <textarea value={intent} onChange={(e) => setIntent(e.target.value)} placeholder={assistantMode === 'image' ? '可选：想重点分析画风、光影或构图…' : '例如：Joy 穿家居服，在窗边喝咖啡…'} />
-          <button className="prompt-ai-run" disabled={working || (assistantMode === 'text' ? !intent.trim() : !imageFile)} onClick={runAssistant}>{working ? '正在翻素材库…' : '帮我配一版'}</button>
+          <button className="prompt-ai-run" disabled={working || (assistantMode === 'text' ? !intent.trim() : !imageFile)} onClick={runAssistant}>{working ? 'VPS 正在后台配图，切走也没关系…' : '帮我配一版'}</button>
           {error && <p className="prompt-ai-error">{error}</p>}
           {draft && <div className="prompt-ai-result"><h4>{draft.subjectZh || '这幅画'}</h4><p>{draft.notesZh}</p><div className="prompt-ai-match-list">{matched.map(({ slotId, suggestion, choice }) => <div key={slotId} className={choice ? '' : 'is-unmatched'}><b>{SLOT_LABELS[slotId] || slotId}</b><span>{suggestion.labelZh}</span><small>{choice ? choice.en : `素材库暂无精确匹配：${suggestion.phrase}`}</small></div>)}</div><button className="prompt-ai-apply" onClick={applyDraft}>应用已匹配的配方</button></div>}
         </section>}
