@@ -9,8 +9,8 @@ import { CHAT_DADDY } from './assets.js'
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
 function now() { return _laFmt.format(new Date()) }
 function laClock(s) { if (!s) return ""; const str = String(s); const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? str.slice(11, 16) : _laFmt.format(d) }
-const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, code: false }
-const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["code", "编码"]]
+const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, code: false, image: false, stock: false }
+const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["image", "画图"], ["stock", "股票"], ["code", "编码"]]
 const toolsEnabled = (toggles) => !!(toggles.tools || toggles.web || toggles.code)
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
@@ -257,7 +257,25 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const typing = typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'TEXTAREA'
     if (el.scrollTop < 8 && !typing && visibleCount < messages.length) loadEarlier()
   }
-  const setToggle = (k) => setToggles(s => { const n = { ...s, [k]: !s[k] }; if (sessionId) writeSessionSettings(sessionId, { toggles: n }); return n })
+  const setToggle = (k) => setToggles(s => {
+    const n = { ...s, [k]: !s[k] }
+    const on = n[k]
+    // scope 通道(画图/股票)与重型开关(工具/编码)互斥; 联网与 scope 可共存(后端 lean 路线兼容)
+    if (on && ["tools", "web", "code"].includes(k)) n.image = false
+    if (on && ["tools", "code"].includes(k)) n.stock = false
+    if (on && (k === "image" || k === "stock")) { n.tools = false; n.code = false }
+    if (sessionId) writeSessionSettings(sessionId, { toggles: n })
+    return n
+  })
+  const chatFlags = () => ({
+    thinking: toggles.think,
+    tools: (toggles.image || toggles.stock) ? false : toolsEnabled(toggles),
+    mcp_tools: (toggles.image || toggles.stock) ? false : toggles.tools,
+    web_tools: toggles.web,
+    coding_tools: toggles.code,
+    ...(toggles.image ? { tool_scope: "image" } : {}),
+    ...((toggles.image || toggles.web || toggles.stock) ? { tool_scopes: [toggles.image && "image", toggles.web && "web", toggles.stock && "stock"].filter(Boolean) } : {}),
+  })
   const pickModel = (id) => { setModel(id); if (sessionId) writeSessionSettings(sessionId, { model: id }); const m = models.find(x => x.id === id); if (m && !m.supportsThinking) setToggle && setToggles(s => ({ ...s, think: false })) }
 
   React.useEffect(() => {
@@ -378,7 +396,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const userBubbleId = "u" + Date.now()
     setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
     try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, ...chatFlags() }, { userBubbleId })
     } finally { setSending(false) }
   }
 
@@ -390,7 +408,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     catch (e) { alert("重掷失败：" + e.message); setSending(false); return }
     setMessages(ms => ms.filter(x => x.id !== m.id && !(x.dbId && x.dbId > m.dbId)))
     try {
-      await streamTo({ session_id: sessionId, regenerate: true, model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code })
+      await streamTo({ session_id: sessionId, regenerate: true, model, ...chatFlags() })
     } finally { setSending(false) }
   }
 
@@ -408,7 +426,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const userBubbleId = "u" + Date.now()
     setMessages(ms => [...ms, { id: userBubbleId, from: "me", time: now(), text: newText, read: true }])
     try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, thinking: toggles.think, tools: toolsEnabled(toggles), mcp_tools: toggles.tools, web_tools: toggles.web, coding_tools: toggles.code }, { userBubbleId })
+      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, ...chatFlags() }, { userBubbleId })
     } finally { setSending(false) }
   }
 
