@@ -17,6 +17,11 @@ export const api = {
     health: () => call('GET', '/api/body-protocol/health'),
     respond: (body) => call('POST', '/api/body-protocol/respond', body),
   },
+  suisui: {
+    baseline: () => call('GET', '/api/suisui/touches?baseline=1'),
+    touches: (since) => call('GET', '/api/suisui/touches?since_id=' + since + '&limit=50'),
+    push: (body) => call('POST', '/api/suisui/push', body),
+  },
   models: () => call('GET', '/api/chat/models'),
   sessions: () => call('GET', '/api/chat/sessions'),
   history: (sid) => call('GET', '/api/chat/history?session_id=' + encodeURIComponent(sid)),
