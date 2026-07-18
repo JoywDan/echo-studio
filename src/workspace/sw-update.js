@@ -4,7 +4,29 @@ import { registerSW } from 'virtual:pwa-register'
 export function setupSWUpdatePrompt() {
   const ua = navigator.userAgent || ''
   const isIOSWebKit = /iP(hone|ad|od)/.test(ua) && /AppleWebKit/.test(ua)
-  if (isIOSWebKit) return
+  if (isIOSWebKit) {
+    // 2026-07-18: iOS 不再整个退出(旧守卫让 Joy 的 PWA 永远收不到更新——新 SW 卡 waiting 至死)。
+    // iOS 路径 = 永不打扰的后台换血: 不弹条、不 60s 轮询; 回前台时查一次更新,
+    // 新版就绪后等 app 退到后台的瞬间接管, 下次打开即新版。绝不在她用着的时候刷新页面。
+    const updateSW = registerSW({
+      onRegisteredSW(swUrl, registration) {
+        if (!registration) return
+        const check = () => { try { const p = registration.update(); if (p && p.catch) p.catch(() => {}) } catch {} }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) check() })
+        check()
+      },
+      onNeedRefresh() {
+        const swap = () => {
+          if (!document.hidden) return
+          try { const p = updateSW(true); if (p && p.catch) p.catch(() => {}) } catch {}
+        }
+        document.addEventListener('visibilitychange', swap)
+        swap()
+      },
+      onOfflineReady() {},
+    })
+    return
+  }
 
   let bar = null
   let swReg = null
