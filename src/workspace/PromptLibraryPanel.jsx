@@ -156,7 +156,7 @@ export default function PromptLibraryPanel({ onClose }) {
     try {
       const locks = Object.fromEntries(matched.filter((item) => lockedSlots.has(item.slotId)).map((item) => [item.slotId, item.choice?.en || item.suggestion.phrase]))
       const options = { count: variantCount, locks, previous: remix ? draft : undefined }
-      const description = intent.trim() || draft?.subjectZh || draft?.subject
+      const description = intent.trim() || draft?.subjectZh || draft?.subject || ''
       const started = assistantMode === 'image' && !remix
         ? await api.promptParlour.startReverse(imageFile, intent, options)
         : await api.promptParlour.startCompose(description, options)
@@ -201,14 +201,14 @@ export default function PromptLibraryPanel({ onClose }) {
       <div className="prompt-parlour-scroll">
         <div className="prompt-ai-actions prompt-ai-actions-v3"><button onClick={() => { setAssistantMode('image'); setVariants([]); setError('') }}>▣ 看图反推</button><button onClick={() => { setAssistantMode('text'); setVariants([]); setError('') }}>✦ 一句话创作</button><button onClick={openHistory}>⌛ 历史</button></div>
 
-        {historyOpen && <section className="prompt-ai-sheet prompt-history-sheet"><div className="prompt-ai-sheet-head"><div><small>saved forever</small><h3>配方历史</h3></div><button onClick={() => setHistoryOpen(false)}>×</button></div><div className="prompt-history-list">{history.length ? history.map((job) => <button key={job.id} disabled={job.status !== 'done'} onClick={() => loadHistoryJob(job)}><b>{job.result?.variants?.[0]?.titleZh || job.result?.titleZh || job.input?.intent || '看图反推'}</b><span>{job.status === 'done' ? `${job.result?.variants?.length || 1} 套方案` : job.status === 'error' ? '失败' : '仍在制作'}</span><small>{new Date(job.createdAt).toLocaleString('zh-CN')}</small></button>) : <p>还没有历史配方</p>}</div></section>}
+        {historyOpen && <section className="prompt-ai-sheet prompt-history-sheet"><div className="prompt-ai-sheet-head"><div><small>saved forever</small><h3>配方历史</h3></div><button onClick={() => setHistoryOpen(false)}>×</button></div><div className="prompt-history-list">{history.length ? history.map((job) => <button key={job.id} disabled={job.status !== 'done'} onClick={() => loadHistoryJob(job)}><b>{job.result?.variants?.[0]?.titleZh || job.result?.titleZh || job.input?.intent || (job.type === 'compose' ? '自由灵感' : '看图反推')}</b><span>{job.status === 'done' ? `${job.result?.variants?.length || 1} 套方案` : job.status === 'error' ? '失败' : '仍在制作'}</span><small>{new Date(job.createdAt).toLocaleString('zh-CN')}</small></button>) : <p>还没有历史配方</p>}</div></section>}
 
         {assistantMode && <section className="prompt-ai-sheet">
           <div className="prompt-ai-sheet-head"><div><small>{assistantMode === 'image' ? 'reverse a picture' : 'tell me the scene'}</small><h3>{assistantMode === 'image' ? '看图反推' : '一句话创作'}</h3></div><button onClick={() => setAssistantMode('')} aria-label="关闭">×</button></div>
           {assistantMode === 'image' && !draft && <label className="prompt-ai-upload"><input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} /><span>{imageFile ? imageFile.name : '选择一张参考图'}</span></label>}
-          {!draft && <textarea value={intent} onChange={(e) => setIntent(e.target.value)} placeholder={assistantMode === 'image' ? '可选：想重点分析画风、光影或构图…' : '例如：Joy 穿家居服，在窗边喝咖啡…'} />}
+          {!draft && <textarea value={intent} onChange={(e) => setIntent(e.target.value)} placeholder={assistantMode === 'image' ? '可选：想重点分析画风、光影或构图…' : '写一句你的画面；留空则让系统为 Joy 和 Dan 天马行空…'} />}
           <div className="prompt-variant-count"><span>给我几套</span>{[3, 5, 8].map((count) => <button key={count} className={variantCount === count ? 'is-active' : ''} onClick={() => setVariantCount(count)}>{count}</button>)}</div>
-          {!draft && <button className="prompt-ai-run" disabled={working || (assistantMode === 'text' ? !intent.trim() : !imageFile)} onClick={() => runAssistant()}>{working ? 'VPS 正在后台做多套配方，切走也没关系…' : `帮我配 ${variantCount} 套`}</button>}
+          {!draft && <button className="prompt-ai-run" disabled={working || (assistantMode === 'image' && !imageFile)} onClick={() => runAssistant()}>{working ? 'VPS 正在后台做多套配方，切走也没关系…' : assistantMode === 'text' && !intent.trim() ? `随机灵感 ${variantCount} 套` : `帮我配 ${variantCount} 套`}</button>}
           {error && <p className="prompt-ai-error">{error}</p>}
 
           {draft && <div className="prompt-ai-result">
