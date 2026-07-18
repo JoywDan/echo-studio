@@ -219,6 +219,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [providerStatus, setProviderStatus] = React.useState({ label: "Claude Subscription", privacy: "Full private context" })
 
   const scrollRef = React.useRef(null)
+  const contentRef = React.useRef(null)
+  const stickRef = React.useRef(true)      // 贴底协议: 用户在底部时, 任何内容长高都自动重钉(流式/图片加载/思考块展开全覆盖)
+  const prevLenRef = React.useRef(0)
   const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
   const [atTop, setAtTop] = React.useState(true)
   const [atBottom, setAtBottom] = React.useState(true)
@@ -252,7 +255,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const onScroll = () => {
     const el = scrollRef.current; if (!el) return
     setAtTop(el.scrollTop < 40)
-    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 60)
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+    setAtBottom(nearBottom)
+    stickRef.current = nearBottom
     // 自动加载更早只在\"真贴顶(<8px)且此刻没在打字\"时触发——躲开手机键盘弹出致 scrollTop 瞬时抖动误触(打字时自己往上滑的根因)
     const typing = typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'TEXTAREA'
     if (el.scrollTop < 8 && !typing && visibleCount < messages.length) loadEarlier()
@@ -295,6 +300,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     if (!sessionId) { setMessages([]); return }
     if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return }
     let alive = true
+    stickRef.current = true  // 新开/切窗默认落底
     api.history(sessionId).then(d => {
       if (!alive) return
       const msgs = (d.messages || []).map((m, i) => ({
@@ -315,6 +321,26 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }, [sessionId])
 
   React.useEffect(() => { scrollToEnd(false) }, [])
+
+  // 贴底协议核心: 内容或容器一变高(流式增字/图片后到/思考块展开/键盘弹出), 只要用户本就在底部, 立即无动画重钉。
+  // 用户上滑阅读旧消息时 stickRef=false, 观察器沉默, 绝不抢滚动。
+  React.useEffect(() => {
+    const el = scrollRef.current, inner = contentRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const ro = new ResizeObserver(() => {
+      if (stickRef.current && !loadingEarlierRef.current) el.scrollTop = el.scrollHeight
+    })
+    if (inner) ro.observe(inner)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // 渲染窗锚定: 新消息到达时若用户正在上面读旧消息, 同步扩大渲染窗, 防 60 条滑窗把上方内容抽走导致视口跳动
+  React.useLayoutEffect(() => {
+    const len = messages.length, prev = prevLenRef.current
+    prevLenRef.current = len
+    if (len > prev && prev > 0 && !stickRef.current) setVisibleCount(c => Math.min(c + (len - prev), len))
+  }, [messages.length])
 
   const abortRef = React.useRef(null)
   const [editingId, setEditingId] = React.useState(null)
@@ -356,7 +382,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const ac = new AbortController(); abortRef.current = ac
     try {
       const meta = await api.stream(body,
-        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)); if (Math.random() < 0.25) scrollToEnd() }, signal: ac.signal })
+        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)) }, signal: ac.signal })
       const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
       setProviderStatus({
         label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
@@ -452,6 +478,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <Heart size={15} color="#e2b3aa" className="float" style={{ top: 40, right: 24 }} />
           <Star size={14} color="#d99a92" className="float" style={{ top: 260, left: 16 }} />
           <DashFly w={66} className="float" style={{ top: 150, right: 30 }} />
+          <div ref={contentRef}>
           {visibleCount < messages.length && (
             <button className="chat-load-earlier" onClick={loadEarlier}>↑ 还有 {messages.length - visibleCount} 条更早的 · 点这里或往上拉</button>
           )}
@@ -469,6 +496,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
               onEdit={m.from === "me" && m.dbId && !sending ? () => { setEditingId(m.id); setEditDraft(m.text || "") } : null}
               onRoll={isLastEcho && m.dbId && !sending ? () => rollMsg(m) : null} />
           })}
+          </div>
         </div>
 
         <div className="chat-jump">
