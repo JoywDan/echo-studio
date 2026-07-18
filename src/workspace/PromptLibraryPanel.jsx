@@ -3,6 +3,7 @@ import { api } from '../api.js'
 import { Heart, Sparkle } from './doodles.jsx'
 import { TornCard, Tape } from './components.jsx'
 import visualCatalog from './assets/prompt-parlour-visual.json'
+import { summarizePromptChoice, summarizePromptText } from './promptKeywords.js'
 
 const SHELVES = [
   { id: 'visual', label: '画风', note: 'pick a world', color: 'lilac', slots: [{ id: 'style', label: '画风' }, { id: 'color', label: '配色' }, { id: 'texture', label: '材质' }] },
@@ -31,7 +32,8 @@ function scoreChoice(choice, suggestion) {
   if (choice.major === suggestion.major) score += 60
   if (choice.minor === suggestion.minor) score += 80
   const wanted = new Set(tokens(`${suggestion.phrase} ${suggestion.labelZh}`))
-  for (const token of tokens(`${choice.en} ${choice.label}`)) if (wanted.has(token)) score += token.length > 3 ? 5 : 2
+  const summary = summarizePromptChoice(choice)
+  for (const token of tokens(`${choice.en} ${choice.label} ${summary.keywords.join(' ')}`)) if (wanted.has(token)) score += token.length > 3 ? 5 : 2
   return score
 }
 
@@ -57,10 +59,17 @@ export default function PromptLibraryPanel({ onClose }) {
   const [error, setError] = React.useState('')
   const [historyOpen, setHistoryOpen] = React.useState(false)
   const [history, setHistory] = React.useState([])
+  const [choiceSearch, setChoiceSearch] = React.useState('')
   const draft = variants[variantIndex] || null
   const shelf = SHELVES.find((item) => item.id === activeShelf) || SHELVES[0]
   const slot = shelf.slots.find((item) => item.id === activeSlot) || shelf.slots[0]
   const choices = catalog.slots?.[slot.id] || []
+  const choiceViews = React.useMemo(() => choices.map((choice) => ({ choice, summary: summarizePromptChoice(choice, slot.id) })), [choices, slot.id])
+  const visibleChoices = React.useMemo(() => {
+    const query = choiceSearch.trim().toLowerCase()
+    if (!query) return choiceViews
+    return choiceViews.filter(({ choice, summary }) => `${choice.label} ${choice.major} ${choice.minor} ${summary.searchText}`.toLowerCase().includes(query))
+  }, [choiceViews, choiceSearch])
 
   React.useEffect(() => {
     let active = true
@@ -68,6 +77,8 @@ export default function PromptLibraryPanel({ onClose }) {
     CATALOG_LOADERS[shelf.id]().then((next) => { if (active) setCatalog(next) })
     return () => { active = false }
   }, [shelf.id])
+
+  React.useEffect(() => { setChoiceSearch('') }, [activeSlot])
 
   const matchDraft = React.useCallback(async (nextDraft) => {
     if (!nextDraft) { setMatched([]); return }
@@ -203,14 +214,20 @@ export default function PromptLibraryPanel({ onClose }) {
           {draft && <div className="prompt-ai-result">
             {variants.length > 1 && <div className="prompt-variant-tabs">{variants.map((item, index) => <button key={index} className={variantIndex === index ? 'is-active' : ''} onClick={() => switchVariant(index)}>{index + 1}. {item.titleZh || `方案 ${index + 1}`}</button>)}</div>}
             <h4>{draft.titleZh || draft.subjectZh || '这幅画'}</h4><p>{draft.subjectZh}</p><p>{draft.notesZh}</p>
-            <div className="prompt-ai-match-list">{matched.map(({ slotId, suggestion, choice }) => <div key={slotId} className={(choice ? '' : 'is-unmatched') + (lockedSlots.has(slotId) ? ' is-locked' : '')}><button className="prompt-slot-lock" onClick={() => toggleLock(slotId)} aria-label={lockedSlots.has(slotId) ? `解锁${SLOT_LABELS[slotId]}` : `锁定${SLOT_LABELS[slotId]}`}>{lockedSlots.has(slotId) ? '●' : '○'}</button><b>{SLOT_LABELS[slotId] || slotId}</b><span>{suggestion.labelZh}</span><small>{choice ? choice.en : `素材库暂无精确匹配：${suggestion.phrase}`}</small></div>)}</div>
+            <div className="prompt-ai-match-list">{matched.map(({ slotId, suggestion, choice }) => { const fallback = summarizePromptText(suggestion.phrase, slotId); return <div key={slotId} className={(choice ? '' : 'is-unmatched') + (lockedSlots.has(slotId) ? ' is-locked' : '')}><button className="prompt-slot-lock" onClick={() => toggleLock(slotId)} aria-label={lockedSlots.has(slotId) ? `解锁${SLOT_LABELS[slotId]}` : `锁定${SLOT_LABELS[slotId]}`}>{lockedSlots.has(slotId) ? '●' : '○'}</button><b>{SLOT_LABELS[slotId] || slotId}</b><span>{suggestion.labelZh}</span><small>{choice ? choice.en : `关键词：${fallback.keywords.join(' · ')}`}</small></div> })}</div>
             <div className="prompt-result-actions"><button onClick={() => runAssistant({ remix: true })} disabled={working}>{working ? '后台重配中…' : `只重配未锁定 (${lockedSlots.size} 项已锁)`}</button><button className="prompt-ai-apply" onClick={applyDraft}>应用这一套</button></div>
           </div>}
         </section>}
 
         <TornCard className="prompt-preview-card"><span className="prompt-paperclip" aria-hidden="true" /><Tape kind="pink" style={{ top: -12, right: '7%', transform: 'rotate(-9deg)' }} /><div className="prompt-preview-label"><Sparkle size={15} color="#9b5b8a" /> 今日的小配方</div><div className="prompt-preview-text">{composePrompt(selected)}</div><span className="prompt-preview-doodles" aria-hidden="true">☆ ♡</span></TornCard>
         <div className="prompt-shelf-tabs" role="tablist" aria-label="Prompt 分类">{SHELVES.map((item) => <button key={item.id} className={'prompt-shelf-tab ' + item.color + (activeShelf === item.id ? ' is-active' : '')} onClick={() => setActiveShelf(item.id)} role="tab" aria-selected={activeShelf === item.id}><span>{item.label}</span><small>{item.note}</small></button>)}</div>
-        <section className={'prompt-choice-paper ' + shelf.color}><div className="prompt-choice-heading"><div><span>选一点</span><h3>{slot.label}</h3></div><Sparkle size={21} color="#b45f91" /></div><div className="prompt-subslot-tabs">{shelf.slots.map((item) => <button key={item.id} className={activeSlot === item.id ? 'is-active' : ''} onClick={() => setActiveSlot(item.id)}>{item.label}</button>)}</div><div className="prompt-choice-list">{choices.map((choice) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '')} onClick={() => toggleChoice(choice)} title={`${choice.major} > ${choice.minor}`}><span>{active ? '✓' : '○'}</span><b>{choice.label}</b><small>{choice.en}</small></button> })}</div></section>
+        <section className={'prompt-choice-paper ' + shelf.color}>
+          <div className="prompt-choice-heading"><div><span>选一点</span><h3>{slot.label}</h3></div><Sparkle size={21} color="#b45f91" /></div>
+          <div className="prompt-subslot-tabs">{shelf.slots.map((item) => <button key={item.id} className={activeSlot === item.id ? 'is-active' : ''} onClick={() => setActiveSlot(item.id)}>{item.label}</button>)}</div>
+          <label className="prompt-choice-search"><span>⌕</span><input value={choiceSearch} onChange={(event) => setChoiceSearch(event.target.value)} placeholder={`搜索${slot.label}关键词…`} /></label>
+          <div className="prompt-choice-list">{visibleChoices.map(({ choice, summary }) => { const active = selected.some((item) => item.id === choice.id); return <button key={choice.id} className={'prompt-choice ' + (active ? 'is-selected' : '') + (summary.unclassified ? ' is-keyword-summary' : '')} onClick={() => toggleChoice(choice)} title={`${choice.major} > ${choice.minor}\n${choice.en}`}><span>{active ? '✓' : '○'}</span><b>{summary.unclassified ? summary.title : choice.label}</b>{summary.unclassified && <em>{summary.keywords.slice(0, 6).map((keyword) => <i key={keyword}>{keyword}</i>)}</em>}<small>{choice.en}</small></button> })}</div>
+          {!visibleChoices.length && <p className="prompt-choice-empty">没有找到这个关键词</p>}
+        </section>
       </div>
       <footer className="prompt-parlour-footer"><button className="prompt-clear" onClick={() => { setSelected(STARTER); setCopied(false) }}>重来</button><button className="prompt-copy" onClick={copyPrompt}>{copied ? '已经放进剪贴板' : '复制小配方'} <span>↗</span></button></footer>
     </section>
