@@ -4,6 +4,7 @@ import { Heart, Sparkle } from './doodles.jsx'
 import { TornCard, Tape } from './components.jsx'
 import visualCatalog from './assets/prompt-parlour-visual.json'
 import { summarizePromptChoice, summarizePromptText } from './promptKeywords.js'
+import SoulOfflinePanel from './SoulOfflinePanel.jsx'
 
 const SHELVES = [
   { id: 'visual', label: '画风', note: 'pick a world', color: 'lilac', slots: [{ id: 'style', label: '画风' }, { id: 'color', label: '配色' }, { id: 'texture', label: '材质' }] },
@@ -166,7 +167,7 @@ export default function PromptLibraryPanel({ onClose }) {
 
   const openHistory = async () => {
     setHistoryOpen(true); setError('')
-    try { setHistory((await api.promptParlour.history(20)).jobs || []) }
+    try { setHistory(((await api.promptParlour.history(30)).jobs || []).filter((job) => job.type !== 'soul_offline').slice(0, 20)) }
     catch (e) { setError(e.message || '历史读取失败') }
   }
 
@@ -199,11 +200,13 @@ export default function PromptLibraryPanel({ onClose }) {
       <header className="prompt-parlour-header"><span className="prompt-dial" aria-hidden="true"><i /></span><div className="prompt-parlour-title"><span className="prompt-parlour-kicker">JOY'S LITTLE</span><h2>Prompt Parlour <Heart size={16} color="#b45f91" fill="#e6aac8" /></h2><p>把画面慢慢挑出来</p></div><div className="prompt-window-controls"><span className="prompt-window-min" aria-hidden="true">−</span><button className="prompt-window-close" onClick={onClose} aria-label="返回 Studio">×</button></div></header>
 
       <div className="prompt-parlour-scroll">
-        <div className="prompt-ai-actions prompt-ai-actions-v3"><button onClick={() => { setAssistantMode('image'); setVariants([]); setError('') }}>▣ 看图反推</button><button onClick={() => { setAssistantMode('text'); setVariants([]); setError('') }}>✦ 一句话创作</button><button onClick={openHistory}>⌛ 历史</button></div>
+        <div className="prompt-ai-actions prompt-ai-actions-v3"><button onClick={() => { setAssistantMode('image'); setVariants([]); setError('') }}>▣ 看图反推</button><button onClick={() => { setAssistantMode('text'); setVariants([]); setError('') }}>✦ 一句话创作</button><button onClick={() => { setAssistantMode('soul'); setVariants([]); setError('') }}>○ 灵魂离线</button><button onClick={openHistory}>⌛ 历史</button></div>
 
         {historyOpen && <section className="prompt-ai-sheet prompt-history-sheet"><div className="prompt-ai-sheet-head"><div><small>saved forever</small><h3>配方历史</h3></div><button onClick={() => setHistoryOpen(false)}>×</button></div><div className="prompt-history-list">{history.length ? history.map((job) => <button key={job.id} disabled={job.status !== 'done'} onClick={() => loadHistoryJob(job)}><b>{job.result?.variants?.[0]?.titleZh || job.result?.titleZh || job.input?.intent || (job.type === 'compose' ? '自由灵感' : '看图反推')}</b><span>{job.status === 'done' ? `${job.result?.variants?.length || 1} 套方案` : job.status === 'error' ? '失败' : '仍在制作'}</span><small>{new Date(job.createdAt).toLocaleString('zh-CN')}</small></button>) : <p>还没有历史配方</p>}</div></section>}
 
-        {assistantMode && <section className="prompt-ai-sheet">
+        {assistantMode === 'soul' && <SoulOfflinePanel onClose={() => setAssistantMode('')} />}
+
+        {assistantMode && assistantMode !== 'soul' && <section className="prompt-ai-sheet">
           <div className="prompt-ai-sheet-head"><div><small>{assistantMode === 'image' ? 'reverse a picture' : 'tell me the scene'}</small><h3>{assistantMode === 'image' ? '看图反推' : '一句话创作'}</h3></div><button onClick={() => setAssistantMode('')} aria-label="关闭">×</button></div>
           {assistantMode === 'image' && !draft && <label className="prompt-ai-upload"><input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} /><span>{imageFile ? imageFile.name : '选择一张参考图'}</span></label>}
           {!draft && <textarea value={intent} onChange={(e) => setIntent(e.target.value)} placeholder={assistantMode === 'image' ? '可选：想重点分析画风、光影或构图…' : '写一句你的画面；留空则让系统为 Joy 和 Dan 天马行空…'} />}

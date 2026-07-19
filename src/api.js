@@ -36,6 +36,34 @@ async function uploadImage(file) {
   return res.json()
 }
 
+async function uploadPromptIdentity(id, file) {
+  const res = await fetch(BASE + `/api/prompt-parlour/identities/${encodeURIComponent(id)}/images`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'image/jpeg',
+      'X-Filename': encodeURIComponent(file.name || `${id}.jpg`),
+      'Authorization': 'Bearer ' + token()
+    },
+    body: file
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || res.statusText)
+  }
+  return res.json()
+}
+
+async function promptIdentityBlob(id, imageId) {
+  const res = await fetch(BASE + `/api/prompt-parlour/identities/${encodeURIComponent(id)}/images/${encodeURIComponent(imageId)}/download`, {
+    headers: { 'Authorization': 'Bearer ' + token() }
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error || res.statusText)
+  }
+  return res.blob()
+}
+
 export const api = {
   ping: () => req('GET', '/api/ping'),
 
@@ -148,5 +176,10 @@ export const api = {
     job: (id) => req('GET', `/api/prompt-parlour/jobs/${encodeURIComponent(id)}`),
     history: (limit = 20) => req('GET', `/api/prompt-parlour/jobs?limit=${limit}`),
     removeJob: (id) => req('DELETE', `/api/prompt-parlour/jobs/${encodeURIComponent(id)}`),
+    identities: () => req('GET', '/api/prompt-parlour/identities'),
+    uploadIdentity: (id, file) => uploadPromptIdentity(id, file),
+    removeIdentityImage: (id, imageId) => req('DELETE', `/api/prompt-parlour/identities/${encodeURIComponent(id)}/images/${encodeURIComponent(imageId)}`),
+    identityImageBlob: (id, imageId) => promptIdentityBlob(id, imageId),
+    startSoulOffline: (options) => req('POST', '/api/prompt-parlour/jobs/soul-offline', options),
   },
 }
