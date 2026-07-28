@@ -2959,3 +2959,32 @@ input, textarea { font-family: inherit; }
 .prompt-choice-empty{position:relative;z-index:1;margin:18px 0;color:#92768a;text-align:center;font-size:13px}
 @media(min-width:760px){.prompt-parlour-skin .prompt-choice-search{flex:none;margin:-2px 2px 8px;padding:5px 10px}.prompt-parlour-skin .prompt-choice.is-keyword-summary{min-height:76px;grid-template-rows:auto auto auto}.prompt-parlour-skin .prompt-choice.is-keyword-summary>span{grid-row:1/4}.prompt-parlour-skin .prompt-choice.is-keyword-summary em{min-width:0;max-height:28px;overflow:hidden}.prompt-parlour-skin .prompt-choice.is-keyword-summary em i{font-size:clamp(8px,.72vw,10px)}.prompt-parlour-skin .prompt-choice.is-keyword-summary small{-webkit-line-clamp:1}}
 @media(max-width:520px){.prompt-choice-search{margin-bottom:9px}.prompt-choice.is-keyword-summary{flex-basis:100%;min-height:78px}}
+
+
+/* —— 2026-07-19 移动端丝滑: 视口锁定 + 滚动稳定 ——
+   根治「聊天窗口自己往上滑」: iOS 键盘弹出 / Safari 工具栏收放时, 系统会滚动
+   *窗口本身* 把 app 顶上去 —— 容器内的 ResizeObserver 管不到这一层。
+   解法: 把 body 钉死在视口上(不可滚), app 高度跟随 visualViewport(见 main.jsx)。
+   回滚: 删掉本段 + main.jsx 的 syncViewportHeight 即可。 */
+html, body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+}
+.app {
+  height: var(--app-h, 100%);
+}
+.chat-scroll {
+  overscroll-behavior: contain;      /* 滚到头不再把整页橡皮筋拖走 */
+  -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+}
+.build-id {
+  margin-left: 7px;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  opacity: 0.42;
+}

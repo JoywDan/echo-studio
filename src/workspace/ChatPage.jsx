@@ -85,7 +85,7 @@ function renderRichInner(text) {
   if (last < t.length) segs.push({ type: 't', v: t.slice(last) })
   if (!segs.length) return renderNarr(t, 'x')
   return segs.map((seg, i) => seg.type === 'img'
-    ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} loading="lazy" /></a>
+    ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} /></a>
     : <React.Fragment key={'t' + i}>{renderNarr(seg.v, 't' + i)}</React.Fragment>)
 }
 
@@ -133,7 +133,7 @@ function CopyBtn({ text }) {
   return <button className={"msg-act-btn" + (done ? " copied" : "")} onClick={copy} title="复制整段">{done ? "已复制 ✓" : "复制"}</button>
 }
 
-function Message({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
+function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
   const isMe = msg.from === "me"
   const imgs = (msg.attachments || []).filter(a => a.kind === "image")
   const files = (msg.attachments || []).filter(a => a.kind === "file")
@@ -208,6 +208,11 @@ async function downscaleImage(file, maxDim = 1600, quality = 0.85) {
     return (blob && blob.size < file.size) ? blob : file
   } catch { return file }
 }
+// 流式回复时每个 token 都会 setState。不 memo 的话 60 条消息全部重渲染 —— 手机上就是「不丝滑」的主因。
+// 比较器只看内容对象本身: 回调是每次渲染新建的箭头函数, 但它们闭包捕获的都是同一个 msg 与稳定 setter, 忽略其身份是安全的。
+const MessageRow = React.memo(MessageBase, (a, b) =>
+  a.msg === b.msg && a.deco === b.deco && !!a.onEdit === !!b.onEdit && !!a.onRoll === !!b.onRoll)
+
 export default function ChatPage({ conv, models = [], onBack, onSessionTouched, onRenameConv }) {
   const [messages, setMessages] = React.useState([])
   const [model, setModel] = React.useState("")
@@ -241,6 +246,30 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const decos = ["tape", "", "clip", "", "flowertape", "", "clip", ""]
 
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
+  // 流式增量按帧合并: 每个 token 都 setState 会让 React 一秒重渲几十次(手机掉帧的直接原因)。
+  // 攒进 ref, 下一帧统一 flush 一次。
+  const deltaBufRef = React.useRef('')
+  const deltaRafRef = React.useRef(0)
+  const flushDelta = (echoId) => {
+    deltaRafRef.current = 0
+    const chunk = deltaBufRef.current
+    if (!chunk) return
+    deltaBufRef.current = ''
+    setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || '') + chunk } : x))
+  }
+  // 收尾用: 同步取走残余缓冲并撤掉待执行帧 —— 流式结束时正文取自 x.streamed,
+  // 不 drain 就会丢掉最后一帧的字。
+  const drainDelta = () => {
+    if (deltaRafRef.current) { cancelAnimationFrame(deltaRafRef.current); deltaRafRef.current = 0 }
+    const chunk = deltaBufRef.current
+    deltaBufRef.current = ''
+    return chunk
+  }
+  const pushDelta = (echoId, t) => {
+    deltaBufRef.current += t
+    if (deltaRafRef.current) return
+    deltaRafRef.current = requestAnimationFrame(() => flushDelta(echoId))
+  }
   const scrollToTop = () => { const el = scrollRef.current; if (el) el.scrollTo({ top: 0, behavior: "smooth" }) }
   const loadingEarlierRef = React.useRef(false)
   const loadEarlier = () => {
@@ -382,23 +411,25 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const ac = new AbortController(); abortRef.current = ac
     try {
       const meta = await api.stream(body,
-        { onDelta: (t) => { setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || "") + t } : x)) }, signal: ac.signal })
+        { onDelta: (t) => pushDelta(echoId, t), signal: ac.signal })
       const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
       setProviderStatus({
         label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
         privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
       })
+      const _tail = drainDelta()
       setMessages(m => m.map(x => {
-        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: x.streamed, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
+        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
         if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
         return x
       }))
       onSessionTouched && onSessionTouched()
     } catch (e) {
+      const _tail = drainDelta()
       const recovered = e.server ? false : await recoverReply(echoId, baseTs)
       if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
-        (x.streamed && x.streamed.length)
-          ? { ...x, done: true, text: x.streamed, streamed: undefined }
+        ((x.streamed || '') + _tail).length
+          ? { ...x, done: true, text: (x.streamed || '') + _tail, streamed: undefined }
           : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
       ) : x))
     } finally { abortRef.current = null; setTimeout(() => scrollToEnd(), 60) }
@@ -467,7 +498,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <TornCard className="chat-header-bg" />
           <button className="back-btn" onClick={onBack} aria-label="返回"><Icon name="back" size={24} color="var(--brick)" /></button>
           <span className="chat-avatar-wrap"><img className="daddy-avatar chat-daddy-avatar" src={CHAT_DADDY} alt="Echo" /><span className="avatar-online" /></span>
-          <div className="chat-id" onClick={renameThis} title="点这里给窗口改名" style={{ cursor: "pointer" }}><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线</div></div>
+          <div className="chat-id" onClick={renameThis} title="点这里给窗口改名" style={{ cursor: "pointer" }}><div className="chat-name">{sessionTitle}</div><div className="chat-status"><span className="dot" /><span className="dot" /> 在线<span className="build-id" title="前端构建号">{__BUILD_ID__}</span></div></div>
           <button className="icon-btn" onClick={() => docInputRef.current && docInputRef.current.click()} aria-label="附件"><Icon name="clip" size={20} color="var(--ink-soft)" /></button>
           <button className="icon-btn" onClick={renameThis} aria-label="给窗口改名"><Icon name="menu" size={22} color="var(--ink)" /></button>
         </header>
@@ -492,7 +523,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
                   <button className="msg-act-btn" disabled={sending || !editDraft.trim()} onClick={saveEdit} style={{ fontWeight: 700 }}>保存并重新生成 ↻</button>
                 </div></div></div>)
             const isLastEcho = m.from === "echo" && m === messages[messages.length - 1]
-            return <Message key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]}
+            return <MessageRow key={m.id} msg={m} onImage={setLightbox} onDecide={decide} deco={decos[i % decos.length]}
               onEdit={m.from === "me" && m.dbId && !sending ? () => { setEditingId(m.id); setEditDraft(m.text || "") } : null}
               onRoll={isLastEcho && m.dbId && !sending ? () => rollMsg(m) : null} />
           })}

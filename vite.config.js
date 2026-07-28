@@ -3,7 +3,11 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// 构建号注入(2026-07-19): 前端 header 显示, 一眼确认手机跑的是哪一版
+const BUILD_ID = process.env.BUILD_ID || new Date().toISOString().slice(5, 16).replace('T', '.').replace(/-/g, '')
+
 export default defineConfig({
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   base: '/echo-studio/',
   plugins: [
     react(),
