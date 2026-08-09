@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { mkdirSync, writeFileSync } from 'fs'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // 构建号注入(2026-07-19): 前端 header 显示, 一眼确认手机跑的是哪一版
@@ -8,9 +9,23 @@ const BUILD_ID = process.env.BUILD_ID || new Date().toISOString().slice(5, 16).r
 
 export default defineConfig({
   define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
+  // 构建号落盘: 前端拿它跟自己内嵌的号比对, 旧了就提示换血(见 build-check.js)。
+  // 放 dist 根目录, 静态层对 .json 已强制 no-store, 不会被缓存骗。
+
   base: '/echo-studio/',
   plugins: [
     react(),
+    {
+      name: 'emit-build-id',
+      closeBundle() {
+        try {
+          const dir = resolve(process.cwd(), 'dist')
+          mkdirSync(dir, { recursive: true })
+          writeFileSync(resolve(dir, 'build-id.json'), JSON.stringify({ build: BUILD_ID }))
+          console.log('[emit-build-id] ' + BUILD_ID)
+        } catch (e) { console.warn('[emit-build-id]', e.message) }
+      },
+    },
     VitePWA({
       // chat 是日常入口，离线可用壳 + 静态资源
       registerType: 'prompt',   // 2026-07-02: 配"新版本已就绪"提示条, 点了才换血——告别关三次开三次

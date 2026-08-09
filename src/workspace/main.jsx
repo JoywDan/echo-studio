@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './app.css'
 import { setupSWUpdatePrompt } from './sw-update.js'
+import { setupBuildCheck } from './build-check.js'
 
 try {
   const params = new URLSearchParams(window.location.search)
@@ -43,3 +44,5 @@ try {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />)
 // SW 更新提示放在渲染之后+防爆: 它在 iOS Safari 上闹脾气也绝不能挡住界面(2026-07-02 手机白屏根因)
 setTimeout(() => { try { setupSWUpdatePrompt() } catch (e) {} }, 800)
+// 版本心跳: SW 链路失灵时的兜底真相源(2026-08-03)
+setTimeout(() => { try { setupBuildCheck() } catch (e) {} }, 1200)
