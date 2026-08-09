@@ -225,6 +225,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   const scrollRef = React.useRef(null)
   const contentRef = React.useRef(null)
+  const gestureRef = React.useRef(0)        // 最近一次真实手势(touch/wheel)的时间戳
   const stickRef = React.useRef(true)      // 贴底协议: 用户在底部时, 任何内容长高都自动重钉(流式/图片加载/思考块展开全覆盖)
   const prevLenRef = React.useRef(0)
   const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
@@ -286,10 +287,15 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     setAtTop(el.scrollTop < 40)
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
     setAtBottom(nearBottom)
-    stickRef.current = nearBottom
+    // 只有真实手势才能解除贴底。键盘弹出/工具栏收放会让容器变矮并派发 scroll 事件,
+    // 旧代码在这里把 stickRef 误判成 false, 于是紧接着的重钉被跳过 —— 这正是"自己往上滑"的根。
+    // 回到底部则任何时候都可以重新贴上(安全方向)。
+    const byGesture = Date.now() - gestureRef.current < 600
+    if (nearBottom) stickRef.current = true
+    else if (byGesture) stickRef.current = false
     // 自动加载更早只在\"真贴顶(<8px)且此刻没在打字\"时触发——躲开手机键盘弹出致 scrollTop 瞬时抖动误触(打字时自己往上滑的根因)
     const typing = typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'TEXTAREA'
-    if (el.scrollTop < 8 && !typing && visibleCount < messages.length) loadEarlier()
+    if (el.scrollTop < 8 && !typing && byGesture && visibleCount < messages.length) loadEarlier()
   }
   const setToggle = (k) => setToggles(s => {
     const n = { ...s, [k]: !s[k] }
@@ -353,6 +359,22 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   // 贴底协议核心: 内容或容器一变高(流式增字/图片后到/思考块展开/键盘弹出), 只要用户本就在底部, 立即无动画重钉。
   // 用户上滑阅读旧消息时 stickRef=false, 观察器沉默, 绝不抢滚动。
+  // 记录真实手势: 只有手指/滚轮动过, 才允许判定"用户主动离开了底部"
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const mark = () => { gestureRef.current = Date.now() }
+    const opts = { passive: true }
+    el.addEventListener('touchstart', mark, opts)
+    el.addEventListener('touchmove', mark, opts)
+    el.addEventListener('wheel', mark, opts)
+    return () => {
+      el.removeEventListener('touchstart', mark)
+      el.removeEventListener('touchmove', mark)
+      el.removeEventListener('wheel', mark)
+    }
+  }, [])
+
   React.useEffect(() => {
     const el = scrollRef.current, inner = contentRef.current
     if (!el || typeof ResizeObserver === "undefined") return
@@ -361,7 +383,18 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     })
     if (inner) ro.observe(inner)
     ro.observe(el)
-    return () => ro.disconnect()
+    // 键盘弹出/收起会改 --app-h -> 容器高度变 -> 这一帧最容易漏钉, 补两拍兜底
+    const onVV = () => {
+      if (!stickRef.current || loadingEarlierRef.current) return
+      const pin = () => { const e2 = scrollRef.current; if (e2) e2.scrollTop = e2.scrollHeight }
+      pin(); requestAnimationFrame(pin); setTimeout(pin, 260)
+    }
+    const vv = window.visualViewport
+    if (vv) { vv.addEventListener('resize', onVV); vv.addEventListener('scroll', onVV) }
+    return () => {
+      ro.disconnect()
+      if (vv) { vv.removeEventListener('resize', onVV); vv.removeEventListener('scroll', onVV) }
+    }
   }, [])
 
   // 渲染窗锚定: 新消息到达时若用户正在上面读旧消息, 同步扩大渲染窗, 防 60 条滑窗把上方内容抽走导致视口跳动
