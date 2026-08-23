@@ -98,8 +98,8 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
         {onEdit && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onEdit() }} aria-label="编辑"><Icon name="edit" size={13} color="var(--ink-soft)" /></button>}
         {onDelete && <button className="round-btn sm" onClick={(e) => { e.stopPropagation(); onDelete() }} aria-label="删除"><Icon name="trash" size={13} color="var(--brick)" /></button>}
       </div>}
-      {note.washiUrl ? <img className={"washi-tape washi-layout-" + (note.layout || 0)} src={note.washiUrl} alt="" style={note.washiStyle} /> : <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />}
-      {note.clipUrl && <img className="note-clip-asset" src={note.clipUrl} alt="" style={note.clipStyle} />}
+      {note.washiUrl ? <img className={"washi-tape washi-layout-" + (note.layout || 0)} src={note.washiUrl} alt="" style={note.washiStyle} loading="lazy" decoding="async" /> : <Tape kind={note.tape} style={{ top: -13, left: 26, transform: "rotate(-8deg)", width: 70, height: 30 }} />}
+      {note.clipUrl && <img className="note-clip-asset" src={note.clipUrl} alt="" style={note.clipStyle} loading="lazy" decoding="async" />}
       <CrayonCard tint={note.tint} className="sticky-card">
         <div className="sticky-body">
           <div className="sticky-title-row">
@@ -113,7 +113,7 @@ function StickyNote({ note, onClick, onEdit, onDelete }) {
           ) : (
             <ul className="sticky-ul">{note.items.map((it, i) => <li key={i}><span className="bull" style={{ background: t.ink }} />{it}</li>)}</ul>
           )}
-          {note.stickers ? note.stickers.map((s, si) => <img key={si} className="note-sticker" src={s.src} alt="" style={s.style} />) : (Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />)}
+          {note.stickers ? note.stickers.map((s, si) => <img key={si} className="note-sticker" src={s.src} alt="" style={s.style} loading="lazy" decoding="async" />) : (Creature && <Creature size={40} style={{ position: "absolute", left: 12, bottom: 10 }} />)}
         </div>
       </CrayonCard>
     </div>
@@ -127,7 +127,7 @@ function ConversationRow({ conv, onClick, last, onDelete }) {
   return (
     <div className={"conv-row" + (conv.active ? " active" : "")} onClick={onClick}>
       {conv.active && <span className="wash conv-wash" />}
-      <span className="conv-av">{conv.avatarUrl ? <img className="conv-panther-avatar" src={conv.avatarUrl} alt="" /> : <Creature size={48} />}</span>
+      <span className="conv-av">{conv.avatarUrl ? <img className="conv-panther-avatar" src={conv.avatarUrl} alt="" loading="lazy" decoding="async" /> : <Creature size={48} />}</span>
       <div className="conv-main">
         <div className="conv-top">
           <span className="conv-title">{conv.title}</span>
@@ -150,8 +150,8 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
   const stop = (e) => e.stopPropagation();
   return (
     <div className="task-wrap" style={{ "--rot": (task.rot || 0) + "deg" }}>
-      {task.washiUrl ? <img className={"task-washi-tape task-washi-layout-" + (task.layout || 0)} src={task.washiUrl} alt="" style={task.washiStyle} /> : (task.tape && <Tape kind={task.tape} style={{ top: -12, left: -6, transform: "rotate(-24deg)", width: 62, height: 26 }} />)}
-      {task.clipUrl ? <img className="task-clip-asset" src={task.clipUrl} alt="" style={task.clipStyle} /> : (task.clip && <BinderClip size={26} style={{ top: -8, left: "50%", marginLeft: -13 }} />)}
+      {task.washiUrl ? <img className={"task-washi-tape task-washi-layout-" + (task.layout || 0)} src={task.washiUrl} alt="" style={task.washiStyle} loading="lazy" decoding="async" /> : (task.tape && <Tape kind={task.tape} style={{ top: -12, left: -6, transform: "rotate(-24deg)", width: 62, height: 26 }} />)}
+      {task.clipUrl ? <img className="task-clip-asset" src={task.clipUrl} alt="" style={task.clipStyle} loading="lazy" decoding="async" /> : (task.clip && <BinderClip size={26} style={{ top: -8, left: "50%", marginLeft: -13 }} />)}
       <CrayonCard tint={task.tint} className={"task-card" + (task.punch ? " punch" : "") + (task.receipt ? " receipt" : "")}>
         <div className="task-inner">
           <button className={"task-check" + (task.done ? " done" : "")} onClick={onToggle} aria-label="完成">
@@ -167,7 +167,7 @@ function TaskCard({ task, onToggle, onEdit, onDelete }) {
             <button className="round-btn sm" onClick={(e) => { stop(e); onDelete && onDelete() }}><Icon name="trash" size={13} color="var(--brick)" /></button>
           </span>
         </div>
-        {task.stickers ? task.stickers.map((s, si) => <img key={si} className="task-sticker-img" src={s.src} alt="" style={s.style} />) : null}
+        {task.stickers ? task.stickers.map((s, si) => <img key={si} className="task-sticker-img" src={s.src} alt="" style={s.style} loading="lazy" decoding="async" />) : null}
         {!task.stickers && task.sticker === "star" && <StarFace size={26} style={{ position: "absolute", right: 14, bottom: -6 }} />}
         {!task.stickers && task.sticker === "flower" && <Flower size={22} color="#d98c84" style={{ position: "absolute", right: 14, bottom: 8 }} />}
         {!task.stickers && task.sticker === "heartlegs" && <HeartLegs size={34} style={{ position: "absolute", right: 8, bottom: -4 }} />}
@@ -186,8 +186,8 @@ function QuickAction({ qa, onClick }) {
     <button className="quick-action" onClick={onClick}>
       <CrayonCard tint="pink" edge={qa.edge} className="qa-card" dbl={false}
         style={{ "--tint": "rgba(255,253,247,0.55)" }}>
-        {mainSticker && <img className="qa-main-sticker" src={mainSticker} alt="" />}
-        {accent && <img className="qa-accent-sticker" src={accent} alt="" />}
+        {mainSticker && <img className="qa-main-sticker" src={mainSticker} alt="" loading="lazy" decoding="async" />}
+        {accent && <img className="qa-accent-sticker" src={accent} alt="" loading="lazy" decoding="async" />}
         <span className="qa-icon-spacer" aria-hidden="true" />
         <span className="qa-label">{qa.label}</span>
       </CrayonCard>
@@ -281,7 +281,7 @@ function StudioCard({ mod, onClick }) {
         <span className="studio-asset-stickers">
           {studioStickers.map(([name, cls]) => {
             const src = KAWAII_IMAGES[name] || STICKER_IMAGES[name];
-            return src ? <img key={name + cls} className={cls} src={src} alt="" /> : null;
+            return src ? <img key={name + cls} className={cls} src={src} alt="" loading="lazy" decoding="async" /> : null;
           })}
         </span>
       </CrayonCard>
@@ -316,6 +316,6 @@ export function DecoLayer() {
     return { src: DECO_POOL[(i * 5 + 2) % DECO_POOL.length], left, top, size, rot }
   })
   return (<div className="deco-layer" aria-hidden="true">
-    {items.map((it, i) => <img key={i} src={it.src} alt="" style={{ position: "absolute", left: it.left + "%", top: it.top + "%", width: it.size, transform: "rotate(" + it.rot + "deg)" }} />)}
+    {items.map((it, i) => <img key={i} src={it.src} alt="" loading="lazy" decoding="async" style={{ position: "absolute", left: it.left + "%", top: it.top + "%", width: it.size, transform: "rotate(" + it.rot + "deg)" }} />)}
   </div>)
 }

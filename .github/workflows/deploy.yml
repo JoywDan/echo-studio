@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: echo-studio-pages
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,9 +19,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - run: npm install
-      - run: npm run build
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run regression tests
+        run: npm run test:body-protocol
+
+      - name: Set traceable build ID
+        run: echo "BUILD_ID=git-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Build production bundle
+        run: npm run build
 
       - uses: peaceiris/actions-gh-pages@v3
         with:

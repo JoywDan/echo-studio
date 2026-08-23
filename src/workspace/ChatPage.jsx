@@ -85,7 +85,7 @@ function renderRichInner(text) {
   if (last < t.length) segs.push({ type: 't', v: t.slice(last) })
   if (!segs.length) return renderNarr(t, 'x')
   return segs.map((seg, i) => seg.type === 'img'
-    ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} /></a>
+    ? <a key={'i' + i} href={seg.url} target="_blank" rel="noreferrer" className="msg-gen-img-link"><img className="msg-image msg-gen-image" src={seg.url} alt={seg.alt} loading="lazy" decoding="async" /></a>
     : <React.Fragment key={'t' + i}>{renderNarr(seg.v, 't' + i)}</React.Fragment>)
 }
 
@@ -138,13 +138,15 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
   const imgs = (msg.attachments || []).filter(a => a.kind === "image")
   const files = (msg.attachments || []).filter(a => a.kind === "file")
   const meta = (<div className="msg-meta"><span>{msg.time}</span>{msg.read && <span className="msg-read">已读</span>}</div>)
-  const body = msg.streamed != null ? <span>{renderRich(msg.streamed)}{!msg.done && <span className="type-cursor" />}</span> : null
+  // 流式阶段只画纯文本，避免每个动画帧都从头扫描一遍不断变长的正文。
+  // 回复结束后仍走 renderRich，音乐卡、图片与旁白样式保持不变。
+  const body = msg.streamed != null ? <span>{msg.streamed}{!msg.done && <span className="type-cursor" />}</span> : null
 
   if (isMe) {
     return (<div className="msg-row me"><div className="msg-col">
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}>
         <Tape kind="plain" style={{ top: -10, right: 16, width: 46, height: 18, transform: "rotate(20deg)" }} />
-        <img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" /></div>))}
+        <img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" loading="lazy" decoding="async" /></div>))}
       {files.map((a, i) => (<div key={i} className="bubble-me file-pill"><span className="file-ico"><Icon name="clip" size={17} color="#f6e6df" /></span>
         <span><span className="file-name">{a.name || a.filename}</span></span></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-me-wrap">
@@ -158,7 +160,7 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
-      {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" /></div>))}
+      {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" loading="lazy" decoding="async" /></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-echo-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(222,196,150,0.4)", inset: "-10px -14px", borderRadius: 24 }} />
         {deco === "tape" && <Tape kind="gingham" style={{ top: -11, left: 30, width: 64, height: 24, transform: "rotate(-4deg)" }} />}
@@ -225,15 +227,22 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   const scrollRef = React.useRef(null)
   const contentRef = React.useRef(null)
+  const inputRef = React.useRef(null)
+  const abortRef = React.useRef(null)
+  const streamRequestRef = React.useRef(0)
   const gestureRef = React.useRef(0)        // 最近一次真实手势(touch/wheel)的时间戳
   const stickRef = React.useRef(true)      // 贴底协议: 用户在底部时, 任何内容长高都自动重钉(流式/图片加载/思考块展开全覆盖)
   const prevLenRef = React.useRef(0)
   const [visibleCount, setVisibleCount] = React.useState(60)  // 渲染窗口化: 只铺最近N条
   const [atTop, setAtTop] = React.useState(true)
   const [atBottom, setAtBottom] = React.useState(true)
+  const atTopRef = React.useRef(true)
+  const atBottomRef = React.useRef(true)
   const imgInputRef = React.useRef(null)
   const docInputRef = React.useRef(null)
   const sessionId = conv && conv.id
+  const sessionIdRef = React.useRef(sessionId)
+  sessionIdRef.current = sessionId
   const sessionTitle = (conv && conv.title) || "Echo"
   const renameThis = async () => {
     if (!onRenameConv || !conv) return
@@ -247,30 +256,6 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const decos = ["tape", "", "clip", "", "flowertape", "", "clip", ""]
 
   const scrollToEnd = (smooth = true) => { const el = scrollRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" }) }
-  // 流式增量按帧合并: 每个 token 都 setState 会让 React 一秒重渲几十次(手机掉帧的直接原因)。
-  // 攒进 ref, 下一帧统一 flush 一次。
-  const deltaBufRef = React.useRef('')
-  const deltaRafRef = React.useRef(0)
-  const flushDelta = (echoId) => {
-    deltaRafRef.current = 0
-    const chunk = deltaBufRef.current
-    if (!chunk) return
-    deltaBufRef.current = ''
-    setMessages(m => m.map(x => x.id === echoId ? { ...x, streamed: (x.streamed || '') + chunk } : x))
-  }
-  // 收尾用: 同步取走残余缓冲并撤掉待执行帧 —— 流式结束时正文取自 x.streamed,
-  // 不 drain 就会丢掉最后一帧的字。
-  const drainDelta = () => {
-    if (deltaRafRef.current) { cancelAnimationFrame(deltaRafRef.current); deltaRafRef.current = 0 }
-    const chunk = deltaBufRef.current
-    deltaBufRef.current = ''
-    return chunk
-  }
-  const pushDelta = (echoId, t) => {
-    deltaBufRef.current += t
-    if (deltaRafRef.current) return
-    deltaRafRef.current = requestAnimationFrame(() => flushDelta(echoId))
-  }
   const scrollToTop = () => { const el = scrollRef.current; if (el) el.scrollTo({ top: 0, behavior: "smooth" }) }
   const loadingEarlierRef = React.useRef(false)
   const loadEarlier = () => {
@@ -284,9 +269,10 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }
   const onScroll = () => {
     const el = scrollRef.current; if (!el) return
-    setAtTop(el.scrollTop < 40)
+    const nearTop = el.scrollTop < 40
+    if (nearTop !== atTopRef.current) { atTopRef.current = nearTop; setAtTop(nearTop) }
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
-    setAtBottom(nearBottom)
+    if (nearBottom !== atBottomRef.current) { atBottomRef.current = nearBottom; setAtBottom(nearBottom) }
     // 只有真实手势才能解除贴底。键盘弹出/工具栏收放会让容器变矮并派发 scroll 事件,
     // 旧代码在这里把 stickRef 误判成 false, 于是紧接着的重钉被跳过 —— 这正是"自己往上滑"的根。
     // 回到底部则任何时候都可以重新贴上(安全方向)。
@@ -331,11 +317,35 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }, [models, sessionId])
 
   React.useEffect(() => {
+    const staleAbort = abortRef.current
+    abortRef.current = null
+    streamRequestRef.current += 1
+    if (staleAbort) { try { staleAbort.abort() } catch {} }
     setSending(false)  // 进/切换任何窗口先清"发送中"卡死态——否则上个窗口没发完会让新窗口编辑/重掷键全消失(时有时无根因)
-    if (!sessionId) { setMessages([]); return }
-    if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return }
+    // 会话级临时状态不能串窗：历史消息 id 会从 h0 重新编号，保留编辑态会误改另一个会话。
+    setMessages([]); setVisibleCount(60)
+    setEditingId(null); setEditDraft('')
+    setPendingFiles([]); setDraft(''); setLightbox(null)
     let alive = true
+    let scrollTimer = 0
     stickRef.current = true  // 新开/切窗默认落底
+    loadingEarlierRef.current = false
+    gestureRef.current = 0
+    atTopRef.current = true; setAtTop(true)
+    atBottomRef.current = true; setAtBottom(true)
+    const cleanup = () => {
+      alive = false
+      if (scrollTimer) clearTimeout(scrollTimer)
+      // 卸载时终止本窗口请求；切会话时由下一轮 effect 在更新后的 session 下终止。
+      if (sessionIdRef.current === sessionId && abortRef.current) {
+        const activeAbort = abortRef.current
+        abortRef.current = null
+        streamRequestRef.current += 1
+        try { activeAbort.abort() } catch {}
+      }
+    }
+    if (!sessionId) { setMessages([]); return cleanup }
+    if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return cleanup }
     api.history(sessionId).then(d => {
       if (!alive) return
       const msgs = (d.messages || []).map((m, i) => ({
@@ -350,12 +360,19 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       }))
       setVisibleCount(60)
       setMessages(msgs.length ? msgs : [{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }])
-      setTimeout(() => scrollToEnd(false), 60)
-    }).catch(() => setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }]))
-    return () => { alive = false }
+      scrollTimer = setTimeout(() => { if (alive && sessionIdRef.current === sessionId) scrollToEnd(false) }, 60)
+    }).catch(() => { if (alive) setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }]) })
+    return cleanup
   }, [sessionId])
 
   React.useEffect(() => { scrollToEnd(false) }, [])
+
+  React.useLayoutEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = Math.min(el.scrollHeight, 100) + "px"
+  }, [draft])
 
   // 贴底协议核心: 内容或容器一变高(流式增字/图片后到/思考块展开/键盘弹出), 只要用户本就在底部, 立即无动画重钉。
   // 用户上滑阅读旧消息时 stickRef=false, 观察器沉默, 绝不抢滚动。
@@ -378,21 +395,31 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   React.useEffect(() => {
     const el = scrollRef.current, inner = contentRef.current
     if (!el || typeof ResizeObserver === "undefined") return
+    let vvRaf = 0
+    let vvTail = 0
     const ro = new ResizeObserver(() => {
       if (stickRef.current && !loadingEarlierRef.current) el.scrollTop = el.scrollHeight
     })
     if (inner) ro.observe(inner)
     ro.observe(el)
     // 键盘弹出/收起会改 --app-h -> 容器高度变 -> 这一帧最容易漏钉, 补两拍兜底
-    const onVV = () => {
+    const pin = () => {
       if (!stickRef.current || loadingEarlierRef.current) return
-      const pin = () => { const e2 = scrollRef.current; if (e2) e2.scrollTop = e2.scrollHeight }
-      pin(); requestAnimationFrame(pin); setTimeout(pin, 260)
+      const e2 = scrollRef.current
+      if (e2) e2.scrollTop = e2.scrollHeight
+    }
+    const onVV = () => {
+      if (vvTail) clearTimeout(vvTail)
+      if (!stickRef.current || loadingEarlierRef.current) return
+      if (!vvRaf) vvRaf = requestAnimationFrame(() => { vvRaf = 0; pin() })
+      vvTail = setTimeout(() => { vvTail = 0; pin() }, 260)
     }
     const vv = window.visualViewport
     if (vv) { vv.addEventListener('resize', onVV); vv.addEventListener('scroll', onVV) }
     return () => {
       ro.disconnect()
+      if (vvRaf) cancelAnimationFrame(vvRaf)
+      if (vvTail) clearTimeout(vvTail)
       if (vv) { vv.removeEventListener('resize', onVV); vv.removeEventListener('scroll', onVV) }
     }
   }, [])
@@ -404,7 +431,6 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     if (len > prev && prev > 0 && !stickRef.current) setVisibleCount(c => Math.min(c + (len - prev), len))
   }, [messages.length])
 
-  const abortRef = React.useRef(null)
   const [editingId, setEditingId] = React.useState(null)
   const [editDraft, setEditDraft] = React.useState("")
   // 手机切后台→连接被系统杀死、流挂死不 reject。回到前台主动中断那条死流, 触发 catch 里的 recover 把已落库的回复捞回来
@@ -416,14 +442,16 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   // 流断了(典型:手机切后台,系统杀掉连接)时,服务器仍在生成并会写入 history——
   // 轮询把已生成的回复捡回来,而不是直接报错丢消息
-  const recoverReply = async (echoId, baseTs) => {
+  const recoverReply = async (echoId, baseTs, isCurrent, targetSessionId) => {
     // baseTs = 发送那一刻库里最新 assistant 的时间戳。只认比它更新的回复——
     // 这样切后台期间服务器就存好的回复也能捞到, 且绝不会把上一条旧回复当新回复重显。
     const deadline = Date.now() + 4 * 60 * 1000
     while (Date.now() < deadline) {
       await new Promise(r => setTimeout(r, document.hidden ? 8000 : 4000))
+      if (!isCurrent()) return false
       try {
-        const d = await api.history(sessionId)
+        const d = await api.history(targetSessionId)
+        if (!isCurrent()) return false
         const a = (d.messages || []).filter(m => m.role !== "user")
         const last = a[a.length - 1]
         if (last && (last.created_at || "") > (baseTs || "")) {
@@ -437,20 +465,54 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }
 
   const streamTo = async (body, { userBubbleId = null } = {}) => {
+    const requestSessionId = sessionId
+    const requestId = ++streamRequestRef.current
+    const isCurrent = () => sessionIdRef.current === requestSessionId && streamRequestRef.current === requestId
     const echoId = "e" + Date.now()
     const baseTs = (() => { for (let i = messages.length - 1; i >= 0; i--) { const mm = messages[i]; if (mm.from === "echo" && mm.createdAt) return mm.createdAt } return new Date().toISOString().slice(0, 19).replace("T", " ") })()
+    let deltaBuffer = ''
+    let deltaRaf = 0
+    const flushDelta = () => {
+      deltaRaf = 0
+      const chunk = deltaBuffer
+      deltaBuffer = ''
+      if (!chunk || !isCurrent()) return
+      setMessages((items) => {
+        let index = items.length - 1
+        if (index < 0 || items[index].id !== echoId) {
+          for (index = items.length - 1; index >= 0 && items[index].id !== echoId; index--) {}
+        }
+        if (index < 0) return items
+        const next = items.slice()
+        const current = items[index]
+        next[index] = { ...current, streamed: (current.streamed || '') + chunk }
+        return next
+      })
+    }
+    const pushDelta = (text) => {
+      if (!isCurrent()) return
+      deltaBuffer += text
+      if (!deltaRaf) deltaRaf = requestAnimationFrame(flushDelta)
+    }
+    const drainDelta = () => {
+      if (deltaRaf) { cancelAnimationFrame(deltaRaf); deltaRaf = 0 }
+      const tail = deltaBuffer
+      deltaBuffer = ''
+      return tail
+    }
     setMessages(m => [...m, { id: echoId, from: "echo", time: now(), streamed: "", done: false }])
-    setTimeout(() => scrollToEnd(), 40)
+    setTimeout(() => { if (isCurrent() && stickRef.current) scrollToEnd(false) }, 40)
     const ac = new AbortController(); abortRef.current = ac
     try {
       const meta = await api.stream(body,
-        { onDelta: (t) => pushDelta(echoId, t), signal: ac.signal })
+        { onDelta: pushDelta, signal: ac.signal })
       const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
+      const _tail = drainDelta()
+      if (!isCurrent()) return
       setProviderStatus({
         label: meta.provider_label || (meta.api_fallback ? "Third-party Fallback" : "Claude Subscription"),
         privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
       })
-      const _tail = drainDelta()
       setMessages(m => m.map(x => {
         if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
         if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
@@ -459,16 +521,28 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       onSessionTouched && onSessionTouched()
     } catch (e) {
       const _tail = drainDelta()
-      const recovered = e.server ? false : await recoverReply(echoId, baseTs)
+      if (!isCurrent()) return
+      const recovered = e.server ? false : await recoverReply(echoId, baseTs, isCurrent, requestSessionId)
+      if (!isCurrent()) return
       if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
         ((x.streamed || '') + _tail).length
           ? { ...x, done: true, text: (x.streamed || '') + _tail, streamed: undefined }
           : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
       ) : x))
-    } finally { abortRef.current = null; setTimeout(() => scrollToEnd(), 60) }
+    } finally {
+      if (deltaRaf) cancelAnimationFrame(deltaRaf)
+      deltaBuffer = ''
+      if (abortRef.current === ac) abortRef.current = null
+      if (isCurrent()) {
+        setSending(false)
+        setTimeout(() => { if (isCurrent() && stickRef.current) scrollToEnd(false) }, 60)
+      }
+    }
   }
 
   const send = async () => {
+    const actionSessionId = sessionId
+    const actionEpoch = streamRequestRef.current
     const text = draft.trim()
     if ((!text && pendingFiles.length === 0) || sending) return
     setSending(true); setDraft("")
@@ -483,41 +557,42 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         }))
       } catch (e) {}
     }
+    if (sessionIdRef.current !== actionSessionId || streamRequestRef.current !== actionEpoch) return
     const userBubbleId = "u" + Date.now()
     setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
-    try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, ...chatFlags() }, { userBubbleId })
-    } finally { setSending(false) }
+    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, ...chatFlags() }, { userBubbleId })
   }
 
   // 重掷: 归档他这条回复, 同一句话重新生成 (2026-07-02)
   const rollMsg = async (m) => {
+    const actionSessionId = sessionId
+    const actionEpoch = streamRequestRef.current
     if (sending || !m.dbId) return
     setSending(true)
     try { await api.rewind({ session_id: sessionId, message_id: m.dbId, mode: "roll" }) }
-    catch (e) { alert("重掷失败：" + e.message); setSending(false); return }
+    catch (e) { if (sessionIdRef.current === actionSessionId && streamRequestRef.current === actionEpoch) { alert("重掷失败：" + e.message); setSending(false) } return }
+    if (sessionIdRef.current !== actionSessionId || streamRequestRef.current !== actionEpoch) return
     setMessages(ms => ms.filter(x => x.id !== m.id && !(x.dbId && x.dbId > m.dbId)))
-    try {
-      await streamTo({ session_id: sessionId, regenerate: true, model, ...chatFlags() })
-    } finally { setSending(false) }
+    await streamTo({ session_id: sessionId, regenerate: true, model, ...chatFlags() })
   }
 
   // 编辑: 归档原消息及之后所有, 用改后的文字重发 (2026-07-02)
   const saveEdit = async () => {
+    const actionSessionId = sessionId
+    const actionEpoch = streamRequestRef.current
     const m = messages.find(x => x.id === editingId)
     const newText = editDraft.trim()
     if (!m || !m.dbId || !newText || sending) return
     setSending(true)
     try { await api.rewind({ session_id: sessionId, message_id: m.dbId, mode: "edit" }) }
-    catch (e) { alert("编辑失败：" + e.message); setSending(false); return }
+    catch (e) { if (sessionIdRef.current === actionSessionId && streamRequestRef.current === actionEpoch) { alert("编辑失败：" + e.message); setSending(false) } return }
+    if (sessionIdRef.current !== actionSessionId || streamRequestRef.current !== actionEpoch) return
     const cutIdx = messages.findIndex(x => x.id === editingId)
     setMessages(ms => ms.slice(0, cutIdx))
     setEditingId(null)
     const userBubbleId = "u" + Date.now()
     setMessages(ms => [...ms, { id: userBubbleId, from: "me", time: now(), text: newText, read: true }])
-    try {
-      await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, ...chatFlags() }, { userBubbleId })
-    } finally { setSending(false) }
+    await streamTo({ session_id: sessionId, messages: [{ role: "user", content: newText }], model, ...chatFlags() }, { userBubbleId })
   }
 
   const onKey = (e) => {}  // 回车=换行，只有发送键才发送（Joy 2026-06-15，照官方 app）
@@ -576,8 +651,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <button className="input-circle" onClick={() => docInputRef.current && docInputRef.current.click()}><Icon name="plus" size={22} color="var(--ink)" /></button>
           <button className="input-circle" onClick={() => imgInputRef.current && imgInputRef.current.click()}><Icon name="camera" size={20} color="var(--ink)" /></button>
           <div className="input-field-wrap">
-            <textarea className="input-field" rows={1} placeholder="输入消息…" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey}
-              ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 100) + "px" } }} />
+            <textarea className="input-field" rows={1} placeholder="输入消息…" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} ref={inputRef} />
           </div>
           <button className="send-btn" onClick={send} disabled={sending || (!draft.trim() && pendingFiles.length === 0)} aria-label="发送"><Icon name="send" size={22} color="#f6e6df" /></button>
         </div>

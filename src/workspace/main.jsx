@@ -22,23 +22,37 @@ try {
 
 // 视觉视口 → --app-h: iOS 键盘弹出/工具栏收放时, app 高度跟着*看得见的*那块走,
 // 并把被系统顶偏的窗口滚动归零 —— 这是「聊天页自己往上滑」的根治层。
+let viewportRaf = 0
+let viewportTail = 0
+let lastViewportHeight = 0
 function syncViewportHeight() {
   try {
     const vv = window.visualViewport
     const h = Math.round(vv ? vv.height : window.innerHeight)
-    if (h > 0) document.documentElement.style.setProperty('--app-h', h + 'px')
+    if (h > 0 && h !== lastViewportHeight) {
+      lastViewportHeight = h
+      document.documentElement.style.setProperty('--app-h', h + 'px')
+    }
     if (window.scrollY !== 0 || window.scrollX !== 0) window.scrollTo(0, 0)
   } catch (e) {}
+}
+function scheduleViewportHeight() {
+  if (viewportRaf) return
+  viewportRaf = requestAnimationFrame(() => { viewportRaf = 0; syncViewportHeight() })
+}
+function scheduleViewportHeightTail(delay) {
+  if (viewportTail) clearTimeout(viewportTail)
+  viewportTail = setTimeout(() => { viewportTail = 0; scheduleViewportHeight() }, delay)
 }
 syncViewportHeight()
 try {
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', syncViewportHeight)
-    window.visualViewport.addEventListener('scroll', syncViewportHeight)
+    window.visualViewport.addEventListener('resize', scheduleViewportHeight)
+    window.visualViewport.addEventListener('scroll', scheduleViewportHeight)
   }
-  window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 250))
-  window.addEventListener('focusin', () => setTimeout(syncViewportHeight, 60))
-  window.addEventListener('focusout', () => setTimeout(syncViewportHeight, 60))
+  window.addEventListener('orientationchange', () => scheduleViewportHeightTail(250))
+  window.addEventListener('focusin', () => scheduleViewportHeightTail(60))
+  window.addEventListener('focusout', () => scheduleViewportHeightTail(60))
 } catch (e) {}
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />)

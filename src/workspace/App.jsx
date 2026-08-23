@@ -9,6 +9,9 @@ import { MusicBar } from './music.jsx'
 import GoldenSessionDebug from '../game/body-protocol/debug/GoldenSessionDebug.tsx'
 import BodyProtocolPage from './BodyProtocolPage.jsx'
 
+const MemoWorkspaceHome = React.memo(WorkspaceHome)
+const MemoChatPage = React.memo(ChatPage)
+
 function genId() { return 'chat-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) }
 function relTime(s) {
   if (!s) return ''
@@ -37,6 +40,9 @@ export default function App() {
   const appRef = React.useRef(null)
   const { t, set, reset, applyTheme, exportTheme, importTheme, cssVars, wallpaper, uploadWallpaper, clearWallpaper, customFont, uploadFont, clearFont } = useTheme()
   const [settingsOpen, setSettingsOpen] = React.useState(false)
+  const [settingsMounted, setSettingsMounted] = React.useState(false)
+  const settingsRafRef = React.useRef(0)
+  const settingsCloseTimerRef = React.useRef(0)
   const bodyProtocolDebug = import.meta.env.DEV && new URLSearchParams(window.location.search).get('bodyProtocolDebug') === '1'
   const bodyProtocolPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get('bodyProtocolPreview') === '1'
 
@@ -70,9 +76,9 @@ export default function App() {
     }
   }
 
-  const openChat = (conv) => { setActiveConv(conv); setView('chat') }
-  const newChat = () => { setActiveConv({ id: genId(), title: '新对话', isNew: true }); setView('chat') }
-  const renameConv = async (conv, nextTitle) => {
+  const openChat = React.useCallback((conv) => { setActiveConv(conv); setView('chat') }, [])
+  const newChat = React.useCallback(() => { setActiveConv({ id: genId(), title: '新对话', isNew: true }); setView('chat') }, [])
+  const renameConv = React.useCallback(async (conv, nextTitle) => {
     const title = String(nextTitle || '').trim()
     if (!title) return null
     if (conv.isNew) {
@@ -83,16 +89,16 @@ export default function App() {
     setSessions((items) => items.map((s) => s.session_id === conv.id ? { ...s, title: r.title } : s))
     setActiveConv((cur) => cur && cur.id === conv.id ? { ...cur, title: r.title, isNew: false } : cur)
     return r
-  }
-  const promptRenameConv = async (conv) => {
+  }, [])
+  const promptRenameConv = React.useCallback(async (conv) => {
     const title = prompt('给这个窗口起个名字', conv.title || '')
     if (title === null) return
     try { await renameConv(conv, title) } catch (e) { alert('改名失败：' + e.message) }
-  }
-  const deleteConv = async (conv) => {
+  }, [renameConv])
+  const deleteConv = React.useCallback(async (conv) => {
     if (!confirm('删除「' + conv.title + '」？这条对话会被永久删除。')) return
     try { await api.deleteSession(conv.id); setSessions((s) => s.filter((x) => x.session_id !== conv.id)) } catch (e) { alert('删除失败：' + e.message) }
-  }
+  }, [])
   // when a message is sent in a (possibly new) session, refresh the list
   const onSessionTouched = React.useCallback(() => {
     api.sessions().then((d) => {
@@ -106,6 +112,34 @@ export default function App() {
     }).catch(() => {})
   }, [])
 
+  const openSettings = React.useCallback(() => {
+    if (settingsCloseTimerRef.current) {
+      clearTimeout(settingsCloseTimerRef.current)
+      settingsCloseTimerRef.current = 0
+    }
+    setSettingsMounted(true)
+    if (settingsRafRef.current) cancelAnimationFrame(settingsRafRef.current)
+    settingsRafRef.current = requestAnimationFrame(() => {
+      settingsRafRef.current = 0
+      setSettingsOpen(true)
+    })
+  }, [])
+  const closeSettings = React.useCallback(() => {
+    setSettingsOpen(false)
+    if (settingsCloseTimerRef.current) clearTimeout(settingsCloseTimerRef.current)
+    settingsCloseTimerRef.current = setTimeout(() => {
+      settingsCloseTimerRef.current = 0
+      setSettingsMounted(false)
+    }, 320)
+  }, [])
+  const backHome = React.useCallback(() => { setView('home'); onSessionTouched() }, [onSessionTouched])
+  const convs = React.useMemo(() => sessionsToConvs(sessions, activeConv && activeConv.id), [sessions, activeConv])
+
+  React.useEffect(() => () => {
+    if (settingsRafRef.current) cancelAnimationFrame(settingsRafRef.current)
+    if (settingsCloseTimerRef.current) clearTimeout(settingsCloseTimerRef.current)
+  }, [])
+
   if (bodyProtocolDebug) return <div className="app is-wide paper-bg" style={cssVars}><GoldenSessionDebug /></div>
   if (bodyProtocolPreview) return <div className="app is-wide paper-bg" style={cssVars}><BodyProtocolPage onClose={() => window.location.href = window.location.pathname} /></div>
   if (authed === null) return <div className="app is-wide paper-bg" style={{ display: 'grid', placeItems: 'center', ...cssVars }}><span className="muted">载入中…</span></div>
@@ -116,15 +150,14 @@ export default function App() {
       <button onClick={tryAuth}>进入</button>{authErr && <div className="err">{authErr}</div>}
     </div></div>)
 
-  const convs = sessionsToConvs(sessions, activeConv && activeConv.id)
   return (
     <div className={'app ' + (mode === 'mobile' ? 'is-mobile' : 'is-wide') + ' paper-' + (t.paperPreset || 'sandpaper') + (wallpaper ? ' has-wallpaper' : '') + ' decor-' + (t.decor || 'full')} ref={appRef} style={cssVars}>
       <div className="layout" data-view={view}>
-        <WorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onRenameConv={promptRenameConv} onDeleteConv={deleteConv} onOpenSettings={() => setSettingsOpen(true)} />
-        <ChatPage conv={activeConv} models={models} onBack={() => { setView('home'); onSessionTouched() }} onSessionTouched={onSessionTouched} onRenameConv={renameConv} />
+        <MemoWorkspaceHome conversations={convs} loading={loadingSessions} onOpenChat={openChat} onNewChat={newChat} onRenameConv={promptRenameConv} onDeleteConv={deleteConv} onOpenSettings={openSettings} />
+        <MemoChatPage conv={activeConv} models={models} onBack={backHome} onSessionTouched={onSessionTouched} onRenameConv={renameConv} />
       </div>
       <MusicBar />
-      <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={() => setSettingsOpen(false)} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} applyTheme={applyTheme} exportTheme={exportTheme} importTheme={importTheme} />
+      {settingsMounted && <Settings t={t} set={set} reset={reset} open={settingsOpen} onClose={closeSettings} wallpaper={wallpaper} uploadWallpaper={uploadWallpaper} clearWallpaper={clearWallpaper} customFont={customFont} uploadFont={uploadFont} clearFont={clearFont} applyTheme={applyTheme} exportTheme={exportTheme} importTheme={importTheme} />}
       {bodyProtocolDebug && <GoldenSessionDebug />}
     </div>)
 }

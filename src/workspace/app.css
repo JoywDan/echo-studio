@@ -2988,3 +2988,27 @@ body {
   letter-spacing: 0.3px;
   opacity: 0.42;
 }
+
+/* 2026-08-23 移动端丝滑：保留纸张与贴纸，只拿掉滚动时最贵的重复滤镜。 */
+@media (max-width: 760px), (pointer: coarse) {
+  .studio-card::before,
+  .studio-card::after,
+  .studio-inner > .hand-border,
+  .studio-deco-fill,
+  .studio-inner::before,
+  .studio-inner::after,
+  .deco-layer img,
+  .bubble-me-wrap > .wash {
+    filter: none !important;
+  }
+  .chat-jump-btn {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255, 252, 245, 0.88);
+  }
+}
+
+.studio-inner {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 138px;
+}

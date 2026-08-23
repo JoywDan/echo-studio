@@ -47,7 +47,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,webp,png,woff2}'],
+        // 图片改为用到时再取，避免首访时 SW 在后台抢下整套贴纸与小项目素材。
+        globPatterns: ['**/*.{js,css,html,woff2}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: null,
         runtimeCaching: [
@@ -61,6 +62,15 @@ export default defineConfig({
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
             handler: 'CacheFirst',
             options: { cacheName: 'gfonts', expiration: { maxEntries: 30, maxAgeSeconds: 31536000 } },
+          },
+          {
+            urlPattern: ({ request, url }) => request.destination === 'image' && url.pathname.startsWith('/echo-studio/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'echo-images-v1',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 180, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
           },
         ],
       },

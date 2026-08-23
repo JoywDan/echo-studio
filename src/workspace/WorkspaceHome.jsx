@@ -53,19 +53,37 @@ import { STUDIO, QUICK_ACTIONS, CONV_CREATURES, NOTE_TINTS, TASK_TINTS } from '.
 import { api } from '../api.js'
 import NoteEditor from './NoteEditor.jsx'
 import TaskEditor from './TaskEditor.jsx'
-import StudioReader from './StudioReader.jsx'
-import MemoryRiver from './MemoryRiver.jsx'
-import DrawPrompt from './DrawPrompt.jsx'
-import DicePanel from './DicePanel.jsx'
-import PhonePanel from './PhonePanel.jsx'
-import MusicPanel from './MusicPanel.jsx'
-import WanderPanel from './WanderPanel.jsx'
-import GameRoomPanel from './GameRoomPanel.jsx'
-import GardenPanel from './GardenPanel.jsx'
-import PromptLibraryPanel from './PromptLibraryPanel.jsx'
-import BodyProtocolPage from './BodyProtocolPage.jsx'
+const StudioReader = React.lazy(() => import('./StudioReader.jsx'))
+const MemoryRiver = React.lazy(() => import('./MemoryRiver.jsx'))
+const DrawPrompt = React.lazy(() => import('./DrawPrompt.jsx'))
+const DicePanel = React.lazy(() => import('./DicePanel.jsx'))
+const PhonePanel = React.lazy(() => import('./PhonePanel.jsx'))
+const MusicPanel = React.lazy(() => import('./MusicPanel.jsx'))
+const WanderPanel = React.lazy(() => import('./WanderPanel.jsx'))
+const GameRoomPanel = React.lazy(() => import('./GameRoomPanel.jsx'))
+const GardenPanel = React.lazy(() => import('./GardenPanel.jsx'))
+const PromptLibraryPanel = React.lazy(() => import('./PromptLibraryPanel.jsx'))
+const BodyProtocolPage = React.lazy(() => import('./BodyProtocolPage.jsx'))
 const ForesightPanel = React.lazy(() => import('./ForesightPanel.jsx'))
 const BookReader = React.lazy(() => import('./BookReader.jsx'))
+
+class LazyPanelBoundary extends React.Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) { return { error } }
+  componentDidCatch(error) { console.error('[workspace] lazy panel failed to load', error) }
+  reset = () => {
+    this.setState({ error: null })
+    if (this.props.onReset) this.props.onReset()
+  }
+  render() {
+    if (!this.state.error) return this.props.children
+    return <div className="book-loading"><div style={{ textAlign: 'center', padding: 24 }}>
+      <div style={{ marginBottom: 12 }}>这个小项目刚才没有载入成功。</div>
+      <button className="set-opt" onClick={() => window.location.reload()}>刷新重试</button>
+      <button className="set-opt" onClick={this.reset} style={{ marginLeft: 8 }}>返回工作台</button>
+    </div></div>
+  }
+}
 
 export default function WorkspaceHome({ conversations = [], onOpenChat, onNewChat, onDeleteConv, onOpenSettings, loading }) {
   const [showAll, setShowAll] = React.useState(false)
@@ -154,6 +172,11 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
   async function saveTask(d) { if (editingTask === 'new') { const r = await api.tasks.create(d); setTasks(t => [...t, r]) } else { const r = await api.tasks.update(editingTask.id, d); setTasks(t => t.map(x => x.id === r.id ? r : x)) } setEditingTask(null) }
   async function delTask(id) { await api.tasks.remove(id); setTasks(t => t.filter(x => x.id !== id)) }
   function openStudio(m) { if (m.module === 'body-protocol') { setBodyProtocolOpen(true) } else if (m.module === 'book') { setBookOpen(true) } else if (m.module === 'drawprompt') { setDrawOpen(true) } else if (m.module === 'memory') { setMemOpen(true) } else if (m.module === 'ao3dice') { setDiceOpen(true) } else if (m.module === 'phone') { setPhoneOpen(true) } else if (m.module === 'game-room') { setGameRoomOpen(true) } else if (m.module === 'foresight') { setForesightOpen(true) } else if (m.module === 'garden') { setGardenOpen(true) } else if (m.module === 'music') { setMusicOpen(true) } else if (m.module === 'street-wander') { setWanderOpen(true) } else if (m.module === 'promptLibrary') { setPromptLibraryOpen(true) } else if (m.url) { window.open(m.url, '_blank') } else if (m.module) { setReader({ module: m.module, title: m.title, tabs: m.tabs }) } }
+  function closeLazyPanels() {
+    setReader(null); setMemOpen(false); setGardenOpen(false); setDrawOpen(false); setBookOpen(false); setDiceOpen(false)
+    setPhoneOpen(false); setMusicOpen(false); setWanderOpen(false); setGameRoomOpen(false); setPromptLibraryOpen(false)
+    setBodyProtocolOpen(false); setForesightOpen(false)
+  }
 
   return (
     <div className="panel workspace-panel">
@@ -161,9 +184,9 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
         <div className="ws-inner">
           <DecoLayer />
           <header className="ws-header">
-            <img className="ws-title-img" src={TITLE} alt="Every version, yours" />
-            <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" />
-            <img className="ws-mascot-r" src={CHEST} alt="美化面板" onClick={onOpenSettings} title="打开美化面板 ✨" />
+            <img className="ws-title-img" src={TITLE} alt="Every version, yours" decoding="async" />
+            <img className="ws-mascot-l" src={PANTHER_HEAD} alt="" decoding="async" />
+            <img className="ws-mascot-r" src={CHEST} alt="美化面板" onClick={onOpenSettings} title="打开美化面板 ✨" decoding="async" />
             <img className="hdr-sticker" src={stickerAt(2)} style={{ position: "absolute", right: 92, top: -6, width: 32 }} alt="" />
             <img className="hdr-sticker" src={stickerAt(8)} style={{ position: "absolute", left: 86, top: 2, width: 28 }} alt="" />
             <img className="hdr-sticker" src={stickerAt(14)} style={{ position: "absolute", right: 4, top: 72, width: 30 }} alt="" />
@@ -189,13 +212,13 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
           <div className="doodle-strip notes-doodle-strip">
             <WormCrown size={58} />
-            <img className="ds-sticker ds-heart" src={stickerAt(3)} alt="" />
+            <img className="ds-sticker ds-heart" src={stickerAt(3)} alt="" loading="lazy" decoding="async" />
             <SpeechHeart size={30} />
             <Wave w={46} color="#cda98c" />
-            <img className="ds-sticker ds-bug" src={stickerAt(5)} alt="" />
-            <img className="ds-sticker" src={stickerAt(9)} alt="" />
+            <img className="ds-sticker ds-bug" src={stickerAt(5)} alt="" loading="lazy" decoding="async" />
+            <img className="ds-sticker" src={stickerAt(9)} alt="" loading="lazy" decoding="async" />
           </div>
-          <img className="ws-section-tape" src={TAPE_LONG[0]} alt="" />
+          <img className="ws-section-tape" src={TAPE_LONG[0]} alt="" loading="lazy" decoding="async" />
 
           <div className="section-head conv-section-head">
             <img className="title-img title-conversations-img" src={TITLE_IMAGES.conversations} alt="Conversations" />
@@ -223,11 +246,11 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
               : taskCards.length === 0 ? <span className="muted" style={{ fontSize: 13, padding: "8px 4px" }}>还没有任务，点 + New task</span>
               : taskCards.map(t => <TaskCard key={t.id} task={t} onToggle={() => toggleTask(t.id)} onEdit={() => setEditingTask(t)} onDelete={() => delTask(t.id)} />)}
           </div>
-          <div className="doodle-strip center-strip task-doodle-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(3)} alt="" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(7)} alt="" /><img className="ds-sticker" src={stickerAt(11)} alt="" /><Squiggle w={50} color="#cdd6b8" /></div>
-          <img className="ws-section-tape task-section-tape" src={TAPE_LONG[1] || TAPE_LONG[0]} alt="" />
+          <div className="doodle-strip center-strip task-doodle-strip"><Squiggle w={50} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(3)} alt="" loading="lazy" decoding="async" /><HeartLegs size={36} /><img className="ds-sticker" src={stickerAt(7)} alt="" loading="lazy" decoding="async" /><img className="ds-sticker" src={stickerAt(11)} alt="" loading="lazy" decoding="async" /><Squiggle w={50} color="#cdd6b8" /></div>
+          <img className="ws-section-tape task-section-tape" src={TAPE_LONG[1] || TAPE_LONG[0]} alt="" loading="lazy" decoding="async" />
 
           <div className="section-head quick-section-head"><h2>Quick actions</h2>
-            <img className="quick-heart-sticker" src={STICKER_IMAGES["04_heart"] || stickerAt(3)} alt="" />
+            <img className="quick-heart-sticker" src={STICKER_IMAGES["04_heart"] || stickerAt(3)} alt="" loading="lazy" decoding="async" />
           </div>
           <div className="qa-grid">
             {QUICK_ACTIONS.map(qa => { const act = { qa1: onNewChat, qa2: () => setEditingNote('new'), qa3: () => setEditingTask('new'), qa4: onNewChat }[qa.id]; return <QuickAction key={qa.id} qa={qa} onClick={act || (() => {})} /> })}
@@ -235,28 +258,32 @@ export default function WorkspaceHome({ conversations = [], onOpenChat, onNewCha
 
           <div className="section-head studio-section-head">
             <h2>Studio</h2><img className="head-sticker" src={stickerAt(4)} style={{ width: 28, marginLeft: 8, verticalAlign: "middle" }} alt="" /><Squiggle w={120} color="#d99a92" style={{ marginLeft: 12, marginBottom: 4 }} />
-            <img className="studio-peek-bunny" src={KAWAII_IMAGES.kawaii_bunny_peeking_over_a_ledge} alt="" />
+            <img className="studio-peek-bunny" src={KAWAII_IMAGES.kawaii_bunny_peeking_over_a_ledge} alt="" loading="lazy" decoding="async" />
           </div>
           <div className="studio-grid">{STUDIO.map(m => <StudioCard key={m.id} mod={m} onClick={() => openStudio(m)} />)}</div>
 
-          <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(10)} alt="" /><img className="ds-sticker" src={stickerAt(15)} alt="" /><img className="ds-sticker" src={stickerAt(18)} alt="" /></div>
+          <div className="doodle-strip end-strip"><Wave w={40} color="#e0b15f" /><img className="ds-sticker" src={stickerAt(10)} alt="" loading="lazy" decoding="async" /><img className="ds-sticker" src={stickerAt(15)} alt="" loading="lazy" decoding="async" /><img className="ds-sticker" src={stickerAt(18)} alt="" loading="lazy" decoding="async" /></div>
         </div>
       </div>
       {editingNote !== null && <NoteEditor note={editingNote === 'new' ? null : editingNote} onSave={saveNote} onClose={() => setEditingNote(null)} />}
       {editingTask !== null && <TaskEditor task={editingTask === 'new' ? null : editingTask} onSave={saveTask} onClose={() => setEditingTask(null)} />}
-      {reader && <StudioReader module={reader.module} title={reader.title} tabs={reader.tabs} onClose={() => setReader(null)} />}
-      {memOpen && <MemoryRiver onClose={() => setMemOpen(false)} />}
-      {gardenOpen && <GardenPanel onClose={() => setGardenOpen(false)} />}
-      {drawOpen && <DrawPrompt onClose={() => setDrawOpen(false)} />}
-      {diceOpen && <DicePanel onClose={() => setDiceOpen(false)} />}
-      {phoneOpen && <PhonePanel onClose={() => setPhoneOpen(false)} />}
-      {musicOpen && <MusicPanel onClose={() => setMusicOpen(false)} />}
-      {wanderOpen && <WanderPanel onClose={() => setWanderOpen(false)} />}
-      {gameRoomOpen && <GameRoomPanel onClose={() => setGameRoomOpen(false)} />}
-      {bodyProtocolOpen && <BodyProtocolPage onClose={() => setBodyProtocolOpen(false)} />}
-      {promptLibraryOpen && <PromptLibraryPanel onClose={() => setPromptLibraryOpen(false)} />}
-      {foresightOpen && <React.Suspense fallback={<div className="book-loading">翻找约定…</div>}><ForesightPanel onClose={() => setForesightOpen(false)} /></React.Suspense>}
-      {bookOpen && <React.Suspense fallback={<div className="book-loading">载入阅读器…</div>}><BookReader onClose={() => setBookOpen(false)} /></React.Suspense>}
+      <LazyPanelBoundary onReset={closeLazyPanels}>
+      <React.Suspense fallback={<div className="book-loading">正在打开…</div>}>
+        {reader && <StudioReader module={reader.module} title={reader.title} tabs={reader.tabs} onClose={() => setReader(null)} />}
+        {memOpen && <MemoryRiver onClose={() => setMemOpen(false)} />}
+        {gardenOpen && <GardenPanel onClose={() => setGardenOpen(false)} />}
+        {drawOpen && <DrawPrompt onClose={() => setDrawOpen(false)} />}
+        {diceOpen && <DicePanel onClose={() => setDiceOpen(false)} />}
+        {phoneOpen && <PhonePanel onClose={() => setPhoneOpen(false)} />}
+        {musicOpen && <MusicPanel onClose={() => setMusicOpen(false)} />}
+        {wanderOpen && <WanderPanel onClose={() => setWanderOpen(false)} />}
+        {gameRoomOpen && <GameRoomPanel onClose={() => setGameRoomOpen(false)} />}
+        {bodyProtocolOpen && <BodyProtocolPage onClose={() => setBodyProtocolOpen(false)} />}
+        {promptLibraryOpen && <PromptLibraryPanel onClose={() => setPromptLibraryOpen(false)} />}
+        {foresightOpen && <ForesightPanel onClose={() => setForesightOpen(false)} />}
+        {bookOpen && <BookReader onClose={() => setBookOpen(false)} />}
+      </React.Suspense>
+      </LazyPanelBoundary>
     </div>
   )
 }
