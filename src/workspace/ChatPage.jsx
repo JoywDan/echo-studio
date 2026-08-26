@@ -9,12 +9,13 @@ import { CHAT_DADDY } from './assets.js'
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
 function now() { return _laFmt.format(new Date()) }
 function laClock(s) { if (!s) return ""; const str = String(s); const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? str.slice(11, 16) : _laFmt.format(d) }
-const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, code: false, image: false, stock: false }
-const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["image", "画图"], ["stock", "股票"], ["code", "编码"]]
+const FORUM_MODEL = "claude-opus-4-6"
+const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, forum: false, code: false, image: false, stock: false }
+const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["forum", "论坛"], ["image", "画图"], ["stock", "股票"], ["code", "编码"]]
 const toolsEnabled = (toggles) => !!(toggles.tools || toggles.web || toggles.code)
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
-const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
+const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", forum_register: "🪪 注册论坛身份", forum_front: "🗞️ 浏览论坛", forum_thread: "💬 阅读帖子", forum_search: "🔎 搜索论坛", forum_me: "👤 查看论坛身份", forum_post: "✍️ 发布帖子", forum_comment: "↩️ 回复帖子", forum_vote: "⬆️ 点赞", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
 const ACTION_LABELS = { write_file: "📝 写文件", pm2_restart: "🔄 重启服务", run_build: "🔨 构建", git_commit: "💾 Git提交" }
 
 function ThinkingBlock({ text }) {
@@ -283,34 +284,61 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const typing = typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'TEXTAREA'
     if (el.scrollTop < 8 && !typing && byGesture && visibleCount < messages.length) loadEarlier()
   }
-  const setToggle = (k) => setToggles(s => {
-    const n = { ...s, [k]: !s[k] }
-    const on = n[k]
-    // scope 通道(画图/股票)与重型开关(工具/编码)互斥; 联网与 scope 可共存(后端 lean 路线兼容)
-    if (on && ["tools", "web", "code"].includes(k)) n.image = false
-    if (on && ["tools", "code"].includes(k)) n.stock = false
-    if (on && (k === "image" || k === "stock")) { n.tools = false; n.code = false }
-    if (sessionId) writeSessionSettings(sessionId, { toggles: n })
-    return n
-  })
+  const setToggle = (k) => {
+    const turningForumOn = k === "forum" && !toggles.forum
+    if (turningForumOn && model !== FORUM_MODEL) {
+      setModel(FORUM_MODEL)
+      if (sessionId) writeSessionSettings(sessionId, { model: FORUM_MODEL })
+    }
+    setToggles(s => {
+      const n = { ...s, [k]: !s[k] }
+      const on = n[k]
+      // 论坛权限是独立的写入通道，不能和通用工具、联网、编码、画图或股票工具同时开放。
+      if (on && k === "forum") {
+        n.tools = false; n.web = false; n.code = false; n.image = false; n.stock = false
+      } else if (on && ["tools", "web", "code", "image", "stock"].includes(k)) {
+        n.forum = false
+      }
+      // scope 通道（画图/股票）与重型开关（工具/编码）互斥；联网可与普通工具共存。
+      if (on && ["tools", "web", "code"].includes(k)) n.image = false
+      if (on && ["tools", "code"].includes(k)) n.stock = false
+      if (on && (k === "image" || k === "stock")) { n.tools = false; n.code = false }
+      if (sessionId) writeSessionSettings(sessionId, { toggles: n })
+      return n
+    })
+  }
   const chatFlags = () => ({
     thinking: toggles.think,
-    tools: (toggles.image || toggles.stock) ? false : toolsEnabled(toggles),
-    mcp_tools: (toggles.image || toggles.stock) ? false : toggles.tools,
-    web_tools: toggles.web,
-    coding_tools: toggles.code,
+    tools: (toggles.image || toggles.stock || toggles.forum) ? false : toolsEnabled(toggles),
+    mcp_tools: (toggles.image || toggles.stock || toggles.forum) ? false : toggles.tools,
+    web_tools: toggles.forum ? false : toggles.web,
+    coding_tools: toggles.forum ? false : toggles.code,
+    forum_tools: toggles.forum,
     ...(toggles.image ? { tool_scope: "image" } : {}),
-    ...((toggles.image || toggles.web || toggles.stock) ? { tool_scopes: [toggles.image && "image", toggles.web && "web", toggles.stock && "stock"].filter(Boolean) } : {}),
+    ...((toggles.image || toggles.web || toggles.stock || toggles.forum) ? { tool_scopes: [toggles.image && "image", toggles.web && "web", toggles.stock && "stock", toggles.forum && "forum"].filter(Boolean) } : {}),
   })
-  const pickModel = (id) => { setModel(id); if (sessionId) writeSessionSettings(sessionId, { model: id }); const m = models.find(x => x.id === id); if (m && !m.supportsThinking) setToggle && setToggles(s => ({ ...s, think: false })) }
+  const pickModel = (id) => {
+    setModel(id)
+    if (sessionId) writeSessionSettings(sessionId, { model: id })
+    const m = models.find(x => x.id === id)
+    setToggles(s => {
+      const n = { ...s }
+      if (m && !m.supportsThinking) n.think = false
+      if (id !== FORUM_MODEL) n.forum = false
+      if (sessionId && (n.think !== s.think || n.forum !== s.forum)) writeSessionSettings(sessionId, { toggles: n })
+      return n
+    })
+  }
 
   React.useEffect(() => {
     if (!models.length || !sessionId) return
     const saved = readSessionSettings(sessionId)
-    const nextModel = [saved && saved.model, models[0].id].find(id => id && models.some(m => m.id === id))
-    const m = models.find(x => x.id === nextModel)
+    let nextModel = [saved && saved.model, models[0].id].find(id => id && models.some(m => m.id === id))
     const savedTog = (saved && saved.toggles) ? { ...saved.toggles } : {}
     delete savedTog.think  // think 永远跟 model defaultThinking 走, 别让旧 saved 把思考关掉(Joy 要默认看到思考链)
+    if (savedTog.forum && models.some(m => m.id === FORUM_MODEL)) nextModel = FORUM_MODEL
+    else if (savedTog.forum) savedTog.forum = false
+    const m = models.find(x => x.id === nextModel)
     const nextToggles = { ...DEFAULT_TOGGLES, ...savedTog, think: m ? !!m.defaultThinking : false }
     if (m && !m.supportsThinking) nextToggles.think = false
     setModel(nextModel); setToggles(nextToggles)
