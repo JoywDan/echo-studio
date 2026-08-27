@@ -25,7 +25,9 @@ jobs:
         run: npm ci
 
       - name: Run regression tests
-        run: npm run test:body-protocol
+        run: |
+          npm run test:workspace-ui
+          npm run test:body-protocol
 
       - name: Set traceable build ID
         run: echo "BUILD_ID=git-${GITHUB_SHA::7}" >> "$GITHUB_ENV"

@@ -80,7 +80,12 @@ input, textarea { font-family: inherit; }
    App shell / responsive
    ============================================================ */
 #root { height: 100%; position: relative; z-index: 1; }
-.app { height: 100%; width: 100%; overflow: hidden; position: relative; }
+.app {
+  height: 100%; width: 100%; overflow: hidden; position: relative;
+  /* Theme variables live on .app, so resolve the body font here too.
+     Otherwise body computes its fallback before the uploaded font variable exists. */
+  font-family: var(--font-cn);
+}
 .layout { display: flex; height: 100%; width: 100%; }
 .panel { height: 100%; overflow: hidden; display: flex; flex-direction: column; position: relative; background: transparent; }
 .panel-scroll { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
@@ -2544,8 +2549,8 @@ input, textarea { font-family: inherit; }
 .voice-bubble.playing .vb-wave i:nth-child(7){animation-delay:.06s}
 @keyframes vbwave { 0%,100%{height:4px} 50%{height:14px} }
 
-/* 动作/旁白(*...*) → 柔褐斜体衬线, 跟对话拉开 */
-.msg-narration { font-style: italic; font-family: 'Songti SC','Noto Serif SC','Source Han Serif SC',serif; color: #a78a72; }
+/* 动作/旁白(*...*) → 保留斜体与柔褐色，但跟随 Joy 选择的正文字体 */
+.msg-narration { font-style: italic; font-family: inherit; color: #a78a72; }
 
 
 /* —— 聊天气泡: 更宽 + 字小一点 + 复制/动作键 —— */
