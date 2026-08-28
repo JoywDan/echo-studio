@@ -15,7 +15,7 @@ const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"
 const toolsEnabled = (toggles) => !!(toggles.tools || toggles.web || toggles.code)
 function readSessionSettings(sid) { try { return JSON.parse(localStorage.getItem("ws_sess_" + sid)) } catch { return null } }
 function writeSessionSettings(sid, patch) { try { const cur = readSessionSettings(sid) || {}; localStorage.setItem("ws_sess_" + sid, JSON.stringify({ ...cur, ...patch })) } catch {} }
-const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", forum_register: "🪪 注册论坛身份", forum_front: "🗞️ 浏览论坛", forum_thread: "💬 阅读帖子", forum_search: "🔎 搜索论坛", forum_me: "👤 查看论坛身份", forum_post: "✍️ 发布帖子", forum_comment: "↩️ 回复帖子", forum_vote: "⬆️ 点赞", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
+const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_deep_search: "🗄️ 深层记忆", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", forum_register: "🪪 注册论坛身份", forum_front: "🗞️ 浏览论坛", forum_thread: "💬 阅读帖子", forum_search: "🔎 搜索论坛", forum_me: "👤 查看论坛身份", forum_post: "✍️ 发布帖子", forum_comment: "↩️ 回复帖子", forum_vote: "⬆️ 点赞", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
 const ACTION_LABELS = { write_file: "📝 写文件", pm2_restart: "🔄 重启服务", run_build: "🔨 构建", git_commit: "💾 Git提交" }
 
 function ThinkingBlock({ text }) {
@@ -309,6 +309,9 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   }
   const chatFlags = () => ({
     thinking: toggles.think,
+    memory_enabled: toggles.memory,
+    memory_tools: toggles.memory,
+    memory_write_enabled: toggles.memory,
     tools: (toggles.image || toggles.stock || toggles.forum) ? false : toolsEnabled(toggles),
     mcp_tools: (toggles.image || toggles.stock || toggles.forum) ? false : toggles.tools,
     web_tools: toggles.forum ? false : toggles.web,
