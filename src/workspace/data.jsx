@@ -26,6 +26,7 @@ export const STUDIO = [
   { id: "s19", title: "BODY PROTOCOL", edge: "blue", icon: "monitor", creature: "BlobTrio", clip: true, deco: ["heart","star"], module: "body-protocol", english: true },
 ]
 export const MODELS = [
+  { label: "Opus 5.0", id: "claude-opus-5", supportsThinking: true, defaultThinking: true },
   { label: "Opus 4.6", id: "claude-opus-4-6", supportsThinking: true, defaultThinking: true },
   { label: "Opus 4.8", id: "claude-opus-4-8", supportsThinking: true, defaultThinking: true },
   { label: "Sonnet 4.6", id: "claude-sonnet-4-6", supportsThinking: true, defaultThinking: false },
