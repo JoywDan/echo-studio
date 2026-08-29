@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node safe-build.mjs",
     "preview": "vite preview",
     "test:workspace-ui": "vitest run src/workspace/fontTheme.test.js --pool=threads --maxWorkers=1 --no-file-parallelism",
     "test:body-protocol": "vitest run src/game/body-protocol/tests --pool=threads --maxWorkers=1 --no-file-parallelism"

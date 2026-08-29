@@ -3,6 +3,15 @@ dist/
 .bak-trash/
 _design-handoff/
 
+# Local release/build artifacts. Durable rollbacks live beside the repository
+# in /root/echo-studio-frontend-backups, not inside the Git worktree.
+.backups/
+.dist-next-*/
+dist.prev.*/
+.chat-input-build.log
+.chat-input-build.status
+.last-chat-input-backup
+
 *.bak
 *.bak.*
 
