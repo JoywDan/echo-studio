@@ -632,7 +632,7 @@ input, textarea { font-family: inherit; }
   border: 2px solid rgba(80,66,52,0.45); background: rgba(252,247,238,0.85); filter: url(#crayon-edge-2); }
 .input-field-wrap { flex: 1; position: relative; }
 .input-field { width: 100%; resize: none; border: 2px solid rgba(80,66,52,0.4); background: rgba(252,247,238,0.92);
-  border-radius: 24px; padding: 12px 18px; font-size: 15.5px; color: var(--ink); outline: none; line-height: 1.4; max-height: 100px;
+  border-radius: 24px; padding: 10px 18px 12px; font-size: 15.5px; color: var(--ink); outline: none; line-height: 1.5; min-height: 52px; max-height: 100px;
   overflow-y: auto; filter: url(#crayon-edge-2); font-family: var(--font-cn); }
 .input-field::-webkit-scrollbar { width: 0; display: none; }
 .input-field::placeholder { color: var(--ink-faint); }

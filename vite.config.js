@@ -7,6 +7,29 @@ import { VitePWA } from 'vite-plugin-pwa'
 // 构建号注入(2026-07-19): 前端 header 显示, 一眼确认手机跑的是哪一版
 const BUILD_ID = process.env.BUILD_ID || new Date().toISOString().slice(5, 16).replace('T', '.').replace(/-/g, '')
 
+function emitBuildId() {
+  let rootDir = process.cwd()
+  let outDir = 'dist'
+
+  return {
+    name: 'emit-build-id',
+    configResolved(config) {
+      rootDir = config.root
+      outDir = config.build.outDir
+    },
+    closeBundle() {
+      try {
+        // Respect Vite's selected outDir. Validation builds often use a temporary
+        // directory and must never change the version advertised by live dist.
+        const dir = resolve(rootDir, outDir)
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(resolve(dir, 'build-id.json'), JSON.stringify({ build: BUILD_ID }))
+        console.log('[emit-build-id] ' + BUILD_ID + ' -> ' + dir)
+      } catch (e) { console.warn('[emit-build-id]', e.message) }
+    },
+  }
+}
+
 export default defineConfig({
   define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   // 构建号落盘: 前端拿它跟自己内嵌的号比对, 旧了就提示换血(见 build-check.js)。
@@ -15,20 +38,10 @@ export default defineConfig({
   base: '/echo-studio/',
   plugins: [
     react(),
-    {
-      name: 'emit-build-id',
-      closeBundle() {
-        try {
-          const dir = resolve(process.cwd(), 'dist')
-          mkdirSync(dir, { recursive: true })
-          writeFileSync(resolve(dir, 'build-id.json'), JSON.stringify({ build: BUILD_ID }))
-          console.log('[emit-build-id] ' + BUILD_ID)
-        } catch (e) { console.warn('[emit-build-id]', e.message) }
-      },
-    },
+    emitBuildId(),
     VitePWA({
       // chat 是日常入口，离线可用壳 + 静态资源
-      registerType: 'prompt',   // 2026-07-02: 配"新版本已就绪"提示条, 点了才换血——告别关三次开三次
+      registerType: 'prompt',   // waiting SW 由 sw-update.js 在页面退到后台后静默接管
       injectRegister: null,      // 注册改由 workspace/main.jsx 手动做(带 onNeedRefresh 回调)
       filename: 'sw.js',
       manifestFilename: 'manifest-pwa.json',

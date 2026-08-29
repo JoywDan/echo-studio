@@ -10,6 +10,7 @@ const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles
 function now() { return _laFmt.format(new Date()) }
 function laClock(s) { if (!s) return ""; const str = String(s); const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? str.slice(11, 16) : _laFmt.format(d) }
 const FORUM_MODEL = "claude-opus-4-6"
+const CHAT_INPUT_MIN_HEIGHT = 52
 const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, forum: false, code: false, image: false, stock: false }
 const FEAT_DEFS = [["think", "思考"], ["memory", "记忆"], ["tools", "工具"], ["web", "联网"], ["forum", "论坛"], ["image", "画图"], ["stock", "股票"], ["code", "编码"]]
 const toolsEnabled = (toggles) => !!(toggles.tools || toggles.web || toggles.code)
@@ -398,12 +399,36 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
 
   React.useEffect(() => { scrollToEnd(false) }, [])
 
-  React.useLayoutEffect(() => {
+  const resizeInput = React.useCallback(() => {
     const el = inputRef.current
     if (!el) return
     el.style.height = "auto"
-    el.style.height = Math.min(el.scrollHeight, 100) + "px"
-  }, [draft])
+    el.style.height = Math.min(Math.max(el.scrollHeight, CHAT_INPUT_MIN_HEIGHT), 100) + "px"
+  }, [])
+
+  React.useLayoutEffect(() => { resizeInput() }, [draft, resizeInput])
+
+  // Uploaded fonts are restored from IndexedDB after the first render. Their
+  // metrics can be taller than the fallback font, so remeasure when font
+  // loading finishes instead of leaving the one-row textarea at a stale height.
+  React.useEffect(() => {
+    const fonts = document.fonts
+    if (!fonts) return
+    let raf = 0
+    let cancelled = false
+    const remeasure = () => {
+      if (cancelled) return
+      if (raf) cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(resizeInput)
+    }
+    fonts.ready.then(remeasure).catch(() => {})
+    fonts.addEventListener?.("loadingdone", remeasure)
+    return () => {
+      cancelled = true
+      if (raf) cancelAnimationFrame(raf)
+      fonts.removeEventListener?.("loadingdone", remeasure)
+    }
+  }, [resizeInput])
 
   // 贴底协议核心: 内容或容器一变高(流式增字/图片后到/思考块展开/键盘弹出), 只要用户本就在底部, 立即无动画重钉。
   // 用户上滑阅读旧消息时 stickRef=false, 观察器沉默, 绝不抢滚动。
