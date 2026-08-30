@@ -5,10 +5,16 @@ import { TornCard, Tape, Paperclip } from './components.jsx'
 import { api, uploadsUrl, API_BASE } from './api.js'
 import { MUSIC_MARK, MusicCard } from './music.jsx'
 import { CHAT_DADDY } from './assets.js'
+import StickerPicker from './StickerPicker.jsx'
 
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
 function now() { return _laFmt.format(new Date()) }
 function laClock(s) { if (!s) return ""; const str = String(s); const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? str.slice(11, 16) : _laFmt.format(d) }
+function parseAttachments(value) { if (!value) return null; if (Array.isArray(value)) return value; try { return JSON.parse(value) } catch { return null } }
+function displayStoredText(text, attachments) {
+  const hasSticker = (attachments || []).some(item => item.kind === 'sticker')
+  return hasSticker && /^\[表情：[^\]]+\]$/.test(String(text || '').trim()) ? '' : text
+}
 const FORUM_MODEL = "claude-opus-4-6"
 const CHAT_INPUT_MIN_HEIGHT = 52
 const DEFAULT_TOGGLES = { think: false, memory: true, tools: false, web: false, forum: false, code: false, image: false, stock: false }
@@ -135,10 +141,18 @@ function CopyBtn({ text }) {
   return <button className={"msg-act-btn" + (done ? " copied" : "")} onClick={copy} title="复制整段">{done ? "已复制 ✓" : "复制"}</button>
 }
 
+function StickerAttachment({ sticker, onImage }) {
+  const src = uploadsUrl(sticker.url, sticker.filename)
+  return <button type="button" className="msg-sticker-wrap" onClick={() => onImage(src)} title={sticker.name || '表情'}>
+    <img className="msg-sticker" src={src} alt={sticker.name || '表情'} loading="lazy" decoding="async" />
+  </button>
+}
+
 function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
   const isMe = msg.from === "me"
   const imgs = (msg.attachments || []).filter(a => a.kind === "image")
   const files = (msg.attachments || []).filter(a => a.kind === "file")
+  const stickers = (msg.attachments || []).filter(a => a.kind === "sticker")
   const meta = (<div className="msg-meta"><span>{msg.time}</span>{msg.read && <span className="msg-read">已读</span>}</div>)
   // 流式阶段只画纯文本，避免每个动画帧都从头扫描一遍不断变长的正文。
   // 回复结束后仍走 renderRich，音乐卡、图片与旁白样式保持不变。
@@ -146,6 +160,7 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
 
   if (isMe) {
     return (<div className="msg-row me"><div className="msg-col">
+      {stickers.map(sticker => <StickerAttachment key={sticker.sticker_id || sticker.id} sticker={sticker} onImage={onImage} />)}
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}>
         <Tape kind="plain" style={{ top: -10, right: 16, width: 46, height: 18, transform: "rotate(20deg)" }} />
         <img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" loading="lazy" decoding="async" /></div>))}
@@ -162,6 +177,7 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
     <div className="msg-col">
       <span className="echo-time">{msg.time}</span>
       {msg.toolCalls && msg.toolCalls.map((tc, i) => <ToolCard key={i} tc={tc} />)}
+      {stickers.map(sticker => <StickerAttachment key={sticker.sticker_id || sticker.id} sticker={sticker} onImage={onImage} />)}
       {imgs.map((a, i) => (<div key={i} className="msg-image-wrap" onClick={() => onImage(uploadsUrl(a.url, a.filename))}><img className="msg-image" src={uploadsUrl(a.url, a.filename)} alt="图片" loading="lazy" decoding="async" /></div>))}
       {(msg.text || msg.streamed != null) && (<div className="bubble-echo-wrap">
         <span className="wash" style={{ "--wash-col": "rgba(222,196,150,0.4)", inset: "-10px -14px", borderRadius: 24 }} />
@@ -225,6 +241,10 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [lightbox, setLightbox] = React.useState(null)
   const [sending, setSending] = React.useState(false)
   const [pendingFiles, setPendingFiles] = React.useState([])
+  const [stickerOpen, setStickerOpen] = React.useState(false)
+  const [stickerCatalog, setStickerCatalog] = React.useState(null)
+  const [stickerLoading, setStickerLoading] = React.useState(false)
+  const [stickerError, setStickerError] = React.useState('')
   const [providerStatus, setProviderStatus] = React.useState({ label: "Claude Subscription", privacy: "Full private context" })
 
   const scrollRef = React.useRef(null)
@@ -357,7 +377,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     // 会话级临时状态不能串窗：历史消息 id 会从 h0 重新编号，保留编辑态会误改另一个会话。
     setMessages([]); setVisibleCount(60)
     setEditingId(null); setEditDraft('')
-    setPendingFiles([]); setDraft(''); setLightbox(null)
+    setPendingFiles([]); setDraft(''); setLightbox(null); setStickerOpen(false)
     let alive = true
     let scrollTimer = 0
     stickRef.current = true  // 新开/切窗默认落底
@@ -380,16 +400,19 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return cleanup }
     api.history(sessionId).then(d => {
       if (!alive) return
-      const msgs = (d.messages || []).map((m, i) => ({
-        id: "h" + i, dbId: m.id || null, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
-        text: m.content, createdAt: m.created_at, thinking: m.thinking_content || null,
-        attachments: m.attachments_json ? (() => { try { return JSON.parse(m.attachments_json) } catch { return null } })() : null,
-        apiFallback: !!m.api_fallback,
-        apiFallbackBlocked: !!m.api_fallback_blocked,
-        providerLabel: m.provider_label || null,
-        providerPrivacyLabel: m.provider_privacy_label || null,
-        read: m.role === "user",
-      }))
+      const msgs = (d.messages || []).map((m, i) => {
+        const attachments = parseAttachments(m.attachments_json)
+        return {
+          id: "h" + i, dbId: m.id || null, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
+          text: displayStoredText(m.content, attachments), createdAt: m.created_at, thinking: m.thinking_content || null,
+          attachments,
+          apiFallback: !!m.api_fallback,
+          apiFallbackBlocked: !!m.api_fallback_blocked,
+          providerLabel: m.provider_label || null,
+          providerPrivacyLabel: m.provider_privacy_label || null,
+          read: m.role === "user",
+        }
+      })
       setVisibleCount(60)
       setMessages(msgs.length ? msgs : [{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }])
       scrollTimer = setTimeout(() => { if (alive && sessionIdRef.current === sessionId) scrollToEnd(false) }, 60)
@@ -511,7 +534,8 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         const a = (d.messages || []).filter(m => m.role !== "user")
         const last = a[a.length - 1]
         if (last && (last.created_at || "") > (baseTs || "")) {
-          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, streamed: undefined, thinking: last.thinking_content || null, apiFallback: !!last.api_fallback, apiFallbackBlocked: !!last.api_fallback_blocked, providerLabel: last.provider_label || null, providerPrivacyLabel: last.provider_privacy_label || null } : x))
+          const recoveredAttachments = parseAttachments(last.attachments_json)
+          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, attachments: recoveredAttachments, streamed: undefined, thinking: last.thinking_content || null, apiFallback: !!last.api_fallback, apiFallbackBlocked: !!last.api_fallback_blocked, providerLabel: last.provider_label || null, providerPrivacyLabel: last.provider_privacy_label || null } : x))
           onSessionTouched && onSessionTouched()
           return true
         }
@@ -570,7 +594,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
       })
       setMessages(m => m.map(x => {
-        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
+        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, attachments: meta.attachments || null, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
         if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
         return x
       }))
@@ -601,7 +625,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const actionEpoch = streamRequestRef.current
     const text = draft.trim()
     if ((!text && pendingFiles.length === 0) || sending) return
-    setSending(true); setDraft("")
+    setSending(true); setDraft(""); setStickerOpen(false)
     const files = pendingFiles
     setPendingFiles([])
     let attachments = []
@@ -617,6 +641,28 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const userBubbleId = "u" + Date.now()
     setMessages(m => [...m, { id: userBubbleId, from: "me", time: now(), text, attachments: attachments.length ? attachments : null, read: true }])
     await streamTo({ session_id: sessionId, messages: [{ role: "user", content: text || "[发了一个附件]" }], attachments, model, ...chatFlags() }, { userBubbleId })
+  }
+
+  const openStickerPicker = async () => {
+    inputRef.current?.blur()
+    setStickerOpen(open => !open)
+    if (stickerCatalog || stickerLoading) return
+    setStickerLoading(true); setStickerError('')
+    try { setStickerCatalog(await api.stickers()) }
+    catch (error) { setStickerError('表情库暂时没拿到：' + error.message) }
+    finally { setStickerLoading(false) }
+  }
+
+  const sendSticker = async (sticker) => {
+    if (sending || !sticker?.id) return
+    const actionSessionId = sessionId
+    const actionEpoch = streamRequestRef.current
+    setSending(true); setStickerOpen(false)
+    const userBubbleId = "u" + Date.now()
+    const attachment = { ...sticker, kind: 'sticker', sticker_id: sticker.id }
+    setMessages(items => [...items, { id: userBubbleId, from: 'me', time: now(), text: '', attachments: [attachment], read: true }])
+    if (sessionIdRef.current !== actionSessionId || streamRequestRef.current !== actionEpoch) { setSending(false); return }
+    await streamTo({ session_id: sessionId, messages: [{ role: 'user', content: `[表情：${sticker.name}]` }], attachments: [{ kind: 'sticker', sticker_id: sticker.id }], model, ...chatFlags() }, { userBubbleId })
   }
 
   // 重掷: 归档他这条回复, 同一句话重新生成 (2026-07-02)
@@ -699,6 +745,8 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           {!atBottom && <button className="chat-jump-btn" onClick={() => scrollToEnd(true)} aria-label="到最新"><Icon name="back" size={18} color="var(--ink-soft)" style={{ transform: "rotate(-90deg)" }} /></button>}
         </div>
 
+        {stickerOpen && <StickerPicker catalog={stickerCatalog} loading={stickerLoading} error={stickerError} onClose={() => setStickerOpen(false)} onSelect={sendSticker} />}
+
         <div className="chat-input">
           <TornCard className="input-strip-bg" />
           {pendingFiles.length > 0 && (<div className="pending-files">{pendingFiles.map((pf, idx) => (<span key={idx} className="pending-file">{pf.kind === "image" ? "🖼" : "📎"} {pf.file.name.length > 14 ? pf.file.name.slice(0, 12) + "…" : pf.file.name} <span onClick={() => setPendingFiles(p => p.filter((_, i) => i !== idx))} style={{ cursor: "pointer", color: "var(--brick)", marginLeft: 4 }}>✕</span></span>))}</div>)}
@@ -706,6 +754,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
           <input ref={docInputRef} type="file" style={{ display: "none" }} onChange={onPickFile("file")} />
           <button className="input-circle" onClick={() => docInputRef.current && docInputRef.current.click()}><Icon name="plus" size={22} color="var(--ink)" /></button>
           <button className="input-circle" onClick={() => imgInputRef.current && imgInputRef.current.click()}><Icon name="camera" size={20} color="var(--ink)" /></button>
+          <button className={"input-circle sticker-trigger" + (stickerOpen ? " active" : "")} onClick={openStickerPicker} aria-label="发表情" title="发表情"><span>☺</span></button>
           <div className="input-field-wrap">
             <textarea className="input-field" rows={1} placeholder="输入消息…" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} ref={inputRef} />
           </div>

@@ -3017,3 +3017,176 @@ body {
   content-visibility: auto;
   contain-intrinsic-size: auto 138px;
 }
+
+/* 2026-08-29 私人表情库：面板只画静态 WebP 缩略图，发送后才解码原 GIF。 */
+.msg-sticker-wrap {
+  display: block;
+  width: fit-content;
+  max-width: min(180px, 46vw);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  content-visibility: auto;
+  contain-intrinsic-size: 160px 160px;
+}
+.msg-sticker {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(180px, 46vw);
+  max-height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 3px rgba(55, 42, 32, .14));
+}
+.msg-row.me .msg-sticker-wrap { margin-left: auto; }
+.msg-row.echo .msg-sticker-wrap { margin-right: auto; }
+
+.sticker-trigger span {
+  font: 700 25px/1 ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.sticker-trigger.active {
+  background: rgba(218, 167, 153, .35) !important;
+  border-color: rgba(167, 55, 42, .55) !important;
+}
+.sticker-picker {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0 12px 2px;
+  padding: 10px;
+  max-height: min(46vh, 430px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  border: 1.5px solid rgba(120, 95, 70, .3);
+  border-radius: 18px;
+  background: rgba(255, 250, 239, .97);
+  box-shadow: 0 -8px 28px rgba(55, 42, 32, .13);
+  z-index: 45;
+}
+.sticker-picker-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  color: var(--ink);
+}
+.sticker-picker-head strong { font-family: var(--font-cn); font-size: 15px; }
+.sticker-picker-head span { flex: 1; color: var(--ink-faint); font-size: 11px; }
+.sticker-picker-head button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  background: rgba(120, 95, 70, .08);
+}
+.sticker-pack-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+.sticker-pack-tabs::-webkit-scrollbar { display: none; }
+.sticker-pack-tabs button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid rgba(120, 95, 70, .24);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgba(243, 230, 191, .34);
+  font-family: var(--font-cn);
+  font-size: 12px;
+}
+.sticker-pack-tabs button.active {
+  color: #fff8ec;
+  border-color: var(--brick);
+  background: var(--brick);
+}
+.sticker-pack-tabs small { margin-left: 4px; opacity: .68; }
+.sticker-search {
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  padding: 7px 11px;
+  border: 1px solid rgba(120, 95, 70, .25);
+  border-radius: 12px;
+  outline: none;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .58);
+  font-family: var(--font-cn);
+  font-size: 13px;
+}
+.sticker-search:focus { border-color: rgba(167, 55, 42, .5); }
+.sticker-grid {
+  min-height: 112px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 8px;
+}
+.sticker-option {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 2px;
+  border-radius: 11px;
+  color: var(--ink-soft);
+  background: transparent;
+}
+.sticker-option:active { background: rgba(218, 167, 153, .22); transform: scale(.96); }
+.sticker-option img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+.sticker-option span {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-cn);
+  font-size: 10px;
+  text-align: center;
+}
+.sticker-more {
+  align-self: center;
+  padding: 6px 14px;
+  border: 1px dashed rgba(167, 55, 42, .38);
+  border-radius: 999px;
+  color: var(--brick);
+  background: rgba(243, 230, 191, .32);
+  font-size: 11px;
+}
+.sticker-picker-state,
+.sticker-empty {
+  grid-column: 1 / -1;
+  padding: 26px 10px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  text-align: center;
+}
+.sticker-picker-state.error { color: var(--brick); }
+
+@media (max-width: 520px) {
+  .sticker-picker { margin-inline: 8px; padding: 8px; max-height: 42vh; }
+  .sticker-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+}
+@media (max-width: 390px) {
+  .chat-input { gap: 6px; padding-left: 8px; padding-right: 8px; }
+  .input-circle { width: 36px; height: 36px; }
+  .send-btn { width: 44px; height: 44px; }
+  .sticker-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticker-option:active { transform: none; }
+}
