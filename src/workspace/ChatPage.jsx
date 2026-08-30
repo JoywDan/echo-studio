@@ -25,9 +25,21 @@ function writeSessionSettings(sid, patch) { try { const cur = readSessionSetting
 const TOOL_LABELS = { music_search: "🎵 找歌", memory_search: "🔍 记忆搜索", memory_deep_search: "🗄️ 深层记忆", memory_recent: "📋 最近记忆", memory_write: "✏️ 写入记忆", memory_wakeup: "🌅 记忆唤醒", web_fetch: "🌐 网页抓取", twitter_read: "🐦 推特阅读", forum_register: "🪪 注册论坛身份", forum_front: "🗞️ 浏览论坛", forum_thread: "💬 阅读帖子", forum_search: "🔎 搜索论坛", forum_me: "👤 查看论坛身份", forum_post: "✍️ 发布帖子", forum_comment: "↩️ 回复帖子", forum_vote: "⬆️ 点赞", vps_read_file: "📄 读文件", vps_list_dir: "📁 列目录", vps_grep: "🔎 搜代码", vps_git: "🌿 Git", vps_pm2: "⚙️ 进程" }
 const ACTION_LABELS = { write_file: "📝 写文件", pm2_restart: "🔄 重启服务", run_build: "🔨 构建", git_commit: "💾 Git提交" }
 
-function ThinkingBlock({ text }) {
+const THINKING_STATUS_TEXT = {
+  no_summary: "本轮模型选择直接回答，没有生成可展示的思考摘要",
+  omitted: "本轮上游省略了思考摘要",
+  redacted: "本轮思考被上游安全加密，没有可展示的摘要",
+  missing_transcript: "本轮思考记录未能读取",
+  missing_session_id: "本轮思考记录缺少会话标识",
+  transcript_error: "本轮思考记录读取失败",
+  duplicate_suppressed: "本轮思考摘要与回复重复，已隐藏",
+  fallback_unavailable: "本轮由备用通道回复，没有思考摘要",
+  legacy_unclassified: "这条旧记录没有保存可区分的思考状态",
+}
+
+function ThinkingBlock({ text, status }) {
   const [open, setOpen] = React.useState(false)
-  if (text === "__none__") return <div className="thinking-block"><span className="muted" style={{ fontSize: 12, fontStyle: "italic", opacity: 0.6 }}>本轮没有可展示的思考摘要</span></div>
+  if (!text) return <div className="thinking-block"><span className="muted" style={{ fontSize: 12, fontStyle: "italic", opacity: 0.6 }}>{THINKING_STATUS_TEXT[status] || "本轮没有可展示的思考摘要"}</span></div>
   return (<div className="thinking-block">
     <button className={"thinking-toggle" + (open ? " open" : "")} onClick={() => setOpen(o => !o)}>思考过程 <Icon name="chevron" size={15} color="var(--ink-faint)" /></button>
     {open && <div className="thinking-content">{text}</div>}</div>)
@@ -189,7 +201,7 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
         <CopyBtn text={msg.text} />
         {onRoll && <button className="msg-act-btn" onClick={onRoll} title="不满意？同一句话让他重新回答">🎲 换一个</button>}
       </div>)}
-      {msg.thinking && <ThinkingBlock text={msg.thinking} />}
+      {(msg.thinking || (msg.thinkingStatus && msg.thinkingStatus !== "disabled")) && <ThinkingBlock text={msg.thinking} status={msg.thinkingStatus} />}
       {msg.pendingActions && msg.pendingActions.map(pa => <ActionCard key={pa.id} pa={pa} onDecide={onDecide} />)}
       {meta}
     </div></div>)
@@ -404,7 +416,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         const attachments = parseAttachments(m.attachments_json)
         return {
           id: "h" + i, dbId: m.id || null, from: m.role === "user" ? "me" : "echo", time: m.time || laClock(m.created_at),
-          text: displayStoredText(m.content, attachments), createdAt: m.created_at, thinking: m.thinking_content || null,
+          text: displayStoredText(m.content, attachments), createdAt: m.created_at, thinking: m.thinking_content || null, thinkingStatus: m.thinking_status || null,
           attachments,
           apiFallback: !!m.api_fallback,
           apiFallbackBlocked: !!m.api_fallback_blocked,
@@ -535,7 +547,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         const last = a[a.length - 1]
         if (last && (last.created_at || "") > (baseTs || "")) {
           const recoveredAttachments = parseAttachments(last.attachments_json)
-          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, attachments: recoveredAttachments, streamed: undefined, thinking: last.thinking_content || null, apiFallback: !!last.api_fallback, apiFallbackBlocked: !!last.api_fallback_blocked, providerLabel: last.provider_label || null, providerPrivacyLabel: last.provider_privacy_label || null } : x))
+          setMessages(m => m.map(x => x.id === echoId ? { ...x, done: true, createdAt: last.created_at, time: last.time || x.time, text: last.content, attachments: recoveredAttachments, streamed: undefined, thinking: last.thinking_content || null, thinkingStatus: last.thinking_status || null, apiFallback: !!last.api_fallback, apiFallbackBlocked: !!last.api_fallback_blocked, providerLabel: last.provider_label || null, providerPrivacyLabel: last.provider_privacy_label || null } : x))
           onSessionTouched && onSessionTouched()
           return true
         }
@@ -586,7 +598,6 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     try {
       const meta = await api.stream(body,
         { onDelta: pushDelta, signal: ac.signal })
-      const tc = meta.thinking_content || (meta.thinking && !meta.thinking_content ? "__none__" : null)
       const _tail = drainDelta()
       if (!isCurrent()) return
       setProviderStatus({
@@ -594,7 +605,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         privacy: meta.provider_privacy_label || (meta.api_fallback ? "Sanitized chat only" : "Full private context"),
       })
       setMessages(m => m.map(x => {
-        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, attachments: meta.attachments || null, streamed: undefined, thinking: tc, toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
+        if (x.id === echoId) return { ...x, done: true, dbId: meta.assistant_msg_id || null, createdAt: meta.created_at || new Date().toISOString().slice(0, 19).replace("T", " "), time: meta.time || x.time, text: (x.streamed || '') + _tail, attachments: meta.attachments || null, streamed: undefined, thinking: meta.thinking_content || null, thinkingStatus: meta.thinking_status || (meta.thinking ? "no_summary" : null), toolCalls: meta.tool_calls, pendingActions: meta.pending_actions, apiFallback: !!meta.api_fallback, apiFallbackBlocked: !!meta.api_fallback_blocked, providerLabel: meta.provider_label || null, providerPrivacyLabel: meta.provider_privacy_label || null }
         if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
         return x
       }))
