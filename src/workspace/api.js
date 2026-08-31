@@ -218,7 +218,18 @@ export const api = {
   // streaming chat: calls onDelta(text) per chunk, returns final meta {tool_calls, pending_actions, thinking_content, ...}
   stream: async (body, { onDelta, onError, signal } = {}) => {
     const resp = await fetch(API + '/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }, body: JSON.stringify(body), signal })
-    if (!resp.ok) { let e; try { e = (await resp.json()).error } catch { e = resp.statusText } throw new Error(e || ('http ' + resp.status)) }
+    if (!resp.ok) {
+      let payload = null
+      try { payload = await resp.json() } catch {}
+      const err = new Error(payload?.error || resp.statusText || ('http ' + resp.status))
+      err.server = true
+      err.code = payload?.code || ('HTTP_' + resp.status)
+      err.retryable = payload?.retryable !== false
+      err.requestTraceId = payload?.request_trace_id || null
+      err.userMsgId = payload?.user_msg_id || null
+      err.attemptedModels = Array.isArray(payload?.attempted_models) ? payload.attempted_models : []
+      throw err
+    }
     const reader = resp.body.getReader(); const dec = new TextDecoder()
     let buf = '', meta = null
     while (true) {
@@ -237,7 +248,17 @@ export const api = {
         let obj; try { obj = JSON.parse(data) } catch { continue }
         if (ev === 'delta') onDelta && onDelta(obj.t)
         else if (ev === 'done') meta = obj
-        else if (ev === 'error') { if (onError) onError(obj.error); const err = new Error(obj.error || 'stream error'); err.server = true; throw err }
+        else if (ev === 'error') {
+          if (onError) onError(obj.error)
+          const err = new Error(obj.error || 'stream error')
+          err.server = true
+          err.code = obj.code || 'CHAT_STREAM_FAILED'
+          err.retryable = obj.retryable !== false
+          err.requestTraceId = obj.request_trace_id || null
+          err.userMsgId = obj.user_msg_id || null
+          err.attemptedModels = Array.isArray(obj.attempted_models) ? obj.attempted_models : []
+          throw err
+        }
       }
     }
     return meta || {}

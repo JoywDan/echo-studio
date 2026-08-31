@@ -6,6 +6,7 @@ import { api, uploadsUrl, API_BASE } from './api.js'
 import { MUSIC_MARK, MusicCard } from './music.jsx'
 import { CHAT_DADDY } from './assets.js'
 import StickerPicker from './StickerPicker.jsx'
+import { failedTurnFromStreamError, inferFailedTurn } from './chatReliability.mjs'
 
 const _laFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit', hour12: false })
 function now() { return _laFmt.format(new Date()) }
@@ -207,6 +208,19 @@ function MessageBase({ msg, onImage, onDecide, deco, onEdit, onRoll }) {
     </div></div>)
 }
 
+function RetryTurnCard({ failure, busy, onRetry }) {
+  if (!failure) return null
+  return <div className="chat-retry-card" role="status" data-failure-code={failure.code || undefined}>
+    <div className="chat-retry-copy">
+      <span className="chat-retry-title">Echo 刚才没接住这句</span>
+      <span className="chat-retry-note">消息还在，重试不会重复发送。</span>
+    </div>
+    <button type="button" className="chat-retry-btn" disabled={busy} onClick={onRetry}>
+      {busy ? '正在重试…' : '重试本轮 ↻'}
+    </button>
+  </div>
+}
+
 function ModelPill({ models, model, setModel, toggles, setToggle }) {
   const [open, setOpen] = React.useState(false)
   const cur = models.find(m => m.id === model)
@@ -258,6 +272,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
   const [stickerLoading, setStickerLoading] = React.useState(false)
   const [stickerError, setStickerError] = React.useState('')
   const [providerStatus, setProviderStatus] = React.useState({ label: "Claude Subscription", privacy: "Full private context" })
+  const [failedTurn, setFailedTurn] = React.useState(null)
 
   const scrollRef = React.useRef(null)
   const contentRef = React.useRef(null)
@@ -387,7 +402,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     if (staleAbort) { try { staleAbort.abort() } catch {} }
     setSending(false)  // 进/切换任何窗口先清"发送中"卡死态——否则上个窗口没发完会让新窗口编辑/重掷键全消失(时有时无根因)
     // 会话级临时状态不能串窗：历史消息 id 会从 h0 重新编号，保留编辑态会误改另一个会话。
-    setMessages([]); setVisibleCount(60)
+    setMessages([]); setVisibleCount(60); setFailedTurn(null)
     setEditingId(null); setEditDraft('')
     setPendingFiles([]); setDraft(''); setLightbox(null); setStickerOpen(false)
     let alive = true
@@ -412,6 +427,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     if (conv.isNew) { setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。想聊什么？" }]); return cleanup }
     api.history(sessionId).then(d => {
       if (!alive) return
+      const durableFailure = inferFailedTurn(d.messages || [], d.latest_failure || null)
       const msgs = (d.messages || []).map((m, i) => {
         const attachments = parseAttachments(m.attachments_json)
         return {
@@ -427,6 +443,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
       })
       setVisibleCount(60)
       setMessages(msgs.length ? msgs : [{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }])
+      setFailedTurn(durableFailure)
       scrollTimer = setTimeout(() => { if (alive && sessionIdRef.current === sessionId) scrollToEnd(false) }, 60)
     }).catch(() => { if (alive) setMessages([{ id: "welcome", from: "echo", time: now(), text: "在呢，囡囡。" }]) })
     return cleanup
@@ -561,6 +578,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
     const requestId = ++streamRequestRef.current
     const isCurrent = () => sessionIdRef.current === requestSessionId && streamRequestRef.current === requestId
     const echoId = "e" + Date.now()
+    setFailedTurn(null)
     const baseTs = (() => { for (let i = messages.length - 1; i >= 0; i--) { const mm = messages[i]; if (mm.from === "echo" && mm.createdAt) return mm.createdAt } return new Date().toISOString().slice(0, 19).replace("T", " ") })()
     let deltaBuffer = ''
     let deltaRaf = 0
@@ -609,17 +627,27 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         if (userBubbleId && x.id === userBubbleId && meta.user_msg_id) return { ...x, dbId: meta.user_msg_id }
         return x
       }))
+      setFailedTurn(null)
       onSessionTouched && onSessionTouched()
     } catch (e) {
       const _tail = drainDelta()
       if (!isCurrent()) return
-      const recovered = e.server ? false : await recoverReply(echoId, baseTs, isCurrent, requestSessionId)
+      // A structured server failure is final and already durable. Legacy server
+      // errors and broken connections may still have completed in the background,
+      // so they keep the existing history recovery path.
+      const finalizedServerFailure = !!(e.server && e.requestTraceId)
+      const recovered = finalizedServerFailure ? false : await recoverReply(echoId, baseTs, isCurrent, requestSessionId)
       if (!isCurrent()) return
-      if (!recovered) setMessages(m => m.map(x => x.id === echoId ? (
-        ((x.streamed || '') + _tail).length
-          ? { ...x, done: true, text: (x.streamed || '') + _tail, streamed: undefined }
-          : { ...x, done: true, text: "（连接出了点问题：" + e.message + "）", streamed: undefined }
-      ) : x))
+      if (!recovered) {
+        const failure = failedTurnFromStreamError(e, e.userMsgId || null)
+        setMessages(items => items.flatMap(x => {
+          if (userBubbleId && x.id === userBubbleId && failure.userMsgId) return [{ ...x, dbId: failure.userMsgId }]
+          if (x.id !== echoId) return [x]
+          const partial = (x.streamed || '') + _tail
+          return partial ? [{ ...x, done: true, text: partial, streamed: undefined }] : []
+        }))
+        setFailedTurn(failure)
+      }
     } finally {
       if (deltaRaf) cancelAnimationFrame(deltaRaf)
       deltaBuffer = ''
@@ -629,6 +657,12 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
         setTimeout(() => { if (isCurrent() && stickRef.current) scrollToEnd(false) }, 60)
       }
     }
+  }
+
+  const retryFailedTurn = async () => {
+    if (!failedTurn || sending) return
+    setSending(true)
+    await streamTo({ session_id: sessionId, regenerate: true, model, ...chatFlags() })
   }
 
   const send = async () => {
@@ -748,6 +782,7 @@ export default function ChatPage({ conv, models = [], onBack, onSessionTouched, 
               onEdit={m.from === "me" && m.dbId && !sending ? () => { setEditingId(m.id); setEditDraft(m.text || "") } : null}
               onRoll={isLastEcho && m.dbId && !sending ? () => rollMsg(m) : null} />
           })}
+          <RetryTurnCard failure={failedTurn} busy={sending} onRetry={retryFailedTurn} />
           </div>
         </div>
 
